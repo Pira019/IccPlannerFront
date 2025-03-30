@@ -5,7 +5,7 @@
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
         "editor.formatOnSave": true
     },
     "[vue]": {
@@ -19,5 +19,8 @@
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
-    }
+    },
+    "cSpell.words": [
+        "l'utilisateur"
+    ]
 }
