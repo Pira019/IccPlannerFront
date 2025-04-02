@@ -7,22 +7,22 @@ const { locale } = useI18n();
 
 // Array of available languages
 const language = ref([
-    { name: 'fr', flag: 'flag-fr' },
-    { name: 'en', flag: 'flag-us' }
+    { name: 'fr-FR', flag: 'flag-fr' },
+    { name: 'en-US', flag: 'flag-us' }
 ]);
 
-const savedLanguage = localStorage.getItem('currentLang');
+const savedLanguage = localStorage.getItem('Accept-Language');
 const currentLanguage = ref(savedLanguage || 'fr');
 
 // If the stored language is not in the array, default to 'fr-FR'
 if (!language.value.some((lang) => lang.name === currentLanguage.value)) {
-    localStorage.setItem('currentLang', currentLanguage.value); // Store the default language
+    localStorage.setItem('Accept-Language', currentLanguage.value); // Store the default language
 }
 
 // Function to switch language
 function switchLang() {
     const nextLang = currentLanguage.value === 'fr' ? 'en' : 'fr'; // Toggle between fr-FR and en-US
-    localStorage.setItem('currentLang', nextLang); // Save the selected language to localStorage
+    localStorage.setItem('Accept-Language', nextLang); // Save the selected language to localStorage
     currentLanguage.value = nextLang; // Update the currentLanguage ref
 }
 

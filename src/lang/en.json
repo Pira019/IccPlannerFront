@@ -3,5 +3,6 @@
     "rememberMe": "Remember me",
     "signIn": "Sign In",
     "password": "Password",
-    "emailAddress": "Email address"
+    "emailAddress": "Email address",
+    "internalError": "An internal error has occurred. Please try again later."
 }

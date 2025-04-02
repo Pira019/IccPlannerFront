@@ -4,6 +4,7 @@
     "signIn": "Se connecter",
     "password": "Mot de passe",
     "emailAddress": "Adresse e-mail",
+    "internalError": "Une erreur interne est survenue. Veuillez réessayer plus tard.",
 
     "invalidType": "Type invalide : attendu {expected}, reçu {received}",
     "invalidTypeReceivedUndefined": "Obligatoire",

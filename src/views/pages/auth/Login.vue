@@ -1,14 +1,29 @@
 <script setup>
 import LangConfiguration from '@/components/LangConfiguration.vue';
+import AccountService from '@/service/AccountService';
+import { handleAsyncError } from '@/utils/handleAsyncError';
 import { loginValidation } from '@/validations/LoginValidation';
 import { useForm } from 'vee-validate';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const { errors, defineField, handleSubmit } = useForm({
+const { t } = useI18n();
+const { errors, defineField, handleSubmit, isSubmitting } = useForm({
     validationSchema: loginValidation
 });
 
-const onSubmit = handleSubmit((values) => {
-    alert(JSON.stringify(values, null, 2));
+const errorMessage = ref(null);
+
+/**
+ * Soumission du formulaire login
+ */
+const onSubmit = handleSubmit.withControlled(async (values) => {
+    const credentials = JSON.stringify(values);
+    const response = await handleAsyncError(() => AccountService.login(credentials), t);
+
+    if (response?.success === false) {
+        errorMessage.value = response.message;
+    }
 });
 
 const [email, emailAttrs] = defineField('email');
@@ -18,7 +33,7 @@ const [remember, rememberAttrs] = defineField('remember');
 
 <template>
     <LangConfiguration />
-    <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
+    <div class="bg-surface-50 dark:bg-surface-950 flex flex-col items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
@@ -42,6 +57,14 @@ const [remember, rememberAttrs] = defineField('remember');
                         </svg>
                         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to PrimeLand!</div>
                         <span class="text-muted-color font-medium">Sign in to continue</span>
+                    </div>
+
+                    <div class="fw-full md:w-[30rem] mb-4" v-if="errorMessage">
+                        <div class="text-wrap">
+                            <Message severity="error">
+                                {{ errorMessage }}
+                            </Message>
+                        </div>
                     </div>
 
                     <form @submit="onSubmit">
@@ -72,7 +95,7 @@ const [remember, rememberAttrs] = defineField('remember');
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
                             </div>
-                            <Button :label="$t('signIn')" type="submit" class="w-full"></Button>
+                            <Button :label="$t('signIn')" :loading="isSubmitting" type="submit" class="w-full mr-2"></Button>
                         </div>
                     </form>
                 </div>

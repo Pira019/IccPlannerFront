@@ -10,16 +10,27 @@ export default class BaseService
     constructor() {}
 
     static axiosInstance = axios.create({
-        baseURL : BaseService.baseApiUrl
+        baseURL : BaseService.baseApiUrl,
+        headers:
+        {
+            'Content-Type': 'application/json',
+            'Accept-Language': 'application/json',
+         }
     })
 
     static getToken() {
         return localStorage.getItem('token'); // Méthode pour récupérer le token
     }
 
+    //Méthode pour récupérer la langue
+    static getLang() {
+        return localStorage.getItem('Accept-Language'); //
+    }
+
     static setupInterceptors()
     {
         this.axiosInstance.interceptors.request.use(config => {
+            config.headers['Accept-Language'] = this.getLang()
             const token = this.getToken();
             if(token)
             {
