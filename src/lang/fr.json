@@ -1,0 +1,87 @@
+{
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "signIn": "Se connecter",
+    "password": "Mot de passe",
+    "emailAddress": "Adresse e-mail",
+    "internalError": "Une erreur interne est survenue. Veuillez réessayer plus tard.",
+
+    "invalidType": "Type invalide : attendu {expected}, reçu {received}",
+    "invalidTypeReceivedUndefined": "Obligatoire",
+    "invalidLiteral": "Valeur invalide, attendu {expected}",
+    "unrecognizedKeys": "Clés non reconnues {keys}",
+    "invalidUnion": "Valeur invalide",
+    "invalidUnionDiscriminator": "Valeur de discriminant invalide. Attendu : {options}",
+    "invalidEnumValue": "Option invalide. Attendu : {options}",
+    "invalidArguments": "Paramètres de fonction invalides",
+    "invalidReturnType": "Valeur de retour de la fonction invalide",
+    "invalidDate": "Date invalide",
+    "custom": "Valeur invalide",
+    "invalidIntersectionTypes": "Les résultats de l'intersection n'ont pas pu être fusionnés",
+    "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}",
+    "notFinite": "Le nombre doit être fini",
+    "invalidString": {
+        "email": "Adresse e-mail invalide",
+        "url": "URL invalide",
+        "uuid": "UUID invalide",
+        "cuid": "CUID invalide",
+        "regex": "Valeur invalide",
+        "datetime": "Date/heure invalide",
+        "startsWith": "Valeur invalide : doit commencer par {startsWith}",
+        "endsWith": "Valeur invalide : doit se terminer par {endsWith}"
+    },
+    "tooSmall": {
+        "array": {
+            "exact": "Insérez {minimum} éléments",
+            "inclusive": "Insérez au moins {minimum} éléments",
+            "notInclusive": "Insérez plus de {minimum} éléments"
+        },
+        "string": {
+            "exact": "La longueur doit être de {minimum} caractères",
+            "inclusive": "Longueur minimale de {minimum} caractères",
+            "notInclusive": "Insérez plus de {minimum} caractères"
+        },
+        "number": {
+            "exact": "La valeur doit être {minimum}",
+            "inclusive": "Insérez une valeur supérieure ou égale à {minimum}",
+            "notInclusive": "Insérez une valeur supérieure à {minimum}"
+        },
+        "set": {
+            "exact": "Valeur invalide",
+            "inclusive": "Valeur invalide",
+            "notInclusive": "Valeur invalide"
+        },
+        "date": {
+            "exact": "La date doit être {minimum}",
+            "inclusive": "La date doit être postérieure ou égale à {minimum}",
+            "notInclusive": "La date doit être postérieure à {minimum}"
+        }
+    },
+    "tooBig": {
+        "array": {
+            "exact": "Insérez {maximum} éléments",
+            "inclusive": "Insérez au plus {maximum} éléments",
+            "notInclusive": "Insérez moins de {maximum} éléments"
+        },
+        "string": {
+            "exact": "La longueur doit être de {maximum} caractères",
+            "inclusive": "Longueur maximale de {maximum} caractères",
+            "notInclusive": "Insérez moins de {maximum} caractères"
+        },
+        "number": {
+            "exact": "La valeur doit être {maximum}",
+            "inclusive": "Insérez une valeur inférieure ou égale à {maximum}",
+            "notInclusive": "Insérez une valeur inférieure à {maximum}"
+        },
+        "set": {
+            "exact": "Valeur invalide",
+            "inclusive": "Valeur invalide",
+            "notInclusive": "Valeur invalide"
+        },
+        "date": {
+            "exact": "La date doit être {maximum}",
+            "inclusive": "La date doit être antérieure ou égale à {maximum}",
+            "notInclusive": "La date doit être antérieure à {maximum}"
+        }
+    }
+}
