@@ -12,7 +12,6 @@ import ToastService from 'primevue/toastservice';
 import en from "@/lang/en.json";
 import fr from "@/lang/fr.json";
 
-import zod_en from 'zod-vue-i18n/locales/en.json';
 
 import '@/assets/styles.scss';
 import { makeZodI18nMap } from 'zod-vue-i18n';
@@ -21,14 +20,11 @@ const app = createApp(App);
 
 const i18n = createI18n({
     legacy : false,
-    locale: 'fr',
-    fallbackLocale: 'fr',
+    locale: 'fr-FR',
+    fallbackLocale: 'fr-FR',
     messages : {
-        fr : fr,
-        en : {
-            ...zod_en,
-            ...en
-        }
+        'fr-FR' : fr,
+        'en-US' :  en
     }
 })
 
