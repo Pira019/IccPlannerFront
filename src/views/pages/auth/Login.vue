@@ -1,13 +1,18 @@
 <script setup>
 import LangConfiguration from '@/components/LangConfiguration.vue';
 import AccountService from '@/service/AccountService';
+import { useAuthStore } from '@/store/AuthStore';
 import { handleAsyncError } from '@/utils/handleAsyncError';
+import { RouteName } from '@/utils/RouteName';
 import { loginValidation } from '@/validations/LoginValidation';
 import { useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
-const { t } = useI18n();
+const { t } = useI18n(); 
+const router = useRouter();
+
 const { errors, defineField, handleSubmit, isSubmitting } = useForm({
     validationSchema: loginValidation
 });
@@ -23,7 +28,9 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
     if (response?.success === false) {
         errorMessage.value = response.message;
+        return;
     }
+    router.push({ name: RouteName.DashBoard });
 });
 
 const [email, emailAttrs] = defineField('email');

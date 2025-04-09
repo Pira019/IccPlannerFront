@@ -14,9 +14,11 @@ import fr from "@/lang/fr.json";
 
 
 import '@/assets/styles.scss';
+import { createPinia } from 'pinia';
 import { makeZodI18nMap } from 'zod-vue-i18n';
 
 const app = createApp(App);
+const pinia = createPinia();
 
 const i18n = createI18n({
     legacy : false,
@@ -29,6 +31,8 @@ const i18n = createI18n({
 })
 
 z.setErrorMap(makeZodI18nMap(i18n))
+
+app.use(pinia);
 app.use(i18n);
 app.use(router);
 app.use(PrimeVue, {
