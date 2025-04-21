@@ -15,12 +15,9 @@ export default class BaseService
         {
             'Content-Type': 'application/json',
             'Accept-Language': 'application/json',
-         }
+         },
+         withCredentials: true
     })
-
-    static getToken() {
-        return localStorage.getItem('token'); // Méthode pour récupérer le token
-    }
 
     //Méthode pour récupérer la langue
     static getLang() {
@@ -31,11 +28,6 @@ export default class BaseService
     {
         this.axiosInstance.interceptors.request.use(config => {
             config.headers['Accept-Language'] = this.getLang()
-            const token = this.getToken();
-            if(token)
-            {
-                config.headers['Authorization'] = `Bearer ${token}`
-            }
             return config;
         })
     }

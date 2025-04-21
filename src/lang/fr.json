@@ -1,4 +1,14 @@
 {
+    "Name": "Nom",
+    "Description": "Description",
+    "Add": "Ajouter",
+    "Ministries": "Ministères",
+    "AddMinistry": "Ajouter un ministère",
+    "Cancel": "Annuler",
+    "Save": "Enregistrer",
+    "MinistryExample": "COMMUNICATION, DATAS ET PRODUCTION AUDIOVISUELLE",
+    "SucceedSave": "Enregistrement réussi!",
+
     "forgotPassword": "Mot de passe oublié ?",
     "rememberMe": "Se souvenir de moi",
     "signIn": "Se connecter",

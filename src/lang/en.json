@@ -1,4 +1,14 @@
 {
+    "Name": "Name",
+    "Description": "Description",
+    "Add": "Add",
+    "AddMinistry": "Add ministry",
+    "Ministries": "Ministries",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "MinistryExample": "COMMUNICATION, DATA AND AUDIOVISUAL PRODUCTION",
+    "SucceedSave": "Successfully saved!",
+
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",
     "signIn": "Sign In",

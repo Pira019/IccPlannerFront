@@ -1,7 +1,7 @@
 <script setup>
 import LangConfiguration from '@/components/LangConfiguration.vue';
+import ErrorComponent from '@/components/ResponseComponent.vue';
 import AccountService from '@/service/AccountService';
-import { useAuthStore } from '@/store/AuthStore';
 import { handleAsyncError } from '@/utils/handleAsyncError';
 import { RouteName } from '@/utils/RouteName';
 import { loginValidation } from '@/validations/LoginValidation';
@@ -10,7 +10,7 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-const { t } = useI18n(); 
+const { t } = useI18n();
 const router = useRouter();
 
 const { errors, defineField, handleSubmit, isSubmitting } = useForm({
@@ -24,12 +24,13 @@ const errorMessage = ref(null);
  */
 const onSubmit = handleSubmit.withControlled(async (values) => {
     const credentials = JSON.stringify(values);
-    const response = await handleAsyncError(() => AccountService.login(credentials), t);
+    const { error } = await handleAsyncError(() => AccountService.login(credentials), t);
 
-    if (response?.success === false) {
-        errorMessage.value = response.message;
+    if (error) {
+        errorMessage.value = error;
         return;
     }
+
     router.push({ name: RouteName.DashBoard });
 });
 
@@ -68,9 +69,7 @@ const [remember, rememberAttrs] = defineField('remember');
 
                     <div class="fw-full md:w-[30rem] mb-4" v-if="errorMessage">
                         <div class="text-wrap">
-                            <Message severity="error">
-                                {{ errorMessage }}
-                            </Message>
+                            <ErrorComponent :error="errorMessage" />
                         </div>
                     </div>
 
