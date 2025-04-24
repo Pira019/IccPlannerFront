@@ -14,4 +14,9 @@ export default class MinistryService extends BaseService
     {
         return await this.axiosInstance.post(this.authBaseUrl, AddMinistryRequest)
     }
+
+    static async getMinistries() {
+        return await this.axiosInstance.get(this.authBaseUrl)
+    }
+
 }

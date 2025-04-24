@@ -8,7 +8,8 @@ const model = ref([
         label: 'Home',
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' }
+            { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
+            { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/department' }
         ]
     },
     {

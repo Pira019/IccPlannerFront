@@ -30,7 +30,6 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         errorMessage.value = error;
         return;
     }
-
     router.push({ name: RouteName.DashBoard });
 });
 

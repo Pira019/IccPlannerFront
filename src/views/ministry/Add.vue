@@ -45,7 +45,7 @@ const [description] = defineField('description');
             <div class="flex flex-col gap-2">
                 <label for="description">{{ $t('Description') }}*</label>
                 <Textarea id="description" :invalid="!!errors.description" v-model="description" rows="8" name="description" />
-                <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.name"> {{ errors.description }}</Message>
+                <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.description"> {{ errors.description }}</Message>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -53,7 +53,7 @@ const [description] = defineField('description');
             </div>
 
             <div class="gap-2 text-right mt-5">
-                <Button type="button" severity="danger" outlined class="mr-2 mb-2" :label="$t('Cancel')" icon="pi pi-times" />
+                <Button type="button" severity="danger" @click="$emit('closeModal')" outlined class="mr-2 mb-2" :label="$t('Cancel')" icon="pi pi-times" />
                 <Button type="submit" class="mr-2 mb-2" :label="$t('Save')" :loading="isSubmitting" icon="pi pi-save" />
             </div>
         </div>

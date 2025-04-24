@@ -1,22 +1,21 @@
 <script setup>
 import { ref } from 'vue';
-import Add from './Add.vue';
+import AddDepartment from './AddDepartment.vue';
 
-const displayAddMinistry = ref(false);
+const displayAddModal = ref(false);
 
 function openAdd() {
-    displayAddMinistry.value = true;
+    displayAddModal.value = true;
 }
-
 function close() {
-    displayAddMinistry.value = false;
+    displayAddModal.value = false;
 }
 </script>
 
 <template>
     <div className="card">
         <div class="font-semibold text-xl mb-4">
-            <h1>{{ $t('Ministries') }}</h1>
+            <h1>{{ $t('Department') }}</h1>
         </div>
     </div>
 
@@ -26,8 +25,8 @@ function close() {
                 <Button type="button" class="mr-2 mb-2" :label="$t('Add')" icon="pi pi-plus" @click="openAdd" />
             </div>
         </div>
-        <Dialog :header="$t('AddMinistry')" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" v-model:visible="displayAddMinistry" :modal="true">
-            <Add @closeModal="close" />
+        <Dialog :header="$t('AddDepartment')" :style="{ width: '50vw' }" v-model:visible="displayAddModal" :modal="true">
+            <AddDepartment @closeModal="close" />
         </Dialog>
     </div>
 </template>
