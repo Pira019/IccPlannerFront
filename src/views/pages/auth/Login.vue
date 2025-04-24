@@ -1,15 +1,46 @@
 <script setup>
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
+import LangConfiguration from '@/components/LangConfiguration.vue';
+import ErrorComponent from '@/components/ResponseComponent.vue';
+import AccountService from '@/service/AccountService';
+import { handleAsyncError } from '@/utils/handleAsyncError';
+import { RouteName } from '@/utils/RouteName';
+import { loginValidation } from '@/validations/LoginValidation';
+import { useForm } from 'vee-validate';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
-const email = ref('');
-const password = ref('');
-const checked = ref(false);
+const { t } = useI18n();
+const router = useRouter();
+
+const { errors, defineField, handleSubmit, isSubmitting } = useForm({
+    validationSchema: loginValidation
+});
+
+const errorMessage = ref(null);
+
+/**
+ * Soumission du formulaire login
+ */
+const onSubmit = handleSubmit.withControlled(async (values) => {
+    const credentials = JSON.stringify(values);
+    const { error } = await handleAsyncError(() => AccountService.login(credentials), t);
+
+    if (error) {
+        errorMessage.value = error;
+        return;
+    }
+    router.push({ name: RouteName.DashBoard });
+});
+
+const [email, emailAttrs] = defineField('email');
+const [password, passwordAttrs] = defineField('password');
+const [remember, rememberAttrs] = defineField('remember');
 </script>
 
 <template>
-    <FloatingConfigurator />
-    <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
+    <LangConfiguration is-login-page="true" />
+    <div class="bg-surface-50 dark:bg-surface-950 flex flex-col items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
@@ -35,22 +66,43 @@ const checked = ref(false);
                         <span class="text-muted-color font-medium">Sign in to continue</span>
                     </div>
 
-                    <div>
-                        <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                        <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
-
-                        <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                        <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
-
-                        <div class="flex items-center justify-between mt-2 mb-8 gap-8">
-                            <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
-                            </div>
-                            <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
+                    <div class="fw-full md:w-[30rem] mb-4" v-if="errorMessage">
+                        <div class="text-wrap">
+                            <ErrorComponent :error="errorMessage" />
                         </div>
-                        <Button label="Sign In" class="w-full" as="router-link" to="/"></Button>
                     </div>
+
+                    <form @submit="onSubmit">
+                        <div>
+                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
+                            <InputText id="email1" :invalid="!!errors.email" type="email" v-model="email" name="email" :emailAttrs :placeholder="$t('emailAddress')" class="w-full md:w-[30rem]" :class="errors.email ? 'mb-2' : 'mb-8'" />
+                            <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.email"> {{ errors.email }}</Message>
+
+                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ $t('password') }}</label>
+                            <Password
+                                id="password1"
+                                :invalid="!!errors.password"
+                                name="password"
+                                v-model="password"
+                                :passwordAttrs
+                                :placeholder="$t('password')"
+                                :toggleMask="true"
+                                :class="errors.email ? 'mb-2' : 'mb-4'"
+                                fluid
+                                :feedback="false"
+                            ></Password>
+                            <Message size="small" severity="error" variant="simple" v-if="errors.password" class="mb-4"> {{ errors.password }}</Message>
+
+                            <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                                <div class="flex items-center">
+                                    <Checkbox id="rememberme1" binary class="mr-2" v-model="remember" :rememberAttrs></Checkbox>
+                                    <label for="rememberme1">{{ $t('rememberMe') }}</label>
+                                </div>
+                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
+                            </div>
+                            <Button :label="$t('signIn')" :loading="isSubmitting" type="submit" class="w-full mr-2"></Button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
