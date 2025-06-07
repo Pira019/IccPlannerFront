@@ -14,3 +14,5 @@ api-generator/typedoc.json
 **/.DS_Store
 .env.production
 .env.testing
+localhost.pem
+localhost-key.pem

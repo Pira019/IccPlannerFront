@@ -1,6 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { boolean } from 'zod';
+
+const props = defineProps({
+    isLoginPage: { type: boolean, required: false }
+});
 
 // Initialiser useI18n
 const { locale } = useI18n();
@@ -28,7 +33,7 @@ watchEffect(() => {
 </script>
 
 <template>
-    <div class="fixed flex gap-4 top-8 right-8">
+    <div :class="props.isLoginPage ? 'fixed flex gap-4 top-8 right-8' : ''">
         <div class="relative">
             <button @click="switchLang">
                 <!-- Dynamically update the flag based on currentLanguage -->

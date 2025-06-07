@@ -1,4 +1,5 @@
 <script setup>
+import LangConfiguration from '@/components/LangConfiguration.vue';
 import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
 
@@ -72,6 +73,11 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                         <i class="pi pi-user"></i>
                         <span>Profile</span>
                     </button>
+                </div>
+            </div>
+            <div class="layout-topbar-menu hidden lg:block">
+                <div class="layout-topbar-menu-content">
+                    <LangConfiguration />
                 </div>
             </div>
         </div>

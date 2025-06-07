@@ -14,6 +14,26 @@ const router = createRouter({
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {
+                    path: '/ministry',
+                    name: 'ministry',
+                    component: () => import('@/views/ministry/Ministry.vue')
+                },
+                {
+                    path: '/department',
+                    name: 'department',
+                    component: () => import('@/views/department/Department.vue')
+                },
+                {
+                    path: '/programs',
+                    name: 'programs',
+                    component: () => import('@/views/program/Program.vue')
+                },
+                {
+                    path: '/availability',
+                    name: 'Availability',
+                    component: () => import('@/views/Availability/availability.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

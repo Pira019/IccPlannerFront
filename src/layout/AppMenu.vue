@@ -6,11 +6,18 @@ import AppMenuItem from './AppMenuItem.vue';
 const model = ref([
     {
         label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
+        items: [
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
+            { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
+            { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/department' },
+            { label: 'Program/Activity', icon: 'pi pi-fw pi-bolt', to: '/programs' }
+        ]
     },
     {
         label: 'UI Components',
         items: [
+            { label: 'Availability', icon: 'pi pi-calendar-minus', to: '/availability' },
+
             { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
             { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
             { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
