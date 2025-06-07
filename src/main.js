@@ -7,6 +7,7 @@ import router from './router';
 import Aura from '@primeuix/themes/aura';
 import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
+import DialogService from 'primevue/dialogservice';
 import ToastService from 'primevue/toastservice';
 
 import en from "@/lang/en.json";
@@ -44,6 +45,7 @@ app.use(PrimeVue, {
     }
 });
 app.use(ToastService);
+app.use(DialogService);
 app.use(ConfirmationService);
 
 app.mount('#app');

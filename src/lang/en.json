@@ -18,6 +18,10 @@
     "StartDate": "Activity start date",
     "ShortNameExemple": "Com,Ejp etc ...",
     "FilterEmptyMessage": "No available options",
+    "Programs": "Programs",
+    "ListPrograms": "Programs/ activity",
+    "DepartmentImp": "Involved Department",
+    "Search": "Search ...",
 
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",
