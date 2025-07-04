@@ -1,35 +1,57 @@
 <script setup lang="ts">
 import CalendarComponent from '@/components/CalendarComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
+import ServicePrgService from '@/service/ServicePrgService';
+import { handleAsyncError } from '@/utils/handleAsyncError';
+import ProgressSpinner from 'primevue/progressspinner';
 
 import { useDialog } from 'primevue/usedialog';
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const dialog = useDialog();
-const dynamicComponent = defineAsyncComponent(() => import('@/views/Availability/AddAvailability.vue'));
+const AddAvailability = defineAsyncComponent(() => import('@/views/Availability/AddAvailability.vue'));
 
-const show = () => {
-    dialog.open(dynamicComponent, {
-        props: {
-            header: 'Product List',
-            modal: true
+const loading = ref(false);
+const dates = ref();
+const errorReq = ref();
+
+async function onMonthChanged({ month, year }) {
+    const { result, error } = await handleAsyncError(
+        () => ServicePrgService.getDates(month, year),
+        t,
+        (val: boolean) => (loading.value = val)
+    );
+
+    errorReq.value = error;
+    dates.value = result?.dates;
+}
+
+const show = (dateService) => {
+    dialog.open(AddAvailability, {
+        data: {
+            dateService
         },
-        emits: {
-            OnClose: (e) => {
-                console.log('TEST');
-            }
+        props: {
+            header: dateService,
+            modal: true
         }
     });
 };
 </script>
 
 <template>
-    <HeaderComponent title-page="Titre de la page" />
-
+    <HeaderComponent :title-page="$t('AvailabilityTitlePage')" />
     <div class="card">
-        <CalendarComponent @show-modal="show" />
-    </div>
+        <div class="text-center" v-if="loading">
+            <ProgressSpinner aria-label="Loading" />
+        </div>
+        <Message class="mb-5" v-if="errorReq != null" severity="error">{{ errorReq?.message }}</Message>
 
-    <Button label="Select a Product" icon="pi pi-search" @click="show" />
+        <Message v-if="dates" class="p-5 mb-5" icon="pi pi-info-circle" severity="info">{{ $t('defaultMsgAvailability') }}</Message>
+
+        <CalendarComponent :dates-service="dates" @show-modal="show" @month-changed="onMonthChanged" />
+    </div>
     <DynamicDialog />
 </template>

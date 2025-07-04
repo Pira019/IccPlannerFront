@@ -22,6 +22,15 @@
     "ListPrograms": "Programs/ activity",
     "DepartmentImp": "Involved Department",
     "Search": "Search ...",
+    "bntClose": "Close",
+    "noServices": "No service available.",
+
+    "msgAvailability": "Your availability has been successfully added.",
+    "msgUnAvailability": "Update completed – you are no longer available for this service.",
+
+    "AvailabilityTitlePage": "My Availabilities",
+
+    "msgSuccess": "The action was completed successfully.",
 
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",

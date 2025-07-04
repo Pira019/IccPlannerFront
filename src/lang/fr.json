@@ -22,6 +22,16 @@
     "ListPrograms": "Nos programmes/ activités",
     "DepartmentImp": "Département impliqué",
     "Search": "Recherche ...",
+    "bntClose": "Fermer",
+    "noServices": "Aucun service.",
+
+    "msgSuccess": "L'action a été effectuée avec succès.",
+
+    "msgAvailability": "Votre disponibilité a été ajoutée avec succès.",
+    "msgUnAvailability": "Mise à jour effectuée – vous n’êtes plus disponible pour ce service.",
+
+    "AvailabilityTitlePage": "Mes disponibilités",
+    "defaultMsgAvailability": "Par défaut, vous êtes indisponible. Veuillez cliquer sur le bouton dans le calendrier pour indiquer vos disponibilités pour un ou plusieurs services.",
 
     "forgotPassword": "Mot de passe oublié ?",
     "rememberMe": "Se souvenir de moi",

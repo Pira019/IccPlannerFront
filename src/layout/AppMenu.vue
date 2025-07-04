@@ -16,7 +16,7 @@ const model = ref([
     {
         label: 'UI Components',
         items: [
-            { label: 'Availability', icon: 'pi pi-calendar-minus', to: '/availability' },
+            { label: 'AvailabilityTitlePage', icon: 'pi pi-calendar-minus', to: '/availability' },
 
             { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
             { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
