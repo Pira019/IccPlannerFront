@@ -15,6 +15,7 @@
         "@fullcalendar/interaction": "^6.1.17",
         "@fullcalendar/vue3": "^6.1.17",
         "@primeuix/themes": "^1.0.0",
+        "@primevue/forms": "^4.3.6",
         "@vee-validate/zod": "^4.15.0",
         "axios": "^1.8.4",
         "c8": "^10.1.3",
