@@ -1,305 +1,191 @@
 <script setup>
 import ProgramService from '@/service/ProgramService';
 import { handleAsyncError } from '@/utils/handleAsyncError';
-import { FilterMatchMode } from '@primevue/core/api';
-import { useToast } from 'primevue/usetoast';
-import { onMounted, ref, watch } from 'vue';
+import { useDialog } from 'primevue';
+import { defineAsyncComponent, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const loading = ref(false);
+// Permet de savoir si c'est en mode édition.
+const isEdit = ref(false);
+const errorReq = ref(null);
+const nodes = ref([]);
+const filters = ref({});
 
-onMounted(() => {
-    getPrograms(1, 25);
-});
+const currentRow = ref(null); // pour stocker la ligne sélectionnée
+const items = ref([]); // pour stocker la ligne sélectionnée
+const menu = ref([]);
 
-const programs = ref();
-const selectedProgram = ref();
-const errorMessage = ref();
-const isLoading = ref(true);
-const dt = ref();
-const menu = ref(null);
+const dialog = useDialog();
+const EditProgramDialog = defineAsyncComponent(() => import('@/views/program/EditProgram.vue'));
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-
-const toast = useToast();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
-const submitted = ref(false);
-const statuses = ref([
-    { label: 'INSTOCK', value: 'instock' },
-    { label: 'LOWSTOCK', value: 'lowstock' },
-    { label: 'OUTOFSTOCK', value: 'outofstock' }
-]);
-
-async function getPrograms(page, pageSize) {
-    const { error, result } = await handleAsyncError(() => ProgramService.getPrograms(page, pageSize), t);
-
-    if (error) {
-        errorMessage.value = error;
-        return;
-    }
-
-    errorMessage.value = null;
-    programs.value = result.items;
-}
-
-watch([errorMessage, programs], () => {
-    isLoading.value = false;
-});
-
-function openNew() {
-    product.value = {};
-    submitted.value = false;
-    productDialog.value = true;
-}
-
-function hideDialog() {
-    productDialog.value = false;
-    submitted.value = false;
-}
-
-function saveProduct() {
-    submitted.value = true;
-
-    if (product?.value.name?.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+function showEditProgram() {
+    dialog.open(EditProgramDialog, {
+        emits: {
+            onSaved: (e) => {
+                nodes.value.push({
+                    key: `prog-${nodes.value.length}`,
+                    data: {
+                        name: e.name,
+                        nodeType: 'program',
+                    }
+                });
+            }
+        },
+        props: {
+            header: isEdit.value ? t('UpdateProgram') : t('AddProgram'),
+            style: {
+                width: '30vw'
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true
         }
-
-        productDialog.value = false;
-        product.value = {};
-    }
+    });
 }
 
-function editProduct(prod) {
-    product.value = { ...prod };
-    productDialog.value = true;
-}
-
-function confirmDeleteProduct(prod) {
-    product.value = prod;
-    deleteProductDialog.value = true;
-}
-
-function deleteProduct() {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-}
-
-function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
-function createId() {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-
-function exportCSV() {
-    dt.value.exportCSV();
-}
-
-function confirmDeleteSelected() {
-    deleteProductsDialog.value = true;
-}
-
-function deleteSelectedProducts() {
-    products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-}
-
-const overlayMenuItems = ref([
+const buildItems = (row) => [
     {
-        label: 'Ajouter un département',
-        icon: 'pi pi-save'
+        items: [
+            {
+                label: t('btnUpdate'),
+                icon: 'pi pi-pencil',
+                command: () => onEdit(row)
+            },
+            {
+                label: t('btnDel'),
+                icon: 'pi pi-trash',
+                command: () => onDelete(row)
+            }
+        ]
     }
-]);
+];
 
-function toggleMenu(event) {
+// Toggle du menu
+const toggle = (event, row) => {
+    currentRow.value = row;
+    items.value = buildItems(row);
     menu.value.toggle(event);
+};
+
+onMounted(async () => {
+    await getData();
+});
+
+async function getData() {
+    const { result, error } = await handleAsyncError(
+        () => ProgramService.getProgramsFilter({}),
+        t,
+        (val) => (loading.value = val)
+    );
+    errorReq.value = error;
+    nodes.value = mapToTreeTable(result);
+}
+
+// Méthodes pour les actions
+const onEdit = (row) => {
+    showEditProgram();
+};
+
+const onDelete = (row) => {
+    console.log('Supprimer ligne:', row);
+    // ta logique ici
+};
+
+function mapToTreeTable(programmes) {
+    return programmes?.map((program, progIndex) => ({
+        key: `prog-${progIndex}`,
+        data: {
+            name: program.name,
+            type: program?.typeProgram ? program.typeProgram : '-',
+            department: Array.isArray(program?.departments) && program.departments.length ? program.departments.map((d) => d.shortName).join(', ') : '-',
+            nodeType: 'program'
+        },
+        children: program?.dates?.map((date, dateIndex) => ({
+            key: `prog-${progIndex}-date-${dateIndex}`,
+            data: {
+                name: date.date ? new Date(date.date).toLocaleDateString() : null,
+                type: `${date.nbrService} service(s)`,
+                department: date.department?.name,
+                nodeType: 'date'
+            },
+            children: date?.services.map((srv, srvIndex) => ({
+                key: `prog-${progIndex}-date-${dateIndex}-srv-${srvIndex}`,
+                data: {
+                    name: srv.name,
+                    type: srv.hours,
+                    department: srv.arrivalHours ? `Heure d'arrivée ${srv.arrivalHours}` : "Pas d'heure d'arrivée",
+                    nodeType: 'service'
+                }
+            }))
+        }))
+    }));
 }
 </script>
 
 <template>
-    <div className="card">
-        <div class="font-semibold text-xl mb-4">
-            <h1>{{ $t('Programs') }}</h1>
-        </div>
-    </div>
-
-    <div>
+    <HeaderComponent :title-page="$t('Programs')" />
+    <Fluid>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
-            <DataTable
-                class="custom-loading-style"
-                ref="dt"
-                v-model:selection="selectedProgram"
-                :value="programs"
-                dataKey="id"
-                :loading="isLoading"
-                stripedRows
-                :paginator="true"
-                edit-mode="row"
-                :rows="10"
-                :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-            >
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ $t('ListPrograms') }}</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" :placeholder="$t('Search')" />
-                        </IconField>
+            <section id="search" class="flex flex-col gap-4">
+                <h3>{{ $t('search') }}</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="font-semibold text-xl mb-1">{{ $t('Department') }}</div>
+                        <MultiSelect
+                            :emptyFilterMessage="$t('NoResultsFound')"
+                            :emptyMessage="$t('FilterEmptyMessage')"
+                            v-model="selectedCities"
+                            :options="cities"
+                            filter
+                            optionLabel="name"
+                            :placeholder="$t('selectDepartment')"
+                            :maxSelectedLabels="3"
+                            class="w-full md:w-80"
+                        />
                     </div>
-                </template>
-                <ResponseComponent :error="errorMessage" :showSuccessMessage="false" />
-                <div v-if="!errorMessage">
-                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                    <Column field="name" :header="$t('Name')" sortable style="min-width: 16rem"></Column>
-                    <Column field="nbrDepartment" :header="$t('DepartmentImp')" sortable style="min-width: 16rem">
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.nbrDepartment" severity="success" />
-                        </template>
-                    </Column>
-                    <Column :exportable="false" style="min-width: 12rem">
-                        <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" class="mr-2" @click="confirmDeleteProduct(slotProps.data)" />
-                            <Menu ref="menu" :model="overlayMenuItems" class="mr-2" :popup="true" />
-                            <Button icon="pi pi-ellipsis-v" aria-haspopup="true" severity="contrast" @click="toggleMenu" style="width: auto" />
-                        </template>
-                    </Column>
+                    <div>
+                        <div class="font-semibold text-xl mb-1">{{ $t('monthAndYear') }}</div>
+                        <DatePicker v-model="date" view="month" dateFormat="mm/yy" :placeholder="$t('selectMonthAndYear')" />
+                    </div>
                 </div>
-            </DataTable>
+                <div class="self-end">
+                    <Button icon="pi pi-search" :label="$t('search')" />
+                </div>
+            </section>
+
+            <Divider />
+
+            <!-- Tableau resulat-->
+            <section id="result" class="mt-10 flex flex-col gap-4 border-top">
+                <div class="self-start">
+                    <Button icon="pi pi-plus" :label="$t('Add')" @click="showEditProgram" />
+                </div>
+
+                <TreeTable :value="nodes" :metaKeySelection="false" selectionMode="single" :filters="filters" filterMode="strict" scrollable scrollHeight="600px" tableStyle="min-width: 100rem" :loading="loading">
+                    <template #header>
+                        <div class="flex justify-end">
+                            <IconField>
+                                <InputIcon class="pi pi-search" />
+                                <InputText v-model="filters['global']" placeholder="Global Search" />
+                            </IconField>
+                        </div>
+                    </template>
+                    <Column field="name" expander frozen sortable header="Nom" style="min-width: 150px" />
+                    <Column field="type" sortable header="Type" style="min-width: 12rem" />
+                    <Column field="department" sortable header="Départements" style="min-width: 12rem" />
+                    <Column header="Action" style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <Button type="button" @click="toggle($event, slotProps.node)" icon="pi pi-ellipsis-v" aria-haspopup="true" aria-controls="overlay_menu" />
+                            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+                        </template>
+                    </Column>
+                </TreeTable>
+            </section>
         </div>
-
-        <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-4" />
-                <div>
-                     c
-                    <label for="name" class="block font-bold mb-3">Name</label>
-                    <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" fluid />
-                    <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Description</label>
-                    <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" fluid />
-                </div>
-                <div>
-                    <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status" fluid></Select>
-                </div>
-
-                <div>
-                    <span class="block font-bold mb-4">Category</span>
-                    <div class="grid grid-cols-12 gap-4">
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category1" v-model="product.category" name="category" value="Accessories" />
-                            <label for="category1">Accessories</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category2" v-model="product.category" name="category" value="Clothing" />
-                            <label for="category2">Clothing</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category3" v-model="product.category" name="category" value="Electronics" />
-                            <label for="category3">Electronics</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category4" v-model="product.category" name="category" value="Fitness" />
-                            <label for="category4">Fitness</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Price</label>
-                        <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" fluid />
-                    </div>
-                    <div class="col-span-6">
-                        <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                        <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
-                    </div>
-                </div>
-            </div>
-
-            <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" @click="saveProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product"
-                    >Are you sure you want to delete <b>{{ product.name }}</b
-                    >?</span
-                >
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-            </template>
-        </Dialog>
-    </div>
+    </Fluid>
+    <DynamicDialog />
 </template>

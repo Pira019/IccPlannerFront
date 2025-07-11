@@ -14,4 +14,22 @@ export default class ProgramService extends BaseService
         return await this.axiosInstance.get(endPoint)
     }
 
+    /*
+        Voir la documentation de l'API
+    */
+     static async getProgramsFilter(payload)
+    {
+        const endPoint = `${this.authBaseUrl}filter`;
+        return await this.axiosInstance.post(endPoint,payload)
+    }
+
+     /*
+        Ajouter un programme
+    */
+     static async addPrg(payload)
+    {
+        const endPoint = `${this.authBaseUrl}`;
+        return await this.axiosInstance.post(endPoint,payload)
+    }
+
 }

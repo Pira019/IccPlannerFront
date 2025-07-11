@@ -3,7 +3,9 @@
     "Description": "Description",
     "Add": "Add",
     "AddMinistry": "Add ministry",
+    "AddProgram": "Add program",
     "Ministries": "Ministries",
+    "UpdateProgram": "Update a program",
     "Department": "Department",
     "Cancel": "Cancel",
     "Save": "Save",
@@ -24,9 +26,18 @@
     "Search": "Search ...",
     "bntClose": "Close",
     "noServices": "No service available.",
+    "selectDepartment": "Select department(s)",
+    "monthAndYear": "Month and year",
+    "selectMonthAndYear": "select month and year",
+    "search": "Search",
+    "btnDel": "Delete",
+    "btnUpdate": "Update",
+    "prgName": "Program name",
 
     "msgAvailability": "Your availability has been successfully added.",
     "msgUnAvailability": "Update completed – you are no longer available for this service.",
+
+    "msgAddPrg": "The program has been successfully added.",
 
     "AvailabilityTitlePage": "My Availabilities",
 

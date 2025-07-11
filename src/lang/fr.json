@@ -5,6 +5,8 @@
     "Ministries": "Ministères",
     "Department": "Départements",
     "AddMinistry": "Ajouter un ministère",
+    "AddProgram": "Ajouter un programme",
+    "UpdateProgram": "Modifier un programme",
     "Cancel": "Annuler",
     "Save": "Enregistrer",
     "MinistryExample": "COMMUNICATION, DATAS ET PRODUCTION AUDIOVISUELLE",
@@ -24,11 +26,20 @@
     "Search": "Recherche ...",
     "bntClose": "Fermer",
     "noServices": "Aucun service.",
+    "selectDepartment": "Sélectionner département(s)",
+    "monthAndYear": "Mois et Année",
+    "search": "Recherche",
+    "selectMonthAndYear": "Sélectionner mois et année",
+    "btnDel": "Supprimer",
+    "btnUpdate": "Modifier",
+    "prgName": "Nom du programme",
 
     "msgSuccess": "L'action a été effectuée avec succès.",
 
     "msgAvailability": "Votre disponibilité a été ajoutée avec succès.",
     "msgUnAvailability": "Mise à jour effectuée – vous n’êtes plus disponible pour ce service.",
+
+    "msgAddPrg": "Le programme a été ajoutée avec succès.",
 
     "AvailabilityTitlePage": "Mes disponibilités",
     "defaultMsgAvailability": "Par défaut, vous êtes indisponible. Veuillez cliquer sur le bouton dans le calendrier pour indiquer vos disponibilités pour un ou plusieurs services.",
