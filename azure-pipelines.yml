@@ -8,7 +8,6 @@ trigger:
 pool : Mypool
  
 steps:
-
 - checkout: self
 - task: NodeTool@0
   inputs:
@@ -33,3 +32,10 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true 
 
+# 7. Publier l'archive dans Azure DevOps
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish artifacts'
