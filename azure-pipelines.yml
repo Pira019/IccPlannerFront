@@ -17,9 +17,12 @@ steps:
   displayName: 'Installer Node.js'
 
 - script: |
-    npm install 
+    npm install
+  displayName: 'Install Dependencies'
+
+- script: |
     npm run build
-  displayName: 'Installer les dépendances et compiler Vue.js'
+  displayName: 'Build Vue.js App'
 
 - task: ArchiveFiles@2
   inputs:
