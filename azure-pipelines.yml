@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - main  # ou master selon ton repo
+      - master  # ou master selon ton repo
 
 pool: Mypool 
 
