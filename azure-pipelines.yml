@@ -6,8 +6,8 @@ trigger:
 pool: MyPool
 
 variables:
-  azureSubscription: 'AZURE-DEV'  # À créer dans Azure DevOps
-  appName: 'APPSERVICE' 
+  azureSubscription: 'Azure-dev'  # À créer dans Azure DevOps
+  appName: 'AppService' 
   buildFolder: 'dist'
 
 steps:
@@ -17,7 +17,7 @@ steps:
   displayName: 'Installer Node.js'
 
 - script: |
-    npm ci
+    npm install 
     npm run build
   displayName: 'Installer les dépendances et compiler Vue.js'
 
