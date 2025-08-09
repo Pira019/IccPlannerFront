@@ -5,7 +5,7 @@ import AppConfigurator from '@/layout/AppConfigurator.vue';
 import AccountService from '@/service/AccountService';
 import { handleAsyncError } from '@/utils/handleAsyncError';
 import { RouteName } from '@/utils/RouteName';
-import { LoginValidation } from '@/validations/LoginValidation';
+import { LoginValidation } from '@/validations/LoginValidator';
 import { useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
