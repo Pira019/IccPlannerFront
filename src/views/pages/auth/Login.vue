@@ -49,7 +49,7 @@ const [remember, rememberAttrs] = defineField('remember');
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
                     <div class="text-center mb-8">
-                        <Image src="/public/images/LOGO-GRIS.png" image-class="mb-8 w-40 shrink-0 mx-auto" width="500" />
+                        <Image src="/images/LOGO-GRIS.png" image-class="mb-8 w-40 shrink-0 mx-auto" width="500" />
                         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ appName }}</div>
                         <span class="text-muted-color font-medium">{{ $t('singInText') }}</span>
                     </div>
