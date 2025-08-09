@@ -5,7 +5,7 @@ import AppConfigurator from '@/layout/AppConfigurator.vue';
 import AccountService from '@/service/AccountService';
 import { handleAsyncError } from '@/utils/handleAsyncError';
 import { RouteName } from '@/utils/RouteName';
-import { LoginValidation } from '@/validations/LoginValidator';
+import { LoginValidator } from '@/validations/LoginValidator';
 import { useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -17,7 +17,7 @@ const router = useRouter();
 const appName = import.meta.env.VITE_APP_NAME;
 
 const { errors, defineField, handleSubmit, isSubmitting } = useForm({
-    validationSchema: LoginValidation
+    validationSchema: LoginValidator
 });
 
 const errorMessage = ref(null);
