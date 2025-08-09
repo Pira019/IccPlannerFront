@@ -6,6 +6,7 @@ import Components from 'unplugin-vue-components/vite';
 
 import { defineConfig } from 'vite';
 
+import fs from "fs";
 // https://vitejs.dev/config/
 export default defineConfig({
     optimizeDeps: {
@@ -23,12 +24,12 @@ export default defineConfig({
         }
 
     },
-   /* server:{
+    server:{
         https:{
             key : fs.readFileSync(new URL('localhost-key.pem', import.meta.url)),
             cert : fs.readFileSync(new URL('localhost.pem', import.meta.url)),
         },
         host : true
-     }*/
+     }
 
 });
