@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * Permet de valider les donnes avant l'envoie
  */
-export const loginValidation = toTypedSchema(
+export const LoginValidation = toTypedSchema(
     z.object({
         email : z.string().email(),
         password : z.string().nonempty(),

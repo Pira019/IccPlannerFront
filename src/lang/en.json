@@ -46,6 +46,7 @@
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",
     "signIn": "Sign In",
+    "singInText": "Sign in to continue",
     "password": "Password",
     "emailAddress": "Email address",
     "internalError": "An internal error has occurred. Please try again later.",
