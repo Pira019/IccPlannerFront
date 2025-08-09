@@ -31,7 +31,7 @@ const router = createRouter({
                 {
                     path: '/availability',
                     name: 'Availability',
-                    component: () => import('@/views/Availability/availability.vue')
+                    component: () => import('@/views/Availability/Availability.vue')
                 },
                 {
                     path: '/uikit/formlayout',
