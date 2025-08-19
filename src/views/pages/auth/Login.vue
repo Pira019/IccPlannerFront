@@ -83,8 +83,8 @@ const [remember, rememberAttrs] = defineField('remember');
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
-                                    <Checkbox id="rememberme1" binary class="mr-2" v-model="remember" :rememberAttrs></Checkbox>
-                                    <label for="rememberme1">{{ $t('rememberMe') }}</label>
+                                    <Checkbox id="remember1" binary class="mr-2" v-model="remember" :rememberAttrs></Checkbox>
+                                    <label for="remember1">{{ $t('rememberMe') }}</label>
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
                             </div>

@@ -35,6 +35,13 @@
     "prgName": "Program name",
 
     "msgAvailability": "Your availability has been successfully added.",
+
+    "liAdmin": "Administration",
+    "liGestRole": "Role Management",
+    "liRole": "Role",
+    "liDesc": "Description",
+    "liUti": "Users",
+
     "msgUnAvailability": "Update completed – you are no longer available for this service.",
 
     "msgAddPrg": "The program has been successfully added.",
