@@ -40,7 +40,12 @@
     "liGestRole": "Role Management",
     "liRole": "Role",
     "liDesc": "Description",
-    "liUti": "Users",
+    "liNbrUti": "Numbres Users",
+    "liPerm": "Permissions",
+    "liMagRole": "Manage roles",
+    "liAucunRole": "No roles founded.",
+    "liAjtRole": "Add a role",
+    "liModifRole": "Update a role",
 
     "msgUnAvailability": "Update completed – you are no longer available for this service.",
 

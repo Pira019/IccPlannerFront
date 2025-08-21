@@ -1,5 +1,6 @@
 <script setup>
-import { ProductService } from '@/service/ProductService';
+import RoleService from '@/service/RoleService';
+import { handleAsyncError } from '@/utils/handleAsyncError';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
@@ -7,12 +8,25 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
+onMounted(async () => {
+    const { result, error } = await handleAsyncError(
+        () => RoleService.getAll(),
+        t,
+        (val) => (loading.value = val)
+    );
+    errorReq.value = error;
+    roles.value = result;
 });
 
 const toast = useToast();
 const dt = ref();
+const roles = ref();
+const loading = ref(false);
+const errorReq = ref();
+const selectedRole = ref();
+const role = ref({});
+const roleDialog = ref(false);
+
 const products = ref();
 const productDialog = ref(false);
 const deleteProductDialog = ref(false);
@@ -25,9 +39,9 @@ const filters = ref({
 const submitted = ref(false);
 
 function openNew() {
-    product.value = {};
+    role.value = {};
     submitted.value = false;
-    productDialog.value = true;
+    roleDialog.value = true;
 }
 
 function hideDialog() {
@@ -112,43 +126,53 @@ function deleteSelectedProducts() {
         <div class="card">
             <Toolbar class="mb-6">
                 <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                    <Button :label="$t('liAjtRole')" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
                 </template>
             </Toolbar>
 
-            <DataTable ref="dt" v-model:selection="selectedProducts" :value="products" dataKey="id" :rows="10" :filters="filters">
+            <DataTable ref="dt" selectionMode="single" :metaKeySelection="false" v-model:selection="selectedRole" :value="roles" dataKey="id" :filters="filters" :loading="loading">
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Manage Products</h4>
+                        <h4 class="m-0">{{ t('liMagRole') }}</h4>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            <InputText v-model="filters['global'].value" :placeholder="$t('search')" />
                         </IconField>
                     </div>
                 </template>
 
-                <Column field="code" :header="t('liRole')" sortable style="min-width: 12rem"></Column>
-                <Column field="name" :header="t('liDesc')" sortable style="min-width: 16rem"></Column>
-                <Column field="category" :header="t('liUti')" sortable style="min-width: 10rem">
+                <template #empty>
+                    <div>
+                        <Message v-if="errorReq" severity="error" icon="pi pi-times-circle">{{ errorReq.message }}</Message>
+                        <Message v-else-if="!loading" severity="info" icon="pi pi-info-circle">{{ $t('liAucunRole') }}</Message>
+                    </div>
+                </template>
+
+                <Column field="name" :header="t('liRole')" sortable style="min-width: 12rem"></Column>
+                <Column field="description" :header="t('liDesc')" style="min-width: 16rem"></Column>
+                <Column field="nbrUsers" :header="t('liNbrUti')" sortable style="min-width: 10rem">
                     <template #body="slotProps" class="font-semibold">
-                        <span class="font-semibold">{{ slotProps.data.price }}</span>
+                        <span class="font-semibold">{{ slotProps.data.nbrUsers }}</span>
+                    </template>
+                </Column>
+                <Column field="permissions" :header="t('liPerm')" sortable style="min-width: 10rem">
+                    <template #body="slotProps" class="font-semibold">
+                        <p v-for="(item, index) in slotProps.data.permissions" :key="index">({{ item?.name }}) {{ item?.description }}</p>
                     </template>
                 </Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                        <Button icon="pi pi-trash" v-if="slotProps.data.name != 'Admin'" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
+        <Dialog v-model:visible="roleDialog" :style="{ width: '450px' }" :header="role.value == null ? $t('liAjtRole') : $t('liModifRole')" :modal="true">
             <div class="flex flex-col gap-6">
-                <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-4" />
                 <div>
                     <label for="name" class="block font-bold mb-3">Name</label>
                     <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" fluid />
