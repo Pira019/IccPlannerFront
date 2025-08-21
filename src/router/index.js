@@ -120,9 +120,9 @@ const router = createRouter({
                     component: () => import('@/views/pages/Crud.vue')
                 },
                 {
-                    path: '/documentation',
-                    name: 'documentation',
-                    component: () => import('@/views/pages/Documentation.vue')
+                    path: '/role-management',
+                    name: 'role-management',
+                    component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
         },
@@ -151,7 +151,7 @@ const router = createRouter({
             path: '/auth/error',
             name: 'error',
             component: () => import('@/views/pages/auth/Error.vue')
-        }
+        },
     ]
 });
 

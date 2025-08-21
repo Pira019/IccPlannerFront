@@ -128,18 +128,13 @@ const model = ref([
         ]
     },
     {
-        label: 'Get Started',
+        label: 'liAdmin',
+        to: '/admin',
         items: [
             {
-                label: 'Documentation',
-                icon: 'pi pi-fw pi-book',
-                to: '/documentation'
-            },
-            {
-                label: 'View Source',
-                icon: 'pi pi-fw pi-github',
-                url: 'https://github.com/primefaces/sakai-vue',
-                target: '_blank'
+                label: 'liGestRole',
+                icon: 'pi pi-shield',
+                to: '/role-management'
             }
         ]
     }
