@@ -1,4 +1,6 @@
 import AppLayout from '@/layout/AppLayout.vue';
+import { useAuthStore } from '@/store/Auth';
+import { hasClaim } from '@/utils/claims';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -122,6 +124,7 @@ const router = createRouter({
                 {
                     path: '/role-management',
                     name: 'role-management',
+                    meta: { requiresAuth: true, requiredClaim: { key: "role", value: "admin" } },
                     component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
@@ -153,6 +156,44 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/Error.vue')
         },
     ]
+});
+
+
+router.beforeEach( async (to, from, next) => {
+
+    const auth = useAuthStore();
+     // Vérifier si on a besoin d'authentification pour cette route
+    const requiresAuth = to.meta?.requiresAuth
+    const requiredClaim = to.meta?.requiredClaim
+
+    if (!requiresAuth && !requiredClaim ) {
+      return next()
+    }
+
+    if(!auth.isFetchingClaims)
+    {
+        await auth.authUser();
+    }
+
+    if (requiresAuth && auth.authError ) {
+       auth.authError = false;
+       return next({
+            name: 'error',
+            query: { error: 'auth_failed' }
+        })
+    }
+
+    if (requiresAuth && !auth?.isAuthenticated) {
+        return next({ name: 'login' })
+    }
+    // Verifier le role
+    if (to.meta?.requiredClaim) {
+    const { key, value } = to.meta.requiredClaim
+    
+    if (hasClaim( key, value)) {
+      return next({ name: 'accessDenied' }) // ou page 403
+    }}
+     next()
 });
 
 export default router;
