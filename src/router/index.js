@@ -184,12 +184,16 @@ router.beforeEach( async (to, from, next) => {
     }
 
     if (requiresAuth && !auth?.isAuthenticated) {
-        return next({ name: 'login' })
+        auth.redirectPath = to.name;
+        return next({
+            name: 'login',
+            query: { redirect: auth.redirectPath }
+         })
     }
     // Verifier le role
     if (to.meta?.requiredClaim) {
     const { key, value } = to.meta.requiredClaim
-    
+
     if (hasClaim( key, value)) {
       return next({ name: 'accessDenied' }) // ou page 403
     }}

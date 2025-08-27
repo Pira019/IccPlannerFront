@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
     claims: { roles: [], permissions: [] },
     isFetchingClaims : false,
     authError : false,
+    redirectPath : null,
   }),
   actions: {
 
@@ -18,22 +19,22 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /* Permet de récupérer les permissions d'un utilisateur */
-async authUser() {
-  this.isFetchingClaims = true
-  try {
-    const authService = await AccountService.claims()
+    async authUser() {
+    this.isFetchingClaims = true
+    try {
+        const authService = await AccountService.claims()
 
-    if (authService.status === 200) {
-      this.saveUserClaims(authService.data)
+        if (authService.status === 200) {
+        this.saveUserClaims(authService.data)
+        }
+    } catch (error)
+    {
+        this.isFetchingClaims = false;
+        if (!error.response) {
+        this.authError = true;
+        }
     }
-  } catch (error)
-  { 
-    this.isFetchingClaims = false;
-    if (!error.response) {
-      this.authError = true;
-    }
-  }
-},
+    },
 
     logout()
     {

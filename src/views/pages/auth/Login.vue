@@ -35,7 +35,13 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         errorMessage.value = error;
         return;
     }
-    router.push({ name: RouteName.DashBoard });
+
+    var redirectPath = RouteName.DashBoard;
+    if (useAuth.redirectPath) {
+        redirectPath = useAuth.redirectPath;
+    }
+
+    router.push({ name: redirectPath });
 });
 
 const [email, emailAttrs] = defineField('email');
