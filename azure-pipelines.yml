@@ -12,7 +12,7 @@ steps:
 
 - script: |
     npm install
-    npm run build
+    npm run serve
   displayName: 'npm install and build'
 
 - task: AzureStaticWebApp@0
