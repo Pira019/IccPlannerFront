@@ -3,6 +3,7 @@ import LangConfiguration from '@/components/LangConfiguration.vue';
 import ErrorComponent from '@/components/ResponseComponent.vue';
 import AppConfigurator from '@/layout/AppConfigurator.vue';
 import AccountService from '@/service/AccountService';
+import { useAuthStore } from '@/store/Auth';
 import { handleAsyncError } from '@/utils/handleAsyncError';
 import { RouteName } from '@/utils/RouteName';
 import { LoginValidator } from '@/validations/LoginValidator';
@@ -21,19 +22,25 @@ const { errors, defineField, handleSubmit, isSubmitting } = useForm({
 });
 
 const errorMessage = ref(null);
+const useAuth = useAuthStore();
 
 /**
- * Soumission du formulaire login
+ * Soumission du formulaire login.
  */
 const onSubmit = handleSubmit.withControlled(async (values) => {
     const credentials = JSON.stringify(values);
-    const { error } = await handleAsyncError(() => AccountService.login(credentials), t);
+    const { error } = await handleAsyncError(async () => await AccountService.login(credentials), t);
 
     if (error) {
         errorMessage.value = error;
         return;
     }
-    router.push({ name: RouteName.DashBoard });
+
+    var redirectPath = RouteName.DashBoard;
+    if (useAuth.redirectPath) {
+        redirectPath = useAuth.redirectPath;
+    }
+    router.push({ name: redirectPath });
 });
 
 const [email, emailAttrs] = defineField('email');

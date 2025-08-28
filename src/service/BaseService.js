@@ -1,4 +1,6 @@
+import { useAuthStore } from "@/store/Auth";
 import axios from "axios";
+import AccountService from "./AccountService";
 
 /**
  * Service de base
