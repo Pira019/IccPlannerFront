@@ -1,6 +1,6 @@
 import AppLayout from '@/layout/AppLayout.vue';
 import { useAuthStore } from '@/store/Auth';
-import { hasClaim } from '@/utils/claims';
+import { checkRequiredClaims } from '@/utils/claims';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -124,7 +124,9 @@ const router = createRouter({
                 {
                     path: '/role-management',
                     name: 'role-management',
-                    meta: { requiresAuth: true, requiredClaim: { key: "role", value: "admin" } },
+                    meta: { requiresAuth: true, requiredClaim: [ { key: 'roles', value: ['Admin'] },
+                                                                 { key: 'permissions', value: ['users.create', 'users.update', 'users.delete'] }
+                                                                ] },
                     component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
@@ -191,12 +193,11 @@ router.beforeEach( async (to, from, next) => {
          })
     }
     // Verifier le role
-    if (to.meta?.requiredClaim) {
-    const { key, value } = to.meta.requiredClaim
-
-    if (hasClaim( key, value)) {
-      return next({ name: 'accessDenied' }) // ou page 403
-    }}
+    if (requiredClaim) {
+        if (!checkRequiredClaims( requiredClaim)) {
+        return next({ name: 'accessDenied' }) // ou page 403
+        }
+    }
      next()
 });
 

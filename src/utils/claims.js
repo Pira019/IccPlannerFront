@@ -1,29 +1,31 @@
 import { useAuthStore } from "@/store/Auth"
 
-export function hasClaim(claimKey, expectedValue) {
-  const auth = useAuthStore()
+function hasClaim(claimKey, expectedValue) {
 
-   // Adapter à votre structure claims: { roles: [], permissions: [] }
-  let claimValue
+const claims =  useAuthStore().claims || {} // objet { role: [...], permission: [...], etc. }
 
-  if (claimKey === 'role') {
-    claimValue = auth.claims.roles
-  } else {
-    claimValue = auth.claims.permissions
+  if (!claims[claimKey]) return false
+
+  // Si le claim est un tableau (ex: plusieurs rôles ou permissions)
+  if (Array.isArray(claims[claimKey])) {
+    return claims[claimKey].includes(expectedValue)
   }
+  // Si c'est une seule valeur (string, number, bool…)
+  return claims[claimKey] === expectedValue
+}
 
-  if (!claimValue || !Array.isArray(claimValue)) return false
+export function checkRequiredClaims(requiredClaims) {
 
-  // Si la valeur attendue est une liste -> vérifier l'inclusion
-  if (Array.isArray(expectedValue)) {
-   return expectedValue.some(val => claimValue.includes(val))
-  }
+      if (!Array.isArray(requiredClaims)) {
+        return false
+    }
+        // L'utilisateur doit avoir AU MOINS UNE valeur de CHAQUE claim requis
+    return requiredClaims?.some(claimRequirement => {
+        const { key, value } = claimRequirement
 
-  // Si le claim est une liste (ex: permissions) -> vérifier si ça contient la valeur attendue
-  if (Array.isArray(claimValue)) {
-    return claimValue.includes(expectedValue)
-  }
-
-  // Comparaison simple
-  return claimValue === expectedValue
+        // Vérifier si l'utilisateur a au moins une des valeurs requises pour ce type de claim
+        return value.some(requiredValue =>
+            hasClaim(key, requiredValue)
+        )
+    })
 }

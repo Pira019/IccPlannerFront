@@ -40,7 +40,6 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     if (useAuth.redirectPath) {
         redirectPath = useAuth.redirectPath;
     }
-
     router.push({ name: redirectPath });
 });
 
