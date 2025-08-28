@@ -17,4 +17,14 @@ export default class AccountService extends BaseService
         const endPoint = `${this.authBaseUrl}login`;
         return await this.axiosInstance.post(endPoint, loginRequest)
     }
+
+    /**
+     * Récupérer les claims.
+     * @returns
+     */
+    static async claims()
+    {
+        const endPoint = `${this.authBaseUrl}claims`;
+        return await this.axiosInstance.get(endPoint)
+    }
 }
