@@ -69,7 +69,7 @@ function checkActiveRoute(item) {
 </script>
 <template>
     <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
-        <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ $t(item.label) }}</div>
+        <div v-if="root && item.visible !== false && item.items.length > 0" class="layout-menuitem-root-text">{{ $t(item.label) }}</div>
         <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ $t(item.label) }}</span>

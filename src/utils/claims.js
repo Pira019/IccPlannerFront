@@ -17,7 +17,7 @@ const claims =  useAuthStore().claims || {} // objet { role: [...], permission: 
 export function checkRequiredClaims(requiredClaims) {
 
       if (!Array.isArray(requiredClaims)) {
-        return false
+        return true
     }
         // L'utilisateur doit avoir AU MOINS UNE valeur de CHAQUE claim requis
     return requiredClaims?.some(claimRequirement => {
