@@ -37,7 +37,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     }
 
     var redirectPath = RouteName.DashBoard;
-    if (useAuth.redirectPath) {
+    if (useAuth.redirectPath != null) {
         redirectPath = useAuth.redirectPath;
     }
     router.push({ name: redirectPath });
