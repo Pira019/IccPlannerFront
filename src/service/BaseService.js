@@ -1,5 +1,3 @@
-import router from "@/router"; // ⚡ importe ton router
-import { useAuthStore } from "@/store/Auth";
 import axios from "axios";
 
 /**

@@ -1,7 +1,7 @@
 import BaseService from "./BaseService";
 
 /**
- * Ce service permet de gérer les actions d'un compte
+ * Ce service permet de gérer les actions d'un compte.
  **/
 export default class AccountService extends BaseService
 {
@@ -16,6 +16,10 @@ export default class AccountService extends BaseService
     {
         const endPoint = `${this.authBaseUrl}login`;
         return await this.axiosInstance.post(endPoint, loginRequest)
+    }
+
+     static get axiosInstance() {
+        return BaseService.axiosInstance // ✅ Délégation explicite
     }
 
     /**

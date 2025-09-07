@@ -5,10 +5,16 @@ import BaseService from "./BaseService";
  **/
 export default class RoleService extends BaseService
 {
-    static authBaseUrl = "roles/"
+    static baseUrl = "roles/"
 
     static async getAll() {
-        return await this.axiosInstance.get(this.authBaseUrl)
+        return await this.axiosInstance.get(this.baseUrl)
+    }
+
+    /** Créer un role */
+     static async create(payload)
+    { 
+        return await this.axiosInstance.post(this.baseUrl,payload)
     }
 
 }
