@@ -1,6 +1,4 @@
-import { useAuthStore } from "@/store/Auth";
 import axios from "axios";
-import AccountService from "./AccountService";
 
 /**
  * Service de base
@@ -31,7 +29,9 @@ export default class BaseService
         this.axiosInstance.interceptors.request.use(config => {
             config.headers['Accept-Language'] = this.getLang()
             return config;
-        })
+        });
+
+
     }
 }
 

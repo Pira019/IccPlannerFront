@@ -1,4 +1,6 @@
 import AppLayout from '@/layout/AppLayout.vue';
+import { Permission } from '@/model/Enum/Permission';
+import { Role } from '@/model/Enum/Role';
 import { useAuthStore } from '@/store/Auth';
 import { checkRequiredClaims } from '@/utils/claims';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -13,7 +15,8 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
-                    component: () => import('@/views/Dashboard.vue')
+                    component: () => import('@/views/Dashboard.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/ministry',
@@ -124,9 +127,10 @@ const router = createRouter({
                 {
                     path: '/role-management',
                     name: 'role-management',
-                    meta: { requiresAuth: true, requiredClaim: [ { key: 'roles', value: ['Admin'] },
-                                                                 { key: 'permissions', value: ['users.create', 'users.update', 'users.delete'] }
+                    meta: { requiresAuth: true, requiredClaim: [ { key: Role.Roles , value: [ Role.Admin ] },
+                                                                 { key: Permission.Permissions, value: [] }
                                                                 ] },
+
                     component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
@@ -172,30 +176,28 @@ router.beforeEach( async (to, from, next) => {
       return next()
     }
 
-    if(!auth.isFetchingClaims)
-    {
-        await auth.authUser();
+     if (!auth.isFetchingClaims  && !auth.claimsLoaded && !auth.isAuthenticated ) {
+
+             await auth.authUser();
     }
 
-    if (requiresAuth && auth.authError ) {
-       auth.authError = false;
-       return next({
-            name: 'error',
-            query: { error: 'auth_failed' }
-        })
+    if (auth.authError) {
+        return next({ name: "error" });
     }
 
-    if (requiresAuth && !auth?.isAuthenticated) {
+
+    if (requiresAuth && !auth.isAuthenticated) {
+        // Si erreur d'auth (problème réseau, serveur, etc.) → page d'erreur
         auth.redirectPath = to.name;
         return next({
             name: 'login',
-            query: { redirect: auth.redirectPath }
-         })
+            query: { redirect: to.name }
+        })
     }
-    // Verifier le role
-    if (requiredClaim) {
-        if (!checkRequiredClaims( requiredClaim)) {
-        return next({ name: 'accessDenied' }) // ou page 403
+   // Vérifier les claims seulement si authentifié
+   if (requiredClaim && auth.isAuthenticated) {
+        if (!checkRequiredClaims(requiredClaim)) {
+            return next({ name: 'accessDenied' })
         }
     }
      next()

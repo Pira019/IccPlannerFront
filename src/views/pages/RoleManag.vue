@@ -1,8 +1,11 @@
 <script setup>
+import PermissionService from '@/service/PermissionService';
 import RoleService from '@/service/RoleService';
 import { handleAsyncError } from '@/utils/handleAsyncError';
+import { addRoleValidation } from '@/validations/Admin/addRoleValidation';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
+import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -25,11 +28,17 @@ const loading = ref(false);
 const errorReq = ref();
 const selectedRole = ref();
 const role = ref({});
+const permissionsList = ref([]);
 const roleDialog = ref(false);
+const roleForm = ref(null);
+
+const loadingPermissions = ref(false);
+
+const loadingSave = ref(false);
+const errorMsgSave = ref(null);
 
 const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
+const deleteRoleDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const product = ref({});
 const selectedProducts = ref();
@@ -38,75 +47,65 @@ const filters = ref({
 });
 const submitted = ref(false);
 
-function openNew() {
+async function getPermissions() {
+    const { result } = await handleAsyncError(
+        () => PermissionService.getAll(),
+        t,
+        (val) => (loadingPermissions.value = val)
+    );
+    permissionsList.value = result;
+}
+
+async function openNew() {
+    await getPermissions();
     role.value = {};
-    submitted.value = false;
+    errorMsgSave.value = null;
+    resetForm();
     roleDialog.value = true;
 }
 
 function hideDialog() {
-    productDialog.value = false;
-    submitted.value = false;
+    resetForm();
+    roleDialog.value = false;
 }
 
-function saveProduct() {
-    submitted.value = true;
+async function createRole() {
+    const { result, error } = await handleAsyncError(
+        () => RoleService.create(role.value),
+        t,
+        (val) => (loadingSave.value = val),
+        true
+    );
 
-    if (product?.value.name?.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-        }
-
-        productDialog.value = false;
-        product.value = {};
+    if (error?.message != null) {
+        errorMsgSave.value = error.message;
+        return;
     }
+
+    role.value.id = result?.id;
+    role.value.nbrUsers = 0;
+    role.value.permissions = permissionsList.value.filter(p => permissionIds.value.includes(p.id))
+    roles.value.push(role.value);
+    role.value = {};
+    roleDialog.value = false;
 }
 
-function editProduct(prod) {
-    product.value = { ...prod };
-    productDialog.value = true;
+function editRole(prod) {
+    errorMsgSave.value = null;
+    role.value = { ...prod };
+    roleDialog.value = true;
 }
 
-function confirmDeleteProduct(prod) {
-    product.value = prod;
-    deleteProductDialog.value = true;
+function confirmDeleteRole(role) {
+    role.value = role;
+    deleteRoleDialog.value = true;
 }
 
-function deleteProduct() {
+function deleteRole() {
     products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
+    deleteRoleDialog.value = false;
     product.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-}
-
-function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
-function createId() {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
 }
 
 function confirmDeleteSelected() {
@@ -119,6 +118,29 @@ function deleteSelectedProducts() {
     selectedProducts.value = null;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
 }
+
+function submitForm() {
+    // Déclenche la soumission du form
+    roleForm.value?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+}
+
+const { errors, defineField, handleSubmit,resetForm } = useForm({
+    validationSchema: addRoleValidation
+});
+
+const saveRole = handleSubmit.withControlled(async (values) => {
+    role.value = values;
+    if (role?.value.name?.trim()) {
+        if (role.value?.id) {
+        } else {
+            createRole();
+        }
+    }
+});
+
+const [name] = defineField('name');
+const [description] = defineField('description');
+const [permissionIds] = defineField('permissionIds');
 </script>
 
 <template>
@@ -150,7 +172,11 @@ function deleteSelectedProducts() {
                     </div>
                 </template>
 
-                <Column field="name" :header="t('liRole')" sortable style="min-width: 12rem"></Column>
+                <Column field="name" :header="t('liRole')" sortable style="min-width: 12rem">
+                     <template #body="slotProps" class="font-semibold">
+                        <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
+                    </template>
+                </Column>
                 <Column field="description" :header="t('liDesc')" style="min-width: 16rem"></Column>
                 <Column field="nbrUsers" :header="t('liNbrUti')" sortable style="min-width: 10rem">
                     <template #body="slotProps" class="font-semibold">
@@ -164,70 +190,49 @@ function deleteSelectedProducts() {
                 </Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" v-if="slotProps.data.name != 'Admin'" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editRole(slotProps.data)" />
+                        <Button icon="pi pi-trash" v-if="slotProps.data.name != 'Admin'" outlined rounded severity="danger" @click="confirmDeleteRole(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
         </div>
 
         <Dialog v-model:visible="roleDialog" :style="{ width: '450px' }" :header="role.value == null ? $t('liAjtRole') : $t('liModifRole')" :modal="true">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <label for="name" class="block font-bold mb-3">Name</label>
-                    <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" fluid />
-                    <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Description</label>
-                    <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" fluid />
-                </div>
-                <div>
-                    <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status" fluid></Select>
-                </div>
+            <form ref="roleForm" @submit.prevent="saveRole">
+                <div class="flex flex-col gap-6">
+                    <div class="mt-2" v-if="errorMsgSave">
+                        <Message severity="error">{{ errorMsgSave }}</Message>
+                    </div>
+                    <div>
+                        <label for="name" class="block font-bold mb-3" :class="{ 'text-red-500': errors.name }">{{ $t('Name') }}</label>
+                        <InputText id="name" v-model.trim="name" required="true" autofocus :invalid="!!errors.name" fluid />
+                        <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.name"> {{ errors.name }}</Message>
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3" :class="{ 'text-red-500': errors.name }">{{ $t('liDesc') }}</label>
+                        <Textarea id="description" v-model="description" :invalid="!!errors.description" required="true" rows="3" cols="20" fluid />
+                        <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.description"> {{ errors.description }}</Message>
+                    </div>
 
-                <div>
-                    <span class="block font-bold mb-4">Category</span>
-                    <div class="grid grid-cols-12 gap-4">
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category1" v-model="product.category" name="category" value="Accessories" />
-                            <label for="category1">Accessories</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category2" v-model="product.category" name="category" value="Clothing" />
-                            <label for="category2">Clothing</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category3" v-model="product.category" name="category" value="Electronics" />
-                            <label for="category3">Electronics</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category4" v-model="product.category" name="category" value="Fitness" />
-                            <label for="category4">Fitness</label>
+                    <div v-if="permissionsList?.length > 0 && !loadingPermissions">
+                        <span class="block font-bold mb-4">{{ $t('liPermission') }}</span>
+                        <div class="grid grid-cols-12 gap-4">
+                            <div class="flex items-center gap-2 col-span-6" v-for="permission in permissionsList" :key="permission?.id || `perm-${index}`">
+                                <Checkbox :inputId="'permission-' + permission.id" v-model="permissionIds" name="permission" :value="permission.id" />
+                                <label :for="'permission-' + permission.id">{{ permission?.name }} <i class="pi pi-info-circle px-2" title="'Enter your username'"></i></label>
+                            </div>
                         </div>
                     </div>
+                    <ProgressSpinner v-if="loadingPermissions" />
                 </div>
-
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Price</label>
-                        <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" fluid />
-                    </div>
-                    <div class="col-span-6">
-                        <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                        <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
-                    </div>
-                </div>
-            </div>
-
+            </form>
             <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" @click="saveProduct" />
+                <Button :label="t('Cancel')" icon="pi pi-times" text @click="hideDialog" />
+                <Button :label="t('Add')" icon="pi pi-check" type="submit" @click="submitForm" :loading="loadingSave" />
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteRoleDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <span v-if="product"
@@ -236,8 +241,8 @@ function deleteSelectedProducts() {
                 >
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
+                <Button label="No" icon="pi pi-times" text @click="deleteRoleDialog = false" />
+                <Button label="Yes" icon="pi pi-check" @click="deleteRole" />
             </template>
         </Dialog>
 

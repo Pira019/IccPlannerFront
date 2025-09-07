@@ -1,6 +1,6 @@
 <script setup>
+import { filterMenuByPermissions } from '@/utils/routesSecure';
 import { ref } from 'vue';
-
 import AppMenuItem from './AppMenuItem.vue';
 
 const model = ref([
@@ -139,11 +139,13 @@ const model = ref([
         ]
     }
 ]);
+
+const accessibleMenu = filterMenuByPermissions(model.value) // Utilisez .value pour extraire le contenu du ref
 </script>
 
 <template>
     <ul class="layout-menu">
-        <template v-for="(item, i) in model" :key="item">
+        <template v-for="(item, i) in accessibleMenu" :key="item">
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
         </template>
