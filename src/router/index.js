@@ -15,13 +15,17 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
-                    component: () => import('@/views/Dashboard.vue'),
-                    meta: { requiresAuth: true }
+                    component: () => import('@/views/Dashboard.vue')
                 },
                 {
                     path: '/ministry',
                     name: 'ministry',
                     component: () => import('@/views/ministry/Ministry.vue')
+                },
+                {
+                    path: '/profil',
+                    name: 'profil',
+                    component: () => import('@/views/pages/Profil.vue')
                 },
                 {
                     path: '/department',
@@ -202,5 +206,10 @@ router.beforeEach( async (to, from, next) => {
     }
      next()
 });
-
+ 
 export default router;
+
+
+export function redirigeVers(routeName) {
+    router.push({ name: routeName });
+}
