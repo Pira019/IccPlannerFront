@@ -4,14 +4,10 @@
     });
 </script>
 <template>
-    <div className="card">
-        <div class="font-semibold text-xl mb-4">
+    <div className="card"> 
             <h1>
                 {{ titlePage }}
-            </h1>
-        </div>
-        <slot class="mb-4">
-            le conntenu dans le slot
-        </slot>
+            </h1>  
+            <slot></slot> 
     </div>
 </template>
