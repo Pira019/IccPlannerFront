@@ -15,9 +15,6 @@ api-generator/typedoc.json
 .env.testing
 localhost.pem
 localhost-key.pem
-vite.config.mjs
-vite.config.mjs
-vite.config.mjs
 .vs/sakai-vue/config
 .vs/sakai-vue/CopilotIndices
 .vs/sakai-vue
