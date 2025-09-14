@@ -5,125 +5,47 @@ import AppMenuItem from './AppMenuItem.vue';
 
 const model = ref([
     {
-        label: 'Home',
+        label: 'Accueil',
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
-            { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/department' },
-            { label: 'Programs', icon: 'pi pi-clock', to: '/programs' }
+            { label: 'Programs', icon: 'pi pi-fw pi-calendar-times', to: '/programs' },
         ]
     },
     {
-        label: 'UI Components',
-        items: [
-            { label: 'AvailabilityTitlePage', icon: 'pi pi-calendar-minus', to: '/availability' },
-
-            { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
-            { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
-            { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
-            { label: 'Table', icon: 'pi pi-fw pi-table', to: '/uikit/table' },
-            { label: 'List', icon: 'pi pi-fw pi-list', to: '/uikit/list' },
-            { label: 'Tree', icon: 'pi pi-fw pi-share-alt', to: '/uikit/tree' },
-            { label: 'Panel', icon: 'pi pi-fw pi-tablet', to: '/uikit/panel' },
-            { label: 'Overlay', icon: 'pi pi-fw pi-clone', to: '/uikit/overlay' },
-            { label: 'Media', icon: 'pi pi-fw pi-image', to: '/uikit/media' },
-            { label: 'Menu', icon: 'pi pi-fw pi-bars', to: '/uikit/menu' },
-            { label: 'Message', icon: 'pi pi-fw pi-comment', to: '/uikit/message' },
-            { label: 'File', icon: 'pi pi-fw pi-file', to: '/uikit/file' },
-            { label: 'Chart', icon: 'pi pi-fw pi-chart-bar', to: '/uikit/charts' },
-            { label: 'Timeline', icon: 'pi pi-fw pi-calendar', to: '/uikit/timeline' },
-            { label: 'Misc', icon: 'pi pi-fw pi-circle', to: '/uikit/misc' }
-        ]
-    },
-    {
-        label: 'Pages',
-        icon: 'pi pi-fw pi-briefcase',
-        to: '/pages',
+        label: 'AvailabilityTitlePage',
         items: [
             {
-                label: 'Landing',
-                icon: 'pi pi-fw pi-globe',
-                to: '/landing'
+                label: 'Mon calendrier',
+                icon: 'pi pi-fw pi-calendar-plus',
+                to: '/availability'
             },
             {
-                label: 'Auth',
-                icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'Login',
-                        icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
-                    },
-                    {
-                        label: 'Error',
-                        icon: 'pi pi-fw pi-times-circle',
-                        to: '/auth/error'
-                    },
-                    {
-                        label: 'Access Denied',
-                        icon: 'pi pi-fw pi-lock',
-                        to: '/auth/access'
-                    }
-                ]
+                label: 'Signaler une absence',
+                icon: 'pi pi-fw pi-times-circle',
+                to: '/signaler-absence'
             },
             {
-                label: 'Crud',
-                icon: 'pi pi-fw pi-pencil',
-                to: '/pages/crud'
-            },
-            {
-                label: 'Not Found',
-                icon: 'pi pi-fw pi-exclamation-circle',
-                to: '/pages/notfound'
-            },
-            {
-                label: 'Empty',
-                icon: 'pi pi-fw pi-circle-off',
-                to: '/pages/empty'
+                label: 'Vue globale des dispos',
+                icon: 'pi pi-fw pi-calendar',
+                to: '/auth/error'
             }
         ]
     },
     {
-        label: 'Hierarchy',
+        label: 'Organisation',
+        items: [
+            { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
+            { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/department' },
+            { label: 'Membres', icon: 'pi pi-fw pi-users', to: '/programs' }
+        ]
+    },
+    {
+        label: 'Rapports',
         items: [
             {
-                label: 'Submenu 1',
-                icon: 'pi pi-fw pi-bookmark',
-                items: [
-                    {
-                        label: 'Submenu 1.1',
-                        icon: 'pi pi-fw pi-bookmark',
-                        items: [
-                            { label: 'Submenu 1.1.1', icon: 'pi pi-fw pi-bookmark' },
-                            { label: 'Submenu 1.1.2', icon: 'pi pi-fw pi-bookmark' },
-                            { label: 'Submenu 1.1.3', icon: 'pi pi-fw pi-bookmark' }
-                        ]
-                    },
-                    {
-                        label: 'Submenu 1.2',
-                        icon: 'pi pi-fw pi-bookmark',
-                        items: [{ label: 'Submenu 1.2.1', icon: 'pi pi-fw pi-bookmark' }]
-                    }
-                ]
-            },
-            {
-                label: 'Submenu 2',
-                icon: 'pi pi-fw pi-bookmark',
-                items: [
-                    {
-                        label: 'Submenu 2.1',
-                        icon: 'pi pi-fw pi-bookmark',
-                        items: [
-                            { label: 'Submenu 2.1.1', icon: 'pi pi-fw pi-bookmark' },
-                            { label: 'Submenu 2.1.2', icon: 'pi pi-fw pi-bookmark' }
-                        ]
-                    },
-                    {
-                        label: 'Submenu 2.2',
-                        icon: 'pi pi-fw pi-bookmark',
-                        items: [{ label: 'Submenu 2.2.1', icon: 'pi pi-fw pi-bookmark' }]
-                    }
-                ]
+                label: 'Rapports généraux',
+                icon: 'pi pi-fw pi-chart-bar',
+                to: '/role-management'
             }
         ]
     },
@@ -135,12 +57,17 @@ const model = ref([
                 label: 'liGestRole',
                 icon: 'pi pi-shield',
                 to: '/role-management'
+            },
+            {
+                label: 'Paramètres des rappels',
+                icon: 'pi pi-fw pi-cog',
+                to: '/jj'
             }
         ]
     }
 ]);
 
-const accessibleMenu = filterMenuByPermissions(model.value) // Utilisez .value pour extraire le contenu du ref
+const accessibleMenu = filterMenuByPermissions(model.value); // Utilisez .value pour extraire le contenu du ref
 </script>
 
 <template>
