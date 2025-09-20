@@ -23,6 +23,11 @@ const router = createRouter({
                     component: () => import('@/views/ministry/Ministry.vue')
                 },
                 {
+                    path: '/profil',
+                    name: 'profil',
+                    component: () => import('@/views/pages/Profil.vue')
+                },
+                {
                     path: '/department',
                     name: 'department',
                     component: () => import('@/views/department/Department.vue')
@@ -115,5 +120,10 @@ router.beforeEach( async (to, from, next) => {
     }
      next()
 });
-
+ 
 export default router;
+
+
+export function redirigeVers(routeName) {
+    router.push({ name: routeName });
+}
