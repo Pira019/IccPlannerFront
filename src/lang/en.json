@@ -48,6 +48,18 @@
     "liModifRole": "Update a role",
     "liPermission": "Permissions",
     "liProfil": "Profil",
+    "liDepart": "Departement",
+
+    "_commentDepart": "Departement libelle",
+    "liListDepart": "List department",
+    "colDepartNam": "Department Name",
+    "colDepartResp": "Manager",
+    "colDepartNbrMemb": "Member",
+    "colDepartReunion": "Meeting",
+    "noDepart": "No department found.",
+    "colDepartStat": "Status",
+
+    "liOnlyMembersCanView": "Only members of this department can view.",
 
     "errorOccured": "Error",
 
