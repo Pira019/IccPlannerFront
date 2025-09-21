@@ -48,6 +48,18 @@
     "liModifRole": "Modifier un rôle",
     "liPermission": "Permissions",
     "liProfil": "Mon profil",
+    "liDepart": "Départements",
+
+    "_commentDepart": "Libellé du département",
+    "liListDepart": "Liste des départements",
+    "colDepartNam": "Nom du département",
+    "colDepartResp": "Responsable",
+    "colDepartNbrMemb": "Nombre de membres",
+    "colDepartReunion": "Réunion",
+    "noDepart": "Aucun département trouvé.",
+    "colDepartStat": "Statut",
+    
+    "liOnlyMembersCanView" : "Seuls les membres de ce département peuvent voir.",
 
     "errorOccured": "Erreur",
 

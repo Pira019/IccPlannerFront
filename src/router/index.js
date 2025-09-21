@@ -28,9 +28,10 @@ const router = createRouter({
                     component: () => import('@/views/pages/Profil.vue')
                 },
                 {
-                    path: '/department',
+                    path: '/departments',
                     name: 'department',
-                    component: () => import('@/views/department/Department.vue')
+                    component: () => import('@/views/department/Department.vue'),
+                    meta: { requiresAuth: true}, requiredClaim: []
                 },
                 {
                     path: '/programs',

@@ -1,20 +1,18 @@
 <script setup>
 import PermissionService from '@/service/PermissionService';
 import RoleService from '@/service/RoleService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addRoleValidation } from '@/validations/Admin/addRoleValidation';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const { handleAsyncError } = useHandleAsyncError();
 
 onMounted(async () => {
     const { result, error } = await handleAsyncError(
         () => RoleService.getAll(),
-        t,
         (val) => (loading.value = val)
     );
     errorReq.value = error;
@@ -50,7 +48,6 @@ const submitted = ref(false);
 async function getPermissions() {
     const { result } = await handleAsyncError(
         () => PermissionService.getAll(),
-        t,
         (val) => (loadingPermissions.value = val)
     );
     permissionsList.value = result;
@@ -72,7 +69,6 @@ function hideDialog() {
 async function createRole() {
     const { result, error } = await handleAsyncError(
         () => RoleService.create(role.value),
-        t,
         (val) => (loadingSave.value = val),
         true
     );
@@ -84,7 +80,7 @@ async function createRole() {
 
     role.value.id = result?.id;
     role.value.nbrUsers = 0;
-    role.value.permissions = permissionsList.value.filter(p => permissionIds.value.includes(p.id))
+    role.value.permissions = permissionsList.value.filter((p) => permissionIds.value.includes(p.id));
     roles.value.push(role.value);
     role.value = {};
     roleDialog.value = false;
@@ -124,7 +120,7 @@ function submitForm() {
     roleForm.value?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 }
 
-const { errors, defineField, handleSubmit,resetForm } = useForm({
+const { errors, defineField, handleSubmit, resetForm } = useForm({
     validationSchema: addRoleValidation
 });
 
@@ -155,7 +151,7 @@ const [permissionIds] = defineField('permissionIds');
             <DataTable ref="dt" selectionMode="single" :metaKeySelection="false" v-model:selection="selectedRole" :value="roles" dataKey="id" :filters="filters" :loading="loading">
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ t('liMagRole') }}</h4>
+                        <h4 class="m-0">{{ $t('liMagRole') }}</h4>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
@@ -172,18 +168,18 @@ const [permissionIds] = defineField('permissionIds');
                     </div>
                 </template>
 
-                <Column field="name" :header="t('liRole')" sortable style="min-width: 12rem">
-                     <template #body="slotProps" class="font-semibold">
+                <Column field="name" :header="$t('liRole')" sortable style="min-width: 12rem">
+                    <template #body="slotProps" class="font-semibold">
                         <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
                     </template>
                 </Column>
-                <Column field="description" :header="t('liDesc')" style="min-width: 16rem"></Column>
-                <Column field="nbrUsers" :header="t('liNbrUti')" sortable style="min-width: 10rem">
+                <Column field="description" :header="$t('liDesc')" style="min-width: 16rem"></Column>
+                <Column field="nbrUsers" :header="$t('liNbrUti')" sortable style="min-width: 10rem">
                     <template #body="slotProps" class="font-semibold">
                         <span class="font-semibold">{{ slotProps.data.nbrUsers }}</span>
                     </template>
                 </Column>
-                <Column field="permissions" :header="t('liPerm')" sortable style="min-width: 10rem">
+                <Column field="permissions" :header="$t('liPerm')" sortable style="min-width: 10rem">
                     <template #body="slotProps" class="font-semibold">
                         <p v-for="(item, index) in slotProps.data.permissions" :key="index">({{ item?.name }}) {{ item?.description }}</p>
                     </template>
