@@ -6,8 +6,8 @@ trigger:
 pool: Azure Pipelines
 
 variables:
-  azureSubscription: 'Azure-dev'  # À créer dans Azure DevOps
-  appName: 'ICC_ELGO_TRST_RESSOURCE' 
+  azureSubscription: 'ICC_ELGO_TRST_RESSOURCE'  # À créer dans Azure DevOps
+  appName: 'IccPlanningFront' 
   buildFolder: 'dist'
 
 steps:
