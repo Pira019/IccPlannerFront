@@ -50,6 +50,9 @@
     "liProfil": "Mon profil",
     "liDepart": "Départements",
 
+     "liAjDepart": "Ajouter un département",
+     "liMjDepart" : "Modifier le département",
+
     "_commentDepart": "Libellé du département",
     "liListDepart": "Liste des départements",
     "colDepartNam": "Nom du département",
@@ -58,8 +61,10 @@
     "colDepartReunion": "Réunion",
     "noDepart": "Aucun département trouvé.",
     "colDepartStat": "Statut",
-    
-    "liOnlyMembersCanView" : "Seuls les membres de ce département peuvent voir.",
+
+    "liOnlyMembersCanView": "Seuls les membres de ce département peuvent voir.",
+
+    "liOrganisation": "Organisation",
 
     "errorOccured": "Erreur",
 

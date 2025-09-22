@@ -2,13 +2,13 @@
 import { ErrorModel } from '@/model/ErrorModel';
 import DepartmentService from '@/service/DepartmentService';
 import MinistryService from '@/service/MinistryService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addDepartmentValidation } from '@/validations/addDepartmentValidation';
 import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const { handleAsyncError } = useHandleAsyncError();
+const emit = defineEmits(['closeModal']);
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
     validationSchema: addDepartmentValidation
@@ -25,7 +25,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         startDate: values.startDate?.toISOString().split('T')[0]
     };
     const body = JSON.stringify(formatedValues);
-    const { error } = await handleAsyncError(() => DepartmentService.add(body), t);
+    const { error } = await handleAsyncError(() => DepartmentService.add(body),null,true);
 
     if (error) {
         errorMessage.value = error;
@@ -33,8 +33,13 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         return;
     }
     resetForm();
+    closeDialog();
     successResponse.value = true;
 });
+
+function closeDialog() {
+    emit('closeModal');
+}
 
 const [name] = defineField('name');
 const [description] = defineField('description');
@@ -45,7 +50,7 @@ const [startDate] = defineField('startDate');
 ///fonction
 
 onMounted(async () => {
-    const { result } = await handleAsyncError(() => MinistryService.getMinistries(), t);
+    const { result } = await handleAsyncError(() => MinistryService.getMinistries());
     ministries.value = result;
 });
 </script>
@@ -96,10 +101,10 @@ onMounted(async () => {
             </div>
 
             <div class="flex flex-col gap-2">
-                <ResponseComponent :error="errorMessage" :showSuccessMessage="true" :successResponse />
+                <ResponseComponent :error="errorMessage" />
             </div>
             <div class="gap-2 text-right mt-5">
-                <Button type="button" severity="danger" @click="$emit('closeModal')" outlined class="mr-2 mb-2" :label="$t('Cancel')" icon="pi pi-times" />
+                <Button type="button" severity="danger" @click="closeDialog" outlined class="mr-2 mb-2" :label="$t('Cancel')" icon="pi pi-times" />
                 <Button type="submit" class="mr-2 mb-2" :label="$t('Save')" :loading="isSubmitting" icon="pi pi-save" />
             </div>
         </div>

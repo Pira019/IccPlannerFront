@@ -5,15 +5,17 @@ import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { FilterMatchMode } from '@primevue/core/api';
 import { onMounted, ref } from 'vue';
 import DepartmentService from '../../service/DepartmentService';
+import AddDepartment from './AddDepartment.vue';
 
 const { handleAsyncError } = useHandleAsyncError();
-
-const displayAddModal = ref(false);
 
 const loading = ref(false);
 const errorReq = ref();
 const selectedDepart = ref();
 const departsList = ref({});
+
+const depart = ref({});
+const departDialog = ref(false);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -34,7 +36,7 @@ onMounted(async () => {
         <div>
             <Toolbar class="mb-6">
                 <template #start>
-                    <Button :label="$t('liAjtRole')" icon="pi pi-plus" severity="secondary" class="mr-2" />
+                    <Button :label="$t('Add')" icon="pi pi-plus" severity="secondary" class="mr-2" @click="() => (departDialog = true)" />
                 </template>
             </Toolbar>
 
@@ -75,4 +77,9 @@ onMounted(async () => {
             </DataTable>
         </div>
     </PageComponent>
+
+    <!-- Modal -->
+    <Dialog v-model:visible="departDialog" :header="depart.value == null ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+        <AddDepartment @closeModal="() => (departDialog = false)" />
+    </Dialog>
 </template>

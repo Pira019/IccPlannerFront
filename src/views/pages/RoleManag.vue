@@ -223,8 +223,8 @@ const [permissionIds] = defineField('permissionIds');
                 </div>
             </form>
             <template #footer>
-                <Button :label="t('Cancel')" icon="pi pi-times" text @click="hideDialog" />
-                <Button :label="t('Add')" icon="pi pi-check" type="submit" @click="submitForm" :loading="loadingSave" />
+                <Button :label="$t('Cancel')" icon="pi pi-times" text @click="hideDialog" />
+                <Button :label="$t('Add')" icon="pi pi-check" type="submit" @click="submitForm" :loading="loadingSave" />
             </template>
         </Dialog>
 
