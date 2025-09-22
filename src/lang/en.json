@@ -48,7 +48,9 @@
     "liModifRole": "Update a role",
     "liPermission": "Permissions",
     "liProfil": "Profil",
-    "liDepart": "Departement",
+    "liDepart": "Department",
+    "liAjDepart": "Add a department",
+    "liMjDepart" : "Update department",
 
     "_commentDepart": "Departement libelle",
     "liListDepart": "List department",
@@ -58,6 +60,8 @@
     "colDepartReunion": "Meeting",
     "noDepart": "No department found.",
     "colDepartStat": "Status",
+
+    "liOrganisation" : "Organisation", 
 
     "liOnlyMembersCanView": "Only members of this department can view.",
 

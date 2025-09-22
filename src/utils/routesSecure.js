@@ -1,6 +1,6 @@
+import { useAuthStore } from "@/store/Auth"
 import { useRouter } from "vue-router"
 import { checkRequiredClaims } from "./claims"
-import { useAuthStore } from "@/store/Auth"
 
  export function filterMenuByPermissions(menuItems) {
     const router = useRouter()
@@ -17,7 +17,7 @@ import { useAuthStore } from "@/store/Auth"
             }
             
             // Vérifier les claims requis
-            if (routeMeta?.requiredClaim) {
+            if (!routeMeta?.requiredClaim) {
                 if (!checkRequiredClaims(routeMeta.requiredClaim)) {
                     return null // Exclure si pas les bonnes permissions
                 }

@@ -15,6 +15,7 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
+                    meta: { requiresAuth: true , requiredClaim:{}},
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {
@@ -28,10 +29,17 @@ const router = createRouter({
                     component: () => import('@/views/pages/Profil.vue')
                 },
                 {
+                    path: '/members',
+                    name: 'members',
+                    meta: { requiresAuth: true },
+                    component: () => import('@/views/pages/Profil.vue')
+                },
+                {
                     path: '/departments',
                     name: 'department',
+                    meta: { requiresAuth: true , requiredClaim: {}},
                     component: () => import('@/views/department/Department.vue'),
-                    meta: { requiresAuth: true}, requiredClaim: []
+                   
                 },
                 {
                     path: '/programs',
@@ -51,9 +59,9 @@ const router = createRouter({
                 {
                     path: '/role-management',
                     name: 'role-management',
-                   /* meta: { requiresAuth: false, requiredClaim: [ { key: Role.Roles , value: [ Role.Admin ] },
+                    meta: { requiresAuth: true, requiredClaim: [ { key: Role.Roles , value: [ Role.Admin ] },
                                                                  { key: Permission.Permissions, value: [] }
-                                                                ] },*/
+                                                                ] },
 
                     component: () => import('@/views/pages/RoleManag.vue')
                 }

@@ -8,7 +8,7 @@ const model = ref([
         label: 'Accueil',
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'Programs', icon: 'pi pi-fw pi-calendar-times', to: '/programs' },
+            { label: 'Programs', icon: 'pi pi-fw pi-calendar-times', to: '/programs' }
         ]
     },
     {
@@ -32,11 +32,11 @@ const model = ref([
         ]
     },
     {
-        label: 'Organisation',
+        label: 'liOrganisation',
         items: [
             { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
             { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/departments' },
-            { label: 'Membres', icon: 'pi pi-fw pi-users', to: '/programs' }
+            { label: 'Membres', icon: 'pi pi-fw pi-users', to: '/members' }
         ]
     },
     {
