@@ -2,13 +2,14 @@
 import CalendarComponent from '@/components/CalendarComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import ServicePrgService from '@/service/ServicePrgService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import ProgressSpinner from 'primevue/progressspinner';
 
 import { useDialog } from 'primevue/usedialog';
 import { defineAsyncComponent, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+const { handleAsyncError } = useHandleAsyncError();
 const { t } = useI18n();
 const dialog = useDialog();
 const AddAvailability = defineAsyncComponent(() => import('@/views/Availability/AddAvailability.vue'));
@@ -20,7 +21,6 @@ const errorReq = ref();
 async function onMonthChanged({ month, year }) {
     const { result, error } = await handleAsyncError(
         () => ServicePrgService.getDates(month, year),
-        t,
         (val: boolean) => (loading.value = val)
     );
 

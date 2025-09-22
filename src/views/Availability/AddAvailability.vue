@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AvailabilityService from '@/service/AvailabilityService';
 import ServicePrgService from '@/service/ServicePrgService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { ProgressSpinner } from 'primevue';
 import { inject, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -11,6 +11,7 @@ const { t } = useI18n();
 const loading = ref(false);
 const errorReq = ref(null);
 const data = ref([]);
+const { handleAsyncError } = useHandleAsyncError();
 //
 const availableLoading = ref(false);
 var errorReqToggle = ref(null);
@@ -18,7 +19,6 @@ var errorReqToggle = ref(null);
 onMounted(async () => {
     const { result, error } = await handleAsyncError(
         () => ServicePrgService.getDepartmentServicesByDate(dialogRef.value.data.dateService),
-        t,
         (val: boolean) => (loading.value = val)
     );
     errorReq.value = error;
@@ -28,7 +28,6 @@ onMounted(async () => {
 async function addAvailable(serviceProgramId) {
     const { error } = await handleAsyncError(
         () => AvailabilityService.addAvailability(serviceProgramId),
-        t,
         (val: boolean) => (availableLoading.value = val),
         true,
         'msgAvailability'
@@ -39,7 +38,6 @@ async function addAvailable(serviceProgramId) {
 async function deleteAvailable(serviceProgramId) {
     const { error } = await handleAsyncError(
         () => AvailabilityService.delete(serviceProgramId),
-        t,
         (val: boolean) => (availableLoading.value = val),
         true,
         'msgUnAvailability'

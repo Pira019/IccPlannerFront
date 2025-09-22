@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ErrorModel } from '@/model/ErrorModel';
 import MinistryService from '@/service/MinistryService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addMinistryValidation } from '@/validations/addMinistryValidation';
 import { useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const { handleAsyncError } = useHandleAsyncError();
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
     validationSchema: addMinistryValidation
