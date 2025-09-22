@@ -33,7 +33,7 @@
 
 <script setup>
 import ProgramService from '@/service/ProgramService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -41,6 +41,7 @@ import { z } from 'zod';
 
 const { t } = useI18n();
 const emit = defineEmits(['saved']);
+const { handleAsyncError } = useHandleAsyncError();
 
 const loading = ref(false);
 const errorReq = ref(null);
@@ -62,8 +63,7 @@ const onFormSubmit = async ({ valid, values }) => {
 ///
 async function editPrg(newPrg) {
     const { error, result } = await handleAsyncError(
-        () => ProgramService.addPrg(newPrg),
-        t,
+        () => ProgramService.addPrg(newPrg), 
         (val) => (loading.value = val),
         true,
         'msgAddPrg'
