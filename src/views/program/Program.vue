@@ -1,12 +1,13 @@
 <script setup>
 import ProgramService from '@/service/ProgramService';
-import { handleAsyncError } from '@/utils/handleAsyncError';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { useDialog } from 'primevue';
 import { defineAsyncComponent, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const loading = ref(false);
+const { handleAsyncError } = useHandleAsyncError();
 // Permet de savoir si c'est en mode édition.
 const isEdit = ref(false);
 const errorReq = ref(null);
@@ -77,8 +78,7 @@ onMounted(async () => {
 
 async function getData() {
     const { result, error } = await handleAsyncError(
-        () => ProgramService.getProgramsFilter({}),
-        t,
+        () => ProgramService.getProgramsFilter({}), 
         (val) => (loading.value = val)
     );
     errorReq.value = error;
