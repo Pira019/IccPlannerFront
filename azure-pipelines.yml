@@ -18,5 +18,6 @@ steps:
 - task: AzureStaticWebApp@0
   inputs:
     app_location: '.'             # dossier frontend source
+    api_location: '' 
     output_location: 'dist'       # dossier build
     azure_static_web_apps_api_token: $(deployment_token)
