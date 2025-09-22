@@ -7,7 +7,7 @@ pool: Azure Pipelines
 
 variables:
   azureSubscription: 'Azure-dev'  # À créer dans Azure DevOps
-  appName: 'AppService' 
+  appName: 'IccPlanningFront' 
   buildFolder: 'dist'
 
 steps:
