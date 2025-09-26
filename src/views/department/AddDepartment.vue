@@ -8,7 +8,7 @@ import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
 
 const { handleAsyncError } = useHandleAsyncError();
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'newDepart']);
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
     validationSchema: addDepartmentValidation
@@ -17,24 +17,20 @@ const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
 const errorMessage = ref<ErrorModel>();
 const ministries = ref<[]>([]);
 
-const successResponse = ref(false);
-
 const onSubmit = handleSubmit.withControlled(async (values) => {
     const formatedValues = {
         ...values,
         startDate: values.startDate?.toISOString().split('T')[0]
     };
-    const body = JSON.stringify(formatedValues);
-    const { error } = await handleAsyncError(() => DepartmentService.add(body),null,true);
+    const { error } = await handleAsyncError(() => DepartmentService.add(formatedValues), null, true);
 
     if (error) {
         errorMessage.value = error;
-        successResponse.value = false;
         return;
     }
+    emit('newDepart', formatedValues);
     resetForm();
     closeDialog();
-    successResponse.value = true;
 });
 
 function closeDialog() {
