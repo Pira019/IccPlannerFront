@@ -21,6 +21,10 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
+// ajoute dans la liste
+function addDepart(newDepart) {
+    departsList.value.departments?.push(newDepart);
+}
 onMounted(async () => {
     const { result, error } = await handleAsyncError(
         () => DepartmentService.get(),
@@ -80,6 +84,6 @@ onMounted(async () => {
 
     <!-- Modal -->
     <Dialog v-model:visible="departDialog" :header="depart.value == null ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-        <AddDepartment @closeModal="() => (departDialog = false)" />
+        <AddDepartment @closeModal="() => (departDialog = false)" @new-depart="(newDepar) => addDepart(newDepar)" />
     </Dialog>
 </template>

@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, watch } from 'vue';
 import { createI18n } from 'vue-i18n';
 import { z } from 'zod';
 import App from './App.vue';
@@ -17,6 +17,7 @@ import fr from "@/lang/fr.json";
 import '@/assets/styles.scss';
 import { createPinia } from 'pinia';
 import { makeZodI18nMap } from 'zod-vue-i18n';
+import { primevueLocales } from './lang/primevueLocales';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -49,3 +50,12 @@ app.use(DialogService);
 app.use(ConfirmationService);
 
 app.mount('#app');
+
+watch(
+  () => i18n.global.locale.value,
+  (newLocale) => {
+    app.config.globalProperties.$primevue.config.locale =
+      primevueLocales[newLocale] || primevueLocales[i18n.global.locale.value]
+  },
+  { immediate: true }
+)
