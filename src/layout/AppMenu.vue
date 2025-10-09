@@ -23,11 +23,11 @@ const model = ref([
                 label: 'Signaler une absence',
                 icon: 'pi pi-fw pi-times-circle',
                 to: '/signaler-absence'
-            },
+            }, 
             {
-                label: 'Vue globale des dispos',
+                label: 'liSchedule',
                 icon: 'pi pi-fw pi-calendar',
-                to: '/auth/error'
+                to: '/schedule'
             }
         ]
     },
