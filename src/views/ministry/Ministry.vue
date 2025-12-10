@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import Add from './Add.vue';
+    import Add from './Add.vue'; 
+    import HeaderComponent from '@/components/HeaderComponent.vue';
 
 const displayAddMinistry = ref(false);
 
@@ -14,12 +15,8 @@ function close() {
 </script>
 
 <template>
-    <div className="card">
-        <div class="font-semibold text-xl mb-4">
-            <h1>{{ $t('Ministries') }}</h1>
-        </div>
-    </div>
 
+    <HeaderComponent :title-page ="$t('Ministries')" />
     <div className="card">
         <div class="place-items-end mb-2">
             <div>
