@@ -5,9 +5,8 @@ import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addMinistryValidation } from '@/validations/addMinistryValidation';
 import { useForm } from 'vee-validate';
 import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const emit = defineEmits(['closeModal']);
 const { handleAsyncError } = useHandleAsyncError();
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
@@ -19,7 +18,7 @@ const successResponse = ref(false);
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
     const body = JSON.stringify(values);
-    const { error } = await handleAsyncError(() => MinistryService.add(body), t);
+    const { error } = await handleAsyncError(() => MinistryService.add(body), null, true);
 
     if (error) {
         errorMessage.value = error;
@@ -27,7 +26,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         return;
     }
     resetForm();
-    successResponse.value = true;
+    emit('closeModal');
 });
 
 const [name] = defineField('name');
@@ -50,7 +49,7 @@ const [description] = defineField('description');
             </div>
 
             <div class="flex flex-col gap-2">
-                <ResponseComponent :error="errorMessage" :showSuccessMessage="true" :successResponse />
+                <ResponseComponent :error="errorMessage" />
             </div>
 
             <div class="gap-2 text-right mt-5">

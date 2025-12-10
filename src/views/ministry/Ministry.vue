@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-    import Add from './Add.vue'; 
-    import HeaderComponent from '@/components/HeaderComponent.vue';
+import Add from './Add.vue';
 
 const displayAddMinistry = ref(false);
 
@@ -15,16 +14,17 @@ function close() {
 </script>
 
 <template>
+    <PageComponent :title-page="$t('Programs')">
+        <template #btn-add>
+            <Button type="button" :label="$t('Add')" icon="pi pi-plus" @click="openAdd" />
+        </template>
 
-    <HeaderComponent :title-page ="$t('Ministries')" />
-    <div className="card">
-        <div class="place-items-end mb-2">
-            <div>
-                <Button type="button" class="mr-2 mb-2" :label="$t('Add')" icon="pi pi-plus" @click="openAdd" />
-            </div>
+        <div>
+            <h2>Mes deonnes</h2>
         </div>
+
         <Dialog :header="$t('AddMinistry')" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" v-model:visible="displayAddMinistry" :modal="true">
             <Add @closeModal="close" />
         </Dialog>
-    </div>
+    </PageComponent>
 </template>
