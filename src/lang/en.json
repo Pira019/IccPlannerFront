@@ -4,6 +4,7 @@
     "Add": "Add",
     "AddMinistry": "Add ministry",
     "AddProgram": "Add program",
+    "EditMinistry": "Edit a ministry",
     "Ministries": "Ministries",
     "UpdateProgram": "Update a program",
     "Department": "Department",
@@ -50,7 +51,13 @@
     "liProfil": "Profil",
     "liDepart": "Department",
     "liAjDepart": "Add a department",
-    "liMjDepart" : "Update department",
+    "liMjDepart": "Update department",
+    "liclose": "Close",
+    "liNoElement" : "No element found.",
+
+
+    "lblDeleteMinistry": "Delete ministry",
+    "liMsgDel": "Are you sure that you want to perform this action?",
 
     "_commentDepart": "Departement libelle",
     "liListDepart": "List department",
@@ -60,8 +67,10 @@
     "colDepartReunion": "Meeting",
     "noDepart": "No department found.",
     "colDepartStat": "Status",
+    "colName": "Name",
+    "colDesc": "Description",
 
-    "liOrganisation" : "Organisation", 
+    "liOrganisation": "Organisation",
 
     "liOnlyMembersCanView": "Only members of this department can view.",
 
