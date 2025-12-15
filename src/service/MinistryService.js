@@ -19,4 +19,17 @@ export default class MinistryService extends BaseService
         return await this.axiosInstance.get(this.authBaseUrl)
     }
 
+    /**
+     * Mo
+     */
+    static async put(AddMinistryRequest) {
+        return await this.axiosInstance.put(this.authBaseUrl,AddMinistryRequest)
+    }
+
+    static async delete(idMinistry,isConfirm = false) 
+    {
+        const urlDel = `${this.authBaseUrl}?id=${idMinistry}&isConfirm=${isConfirm}`;
+        return await this.axiosInstance.delete(urlDel)
+    }
+
 }

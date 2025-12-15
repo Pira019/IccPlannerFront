@@ -5,9 +5,11 @@
     "Ministries": "Ministères",
     "Department": "Départements",
     "AddMinistry": "Ajouter un ministère",
+    "EditMinistry": "Modifier un ministère",
     "AddProgram": "Ajouter un programme",
     "UpdateProgram": "Modifier un programme",
     "Cancel": "Annuler",
+    "liclose": "Fermer", 
     "Save": "Enregistrer",
     "MinistryExample": "COMMUNICATION, DATAS ET PRODUCTION AUDIOVISUELLE",
     "DepartmentExample": "Régie",
@@ -33,6 +35,7 @@
     "btnDel": "Supprimer",
     "btnUpdate": "Modifier",
     "prgName": "Nom du programme",
+    "liNoElement" : "Aucun élément trouvé.",
 
     "msgSuccess": "L'action a été effectuée avec succès.",
 
@@ -50,8 +53,12 @@
     "liProfil": "Mon profil",
     "liDepart": "Départements",
 
-     "liAjDepart": "Ajouter un département",
-     "liMjDepart" : "Modifier le département",
+    "lblDeleteMinistry": "Supprimer le ministère",
+
+    "liMsgDel": "Êtes-vous sûr de vouloir effectuer cette action ?",
+
+    "liAjDepart": "Ajouter un département",
+    "liMjDepart": "Modifier le département",
 
     "_commentDepart": "Libellé du département",
     "liListDepart": "Liste des départements",
@@ -59,6 +66,8 @@
     "colDepartResp": "Responsable",
     "colDepartNbrMemb": "Nombre de membres",
     "colDepartReunion": "Réunion",
+    "colName": "Nom",
+    "colDesc": "Description",
     "noDepart": "Aucun département trouvé.",
     "colDepartStat": "Statut",
 
