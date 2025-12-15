@@ -1,36 +1,78 @@
 <script setup lang="ts">
-import { ErrorModel } from '@/model/ErrorModel';
 import MinistryService from '@/service/MinistryService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addMinistryValidation } from '@/validations/addMinistryValidation';
 import { useForm } from 'vee-validate';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'updatedMin', 'addedMinistry']);
+const props = defineProps({
+    selectedMinistry: {
+        type: Object,
+        default: () => ({})
+    }
+});
+
 const { handleAsyncError } = useHandleAsyncError();
+
+const idMinUpdate = ref();
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
     validationSchema: addMinistryValidation
 });
 
-const errorMessage = ref<ErrorModel>();
+const errorMessage = ref();
 const successResponse = ref(false);
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
-    const body = JSON.stringify(values);
-    const { error } = await handleAsyncError(() => MinistryService.add(body), null, true);
+    if (idMinUpdate.value) {
+        var body_update = {
+            ...values,
+            id: idMinUpdate.value
+        };
+        values = body_update;
+    }
+
+    var method = idMinUpdate.value ? MinistryService.put(values) : MinistryService.add(values);
+
+    const { result, error } = await handleAsyncError(
+        () => method,
+        (val) => (isSubmitting.value = val),
+        true
+    );
 
     if (error) {
         errorMessage.value = error;
-        successResponse.value = false;
         return;
     }
+
+    if (idMinUpdate.value) {
+        emit('updatedMin', values);
+    } else {
+        emit('addedMinistry', {
+            ...values,
+            id: result?.id
+        });
+    }
+
     resetForm();
     emit('closeModal');
 });
 
 const [name] = defineField('name');
 const [description] = defineField('description');
+
+watch(
+    () => props.selectedMinistry,
+    (newVal) => {
+        if (newVal) {
+            name.value = newVal.name;
+            description.value = newVal.description;
+            idMinUpdate.value = newVal.id;
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
