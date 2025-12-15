@@ -14,9 +14,9 @@ watch(
     () => toastStore.isSucceed,
     () => {
         if (toastStore.isSucceed != null) {
-            toast.add({ severity: 'success', summary: 'Info', detail: toastStore?.msg, life: 3000 });
+            toast.add({ summary: 'Info', detail: toastStore?.msg, life: 6000 });
         }
-        toastStore.toastReset()
+        toastStore.toastReset();
     }
 );
 </script>

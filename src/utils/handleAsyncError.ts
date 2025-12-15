@@ -22,7 +22,8 @@ export function useHandleAsyncError() {
                 success: false,
                 statusCode: error?.response?.data?.statusCode,
                 message: error?.response?.data?.message || t('internalError'),
-                validationErrors: error?.response?.data?.validationErrors
+                validationErrors: error?.response?.data?.validationErrors,
+                IsWarning: error?.response?.data?.isWarning || false
             };
             return { error: errorModel };
         } finally {
