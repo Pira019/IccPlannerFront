@@ -2,8 +2,7 @@
 import PageComponent from '@/components/PageComponent.vue';
 import ResponseComponent from '@/components/ResponseComponent.vue';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
-import { FilterMatchMode } from '@primevue/core/api';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import DepartmentService from '../../service/DepartmentService';
 import AddDepartment from './AddDepartment.vue';
 
@@ -14,40 +13,79 @@ const errorReq = ref();
 const selectedDepart = ref();
 const departsList = ref({});
 
+const pageSize = ref(10);
+const totalRecords = ref(null);
+const first = ref(0);
+
 const depart = ref({});
 const departDialog = ref(false);
 
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: '' }
 });
 
 // ajoute dans la liste
 function addDepart(newDepart) {
     departsList.value.departments?.push(newDepart);
 }
+
+const onPage = (event) => {
+    first.value = event.first;
+    pageSize.value = event.rows;
+
+    const page = event.page + 1;
+
+    getDept(page, pageSize.value);
+};
+
 onMounted(async () => {
+    await getDept();
+});
+
+async function getDept(pageNumber = 1, pageSize = 10) {
     const { result, error } = await handleAsyncError(
-        () => DepartmentService.get(),
+        () => DepartmentService.get(pageNumber, pageSize),
         (val) => (loading.value = val)
     );
     errorReq.value = error;
+
+    if (error) {
+        return;
+    }
     departsList.value = result;
+    totalRecords.value = result.totalCount;
+}
+
+const filteredDepartments = computed(() => {
+    const value = filters.value.global.value?.toLowerCase();
+    if (!value) return departsList.value.departments;
+
+    return departsList.value.departments.filter((d) => d.name.toLowerCase().includes(value) || d.shortName.toLowerCase().includes(value));
 });
 </script>
 
 <template>
-    <PageComponent :title-page="$t('liDepart')">
+    <PageComponent :title-page="$t('liDepart')" @btn-add="() => (departDialog = true)">
         <div>
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button :label="$t('Add')" icon="pi pi-plus" severity="secondary" class="mr-2" @click="() => (departDialog = true)" />
-                </template>
-            </Toolbar>
-
-            <DataTable ref="dt" selectionMode="single" :metaKeySelection="false" v-model:selection="selectedDepart" :value="departsList?.departments" dataKey="id" :filters="filters" :loading="loading">
+            <DataTable
+                :onPage="onPage"
+                ref="dt"
+                paginator
+                :first="first"
+                :rows="pageSize"
+                :totalRecords="totalRecords"
+                :rowsPerPageOptions="[10, 20, 50]"
+                selectionMode="single"
+                :metaKeySelection="false"
+                v-model:selection="selectedDepart"
+                :value="filteredDepartments"
+                dataKey="id"
+                :filters="filters"
+                :loading="loading"
+                lazy
+            >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ $t('liListDepart') }}</h4>
+                    <div class="flex justify-end">
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
@@ -64,20 +102,14 @@ onMounted(async () => {
                     </div>
                 </template>
 
-                <Column field="name" :header="$t('colDepartNam')" sortable style="min-width: 12rem">
+                <Column field="name" :header="$t('colDepartNam')" style="min-width: 12rem">
                     <template #body="slotProps" class="font-semibold">
                         <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
+                        <Tag severity="Primary" class="uppercase mx-2"> {{ slotProps.data.shortName }} </Tag>
                     </template>
                 </Column>
-                <Column field="manager" :header="$t('colDepartResp')" style="min-width: 16rem"></Column>
-                <Column field="nbrMember" :header="$t('colDepartNbrMemb')" sortable style="min-width: 10rem">
-                    <template #body="slotProps" class="font-semibold">
-                        <p v-if="departsList?.showInfo || slotProps.data.nbrMember > 0">
-                            {{ slotProps.data.nbrMember }}
-                        </p>
-                        <i v-else class="pi pi-eye-slash" v-tooltip="{ value: $t('liOnlyMembersCanView') }" style="font-size: 1.5rem"></i>
-                    </template>
-                </Column>
+                <Column field="nbrMember" :header="$t('colDepartNbrMemb')"></Column>
+                <Column field="nbrProgram" :header="$t('colNbrPrg')"></Column>
             </DataTable>
         </div>
     </PageComponent>
