@@ -18,8 +18,9 @@ export default class DepartmentService extends BaseService
      /**
      * Obtenir la liste des departements
      */
-    static async get()
+    static async get(pageNumber,pageSize)
     {
-        return await this.axiosInstance.get(this.authBaseUrl)
+        var endPoint = `${this.authBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        return await this.axiosInstance.get(endPoint)
     }
 }

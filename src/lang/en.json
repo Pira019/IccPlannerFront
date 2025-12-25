@@ -53,8 +53,7 @@
     "liAjDepart": "Add a department",
     "liMjDepart": "Update department",
     "liclose": "Close",
-    "liNoElement" : "No element found.",
-
+    "liNoElement": "No element found.",
 
     "lblDeleteMinistry": "Delete ministry",
     "liMsgDel": "Are you sure that you want to perform this action?",
@@ -63,12 +62,13 @@
     "liListDepart": "List department",
     "colDepartNam": "Department Name",
     "colDepartResp": "Manager",
-    "colDepartNbrMemb": "Member",
+    "colDepartNbrMemb": "Number of Stars",
     "colDepartReunion": "Meeting",
     "noDepart": "No department found.",
     "colDepartStat": "Status",
     "colName": "Name",
     "colDesc": "Description",
+    "colNbrPrg": "Nomber of programs",
 
     "liOrganisation": "Organisation",
 
