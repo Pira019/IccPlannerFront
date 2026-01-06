@@ -6,9 +6,9 @@ import { z } from 'zod';
 export const addDepartmentValidation  = toTypedSchema(
     z.object({
         name : z.string().nonempty().max(255),
-        ministryId : z.number().positive(),
+        ministryId : z.number().positive().optional(),
         description : z.string().nonempty(),
-        shortName : z.string().max(55).optional(),
+        shortName : z.string().max(15).optional(),
         startDate: z.preprocess((val) => val ? new Date(val) : undefined, z.date().optional()).optional()
     })
 )

@@ -8,27 +8,58 @@ import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
 
 const { handleAsyncError } = useHandleAsyncError();
-const emit = defineEmits(['closeModal', 'newDepart']);
+const emit = defineEmits(['closeModal', 'newDepart', 'updateDepart']);
+const props = defineProps({
+    idDept: {
+        default: 0
+    }
+});
 
 const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
     validationSchema: addDepartmentValidation
 });
 
 const errorMessage = ref<ErrorModel>();
-const ministries = ref<[]>([]);
+const ministries = ref<number[]>([]);
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
-    const formatedValues = {
+    if (props.idDept != 0) {
+        var body_update = {
+            ...values,
+            id: props.idDept
+        };
+        values = body_update;
+    }
+
+    const payload = {
         ...values,
         startDate: values.startDate?.toISOString().split('T')[0]
     };
-    const { error } = await handleAsyncError(() => DepartmentService.add(formatedValues), null, true);
+
+    var method = props.idDept != 0 ? DepartmentService.add(payload) : DepartmentService.add(payload);
+    var liTextSucc = props.idDept != 0 ? 'liDeptEdtSuccess' : 'liDeptAddSuccess';
+
+    const { result, error } = await handleAsyncError(
+        () => method,
+        (val) => (isSubmitting.value = val),
+        true,
+        liTextSucc
+    );
 
     if (error) {
         errorMessage.value = error;
         return;
     }
-    emit('newDepart', formatedValues);
+
+    if (props.idDept != 0) {
+        emit('updateDepart', payload);
+    } else {
+        emit('newDepart', {
+            ...payload,
+            id: result?.id
+        });
+    }
+
     resetForm();
     closeDialog();
 });
@@ -55,44 +86,57 @@ onMounted(async () => {
     <form @submit="onSubmit">
         <div class="flex flex-col">
             <div class="flex flex-col gap-2 mb-4">
-                <label class="font-semibold text-xl" for="ministry_name"> {{ $t('Ministry') }}*</label>
-                <Select
-                    name="ministry_name"
-                    id="ministry_name"
-                    :invalid="!!errors.ministryId"
-                    v-model="ministryId"
-                    optionValue="id"
-                    :options="ministries"
-                    optionLabel="name"
-                    :placeholder="$t('SelectMinistry')"
-                    filter
-                    :emptyFilterMessage="$t('NoResultsFound')"
-                    :emptyMessage="$t('FilterEmptyMessage')"
-                />
+                <FloatLabel variant="on">
+                    <label class="font-semibold text-xl" for="ministry_name"> {{ $t('Ministry') }}*</label>
+                    <Select
+                        fluid
+                        name="ministry_name"
+                        id="ministry_name"
+                        :invalid="!!errors.ministryId"
+                        v-model="ministryId"
+                        optionValue="id"
+                        :options="ministries"
+                        optionLabel="name"
+                        :placeholder="$t('SelectMinistry')"
+                        filter
+                        :emptyFilterMessage="$t('NoResultsFound')"
+                        :emptyMessage="$t('FilterEmptyMessage')"
+                    />
+                </FloatLabel>
                 <Message size="small" severity="error" variant="simple" v-if="errors.ministryId"> {{ errors.ministryId }}</Message>
             </div>
 
             <div class="flex flex-col gap-2 mb-4">
-                <label class="font-semibold text-xl" for="department_name"> {{ $t('Name') }}*</label>
-                <InputText id="department_name" :invalid="!!errors.name" v-model="name" maxlength="55" name="department_name" type="text" :placeholder="$t('DepartmentExample')" />
+                <FloatLabel variant="on">
+                    <InputText id="department_name" :invalid="!!errors.name" v-model="name" size="large" maxlength="255" name="department_name" fluid />
+                    <label for="department_name"> {{ $t('Name') }}*</label>
+                </FloatLabel>
+                <Message size="small" class="mx-1" severity="secondary" variant="simple">Ex : {{ $t('DepartmentExample') }}</Message>
                 <Message size="small" severity="error" variant="simple" v-if="errors.name"> {{ errors.name }}</Message>
             </div>
 
-            <div class="flex flex-col gap-2 mb-4">
-                <label class="font-semibold text-xl" for="shortName"> {{ $t('ShortName') }}</label>
-                <InputText id="shortName" :invalid="!!errors.shortName" v-model="shortName" maxlength="55" name="shortName" type="text" :placeholder="$t('ShortNameExemple')" />
-                <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.shortName"> {{ errors.shortName }}</Message>
+            <div class="grid grid-cols-12 gap-3 mb-4">
+                <div class="col-span-8">
+                    <FloatLabel variant="on">
+                        <InputText id="shortName" size="large" fluid :invalid="!!errors.shortName" v-model="shortName" maxlength="15" name="shortName" type="text" />
+                        <label for="shortName"> {{ $t('ShortName') }}</label>
+                    </FloatLabel>
+                    <Message size="small" class="mt-2 mx-1" severity="secondary" variant="simple">Ex : {{ $t('ShortNameExemple') }}</Message>
+                    <Message size="small" severity="error" variant="simple" class="mb-6 mx-1" v-if="errors.shortName"> {{ errors.shortName }}</Message>
+                </div>
+                <div class="col-span-4">
+                    <FloatLabel variant="on">
+                        <label for="startDate"> {{ $t('StartDate') }}</label>
+                        <DatePicker id="startDate" size="large" :showIcon="true" v-model="startDate" :invalid="!!errors.startDate" dateFormat="yy-mm-dd"></DatePicker>
+                    </FloatLabel>
+                    <Message size="small" class="mx-1" severity="error" variant="simple" v-if="errors.startDate"> {{ errors.startDate }}</Message>
+                </div>
             </div>
-
-            <div class="flex flex-col gap-2 mb-4">
-                <label class="font-semibold text-xl" for="startDate"> {{ $t('StartDate') }}</label>
-                <DatePicker id="startDate" :showIcon="true" v-model="startDate" :invalid="!!errors.startDate" dateFormat="yy-mm-dd"></DatePicker>
-                <Message size="small" severity="error" variant="simple" v-if="errors.startDate"> {{ errors.startDate }}</Message>
-            </div>
-
             <div class="flex flex-col gap-2">
-                <label for="description" class="font-semibold text-xl">{{ $t('Description') }}*</label>
-                <Textarea id="description" :invalid="!!errors.description" v-model="description" rows="8" name="description" />
+                <FloatLabel variant="on">
+                    <label for="description" class="font-semibold text-xl">{{ $t('Description') }}*</label>
+                    <Textarea fluid id="description" size="large" :invalid="!!errors.description" v-model="description" rows="8" name="description" />
+                </FloatLabel>
                 <Message size="small" severity="error" variant="simple" v-if="errors.description"> {{ errors.description }}</Message>
             </div>
 

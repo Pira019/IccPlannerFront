@@ -60,6 +60,8 @@
     "liAjDepart": "Ajouter un département",
     "liMjDepart": "Modifier le département",
 
+    "liDeptAddSuccess": "Le département a été ajouté avec succès.",
+    "liDeptEdtSuccess": "Le département a été mis à jour avec succès.",
     "_commentDepart": "Libellé du département",
     "liListDepart": "Liste des départements",
     "colDepartNam": "Nom du département",
@@ -71,6 +73,8 @@
     "noDepart": "Aucun département trouvé.",
     "colDepartStat": "Statut",
     "colNbrPrg": "Nombre de programmes",
+
+    "liDetail": "Voir le détail",
 
     "liOnlyMembersCanView": "Seuls les membres de ce département peuvent voir.",
 

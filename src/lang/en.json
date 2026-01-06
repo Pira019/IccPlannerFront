@@ -58,6 +58,8 @@
     "lblDeleteMinistry": "Delete ministry",
     "liMsgDel": "Are you sure that you want to perform this action?",
 
+    "liDeptAddSuccess": "The department has been added successfully.",
+    "liDeptEdtSuccess": "The department has been updated successfully.",
     "_commentDepart": "Departement libelle",
     "liListDepart": "List department",
     "colDepartNam": "Department Name",
@@ -69,6 +71,7 @@
     "colName": "Name",
     "colDesc": "Description",
     "colNbrPrg": "Nomber of programs",
+    "liDetail": "See more",
 
     "liOrganisation": "Organisation",
 
