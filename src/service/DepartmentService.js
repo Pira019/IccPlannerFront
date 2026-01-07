@@ -15,6 +15,17 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.post(this.authBaseUrl, payload)
     }
 
+    static async getById(idDept)
+    {
+        const endpoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.get(endpoint)
+    }
+
+    static async update(idDept,payload)
+    {
+        const endpoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.put(endpoint,payload)
+    }
      /**
      * Obtenir la liste des departements
      */

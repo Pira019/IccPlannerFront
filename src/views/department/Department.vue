@@ -17,8 +17,13 @@ const errorReq = ref();
 const selectedDepart = ref();
 const departsList = ref({});
 
+const depart = ref({});
+var deptEdtId = ref(null);
+const departDialog = ref(false);
+
 const menus = ref({});
 
+// menu
 const getItems = (rowData) => [
     {
         label: t('liDetail'),
@@ -26,32 +31,30 @@ const getItems = (rowData) => [
         command: () => {
             router.push({ name: 'department-details', params: { id: rowData.id } });
         }
-    },
-    {
-        label: 'Delete',
-        icon: 'pi pi-times',
-        command: () => {
-            console.log('dfdinio');
-        }
-    },
+    }, 
     {
         separator: true
     },
     {
-        label: 'Quit',
-        icon: 'pi pi-power-off',
+        label: t('btnUpdate'),
+        icon: 'pi pi-pencil',
         command: () => {
-            window.location.href = 'https://vuejs.org/';
+            deptEdtId.value = rowData.id;
+            departDialog.value = true;
         }
-    }
+    },
+    {
+        label: t('btnDel'),
+        icon: 'pi pi-trash',
+        command: () => {
+            console.log('dfdinio');
+        }
+    },
 ];
 
 const pageSize = ref(10);
 const totalRecords = ref(null);
 const first = ref(0);
-
-const depart = ref({});
-const departDialog = ref(false);
 
 const filters = ref({
     global: { value: '' }
@@ -60,6 +63,11 @@ const filters = ref({
 // ajoute dans la liste
 async function addDepart() {
     await getDept();
+}
+
+function onAddDepartment() {
+    deptEdtId.value = null;
+    departDialog.value = true;
 }
 
 const onPage = async (event) => {
@@ -104,7 +112,7 @@ const toggle = (event, id) => {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('liDepart')" @btn-add="() => (departDialog = true)">
+    <PageComponent :title-page="$t('liDepart')" @btn-add="onAddDepartment()">
         <div>
             <DataTable
                 :onPage="onPage"
@@ -162,7 +170,7 @@ const toggle = (event, id) => {
     </PageComponent>
 
     <!-- Modal -->
-    <Dialog v-model:visible="departDialog" :header="depart.value == null ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-        <AddDepartment @closeModal="() => (departDialog = false)" @new-depart="(newDepar) => addDepart(newDepar)" />
+    <Dialog v-model:visible="departDialog" :header="!deptEdtId ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+        <AddDepartment @closeModal="() => (departDialog = false)" :id-dept="deptEdtId" @new-depart="(newDepar) => addDepart(newDepar)" @update-depart="() => getDept()" />
     </Dialog>
 </template>

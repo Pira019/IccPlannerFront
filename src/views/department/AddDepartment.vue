@@ -5,13 +5,13 @@ import MinistryService from '@/service/MinistryService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { addDepartmentValidation } from '@/validations/addDepartmentValidation';
 import { useForm } from 'vee-validate';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const { handleAsyncError } = useHandleAsyncError();
 const emit = defineEmits(['closeModal', 'newDepart', 'updateDepart']);
 const props = defineProps({
     idDept: {
-        default: 0
+        default: null
     }
 });
 
@@ -22,8 +22,10 @@ const { errors, defineField, handleSubmit, isSubmitting, resetForm } = useForm({
 const errorMessage = ref<ErrorModel>();
 const ministries = ref<number[]>([]);
 
+const loadingEdt = ref(false);
+
 const onSubmit = handleSubmit.withControlled(async (values) => {
-    if (props.idDept != 0) {
+    if (props.idDept) {
         var body_update = {
             ...values,
             id: props.idDept
@@ -33,11 +35,12 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
     const payload = {
         ...values,
+        ministryId: values.ministryId == null ? 0 : values.ministryId,
         startDate: values.startDate?.toISOString().split('T')[0]
     };
 
-    var method = props.idDept != 0 ? DepartmentService.add(payload) : DepartmentService.add(payload);
-    var liTextSucc = props.idDept != 0 ? 'liDeptEdtSuccess' : 'liDeptAddSuccess';
+    var method = props.idDept ? DepartmentService.update(props.idDept, payload) : DepartmentService.add(payload);
+    var liTextSucc = props.idDept ? 'liDeptEdtSuccess' : 'liDeptAddSuccess';
 
     const { result, error } = await handleAsyncError(
         () => method,
@@ -51,8 +54,8 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         return;
     }
 
-    if (props.idDept != 0) {
-        emit('updateDepart', payload);
+    if (props.idDept) {
+        emit('updateDepart');
     } else {
         emit('newDepart', {
             ...payload,
@@ -78,13 +81,42 @@ const [startDate] = defineField('startDate');
 
 onMounted(async () => {
     const { result } = await handleAsyncError(() => MinistryService.getMinistries());
-    ministries.value = result;
+    ministries.value = result.map((m) => ({
+        ...m,
+        name: m.name.toUpperCase()
+    }));
 });
+
+watch(
+    () => props.idDept,
+    async (value) => {
+        if (value) {
+            const { result, error } = await handleAsyncError(
+                () => DepartmentService.getById(props.idDept),
+                (val) => (loadingEdt.value = val)
+            );
+
+            if (error) {
+                errorMessage.value = error;
+                return;
+            }
+            name.value = result?.name;
+            description.value = result?.description;
+            ministryId.value = result?.ministryId;
+            shortName.value = result?.shortName;
+            startDate.value = result?.startDate;
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
     <form @submit="onSubmit">
         <div class="flex flex-col">
+            <div v-if="props.idDept != 0" class="text-center">
+                <LoadingDialogComponent :onLoading="loadingEdt" />
+            </div>
             <div class="flex flex-col gap-2 mb-4">
                 <FloatLabel variant="on">
                     <label class="font-semibold text-xl" for="ministry_name"> {{ $t('Ministry') }}*</label>
@@ -92,6 +124,7 @@ onMounted(async () => {
                         fluid
                         name="ministry_name"
                         id="ministry_name"
+                        showClear
                         :invalid="!!errors.ministryId"
                         v-model="ministryId"
                         optionValue="id"
