@@ -15,11 +15,32 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.post(this.authBaseUrl, payload)
     }
 
+    static async getById(idDept)
+    {
+        const endpoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.get(endpoint)
+    }
+
+    static async update(idDept,payload)
+    {
+        const endpoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.put(endpoint,payload)
+    }
      /**
      * Obtenir la liste des departements
      */
-    static async get()
+    static async get(pageNumber,pageSize)
     {
-        return await this.axiosInstance.get(this.authBaseUrl)
+        var endPoint = `${this.authBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        return await this.axiosInstance.get(endPoint)
     }
+
+    // Supprimer le dept.
+    static async deleteById(idDept)
+    {
+        var endPoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+
 }

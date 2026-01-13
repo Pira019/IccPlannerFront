@@ -36,11 +36,24 @@ const router = createRouter({
                 },
                 {
                     path: '/departments',
-                    name: 'department',
-                    meta: { requiresAuth: true , requiredClaim: {}},
-                    component: () => import('@/views/department/Department.vue'),
-                   
+                    meta: { requiresAuth: true, requiredClaim: {} },
+                    children: [
+                        {
+                        path:'',
+                        name: 'department-list',
+                        component: () => import('@/views/department/Department.vue'),
+                        meta: { requiresAuth: true, requiredClaim: {} },
+                        },
+                        {
+                        path: ':id',
+                        name: 'department-details',
+                        props: true,
+                        component: () => import('@/views/department/DepartmentDetails.vue'),
+                        meta: { requiresAuth: true, requiredClaim: {} },
+                        }
+                    ]
                 },
+
                 {
                     path: '/programs',
                     name: 'programs',
@@ -129,7 +142,7 @@ router.beforeEach( async (to, from, next) => {
     }
      next()
 });
- 
+
 export default router;
 
 

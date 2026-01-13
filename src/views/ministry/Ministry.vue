@@ -123,13 +123,9 @@ onMounted(async () => {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('Programs')">
-        <template #btn-add>
-            <Button type="button" :label="$t('Add')" icon="pi pi-plus" @click="openAdd" />
-        </template>
-
+    <PageComponent :title-page="$t('Ministries')" @btn-add="openAdd">
         <div>
-            <DataTable :value="ministryList" tableStyle="min-width: 50rem" stripedRows :filters="filters" :loading="loading">
+            <DataTable ref="dt" dataKey="id" selectionMode="single" :metaKeySelection="false" :value="ministryList" tableStyle="min-width: 50rem" stripedRows :filters="filters" :loading="loading">
                 <template #header>
                     <div class="flex justify-end">
                         <IconField>
