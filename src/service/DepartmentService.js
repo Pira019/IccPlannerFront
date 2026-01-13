@@ -34,4 +34,13 @@ export default class DepartmentService extends BaseService
         var endPoint = `${this.authBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         return await this.axiosInstance.get(endPoint)
     }
+
+    // Supprimer le dept.
+    static async deleteById(idDept)
+    {
+        var endPoint = `${this.authBaseUrl}${idDept}`
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+
 }

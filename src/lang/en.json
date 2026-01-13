@@ -60,6 +60,7 @@
 
     "liDeptAddSuccess": "The department has been added successfully.",
     "liDeptEdtSuccess": "The department has been updated successfully.",
+    "liDeptDel": "Delete a department",
     "_commentDepart": "Departement libelle",
     "liListDepart": "List department",
     "colDepartNam": "Department Name",

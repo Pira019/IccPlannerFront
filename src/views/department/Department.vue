@@ -2,6 +2,7 @@
 import PageComponent from '@/components/PageComponent.vue';
 import ResponseComponent from '@/components/ResponseComponent.vue';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { useConfirmDialog } from '@/utils/useConfirmDialog';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -12,16 +13,23 @@ const { handleAsyncError } = useHandleAsyncError();
 const { t } = useI18n();
 const router = useRouter();
 
-const loading = ref(false);
+const { showConfirm } = useConfirmDialog();
+
+const dt = ref(null);
+
 const errorReq = ref();
+const loading = ref(false);
+
+const departDialog = ref(false);
+const loadingDel = ref(false);
+const showDeleteLoadingDiag = ref(false);
+
+const menus = ref({});
+
 const selectedDepart = ref();
 const departsList = ref({});
 
-const depart = ref({});
 var deptEdtId = ref(null);
-const departDialog = ref(false);
-
-const menus = ref({});
 
 // menu
 const getItems = (rowData) => [
@@ -31,7 +39,7 @@ const getItems = (rowData) => [
         command: () => {
             router.push({ name: 'department-details', params: { id: rowData.id } });
         }
-    }, 
+    },
     {
         separator: true
     },
@@ -47,29 +55,98 @@ const getItems = (rowData) => [
         label: t('btnDel'),
         icon: 'pi pi-trash',
         command: () => {
-            console.log('dfdinio');
+            showConfirm({
+                group: 'deleteDialog',
+                message: 'liMsgDel',
+                header: 'liDeptDel',
+                acceptLabel: 'btnDel',
+                acceptSeverity: 'danger',
+                onAccept: () => deleteById(rowData.id)
+            });
         }
-    },
+    }
 ];
 
 const pageSize = ref(10);
 const totalRecords = ref(null);
 const first = ref(0);
+const dialogVisible = computed({
+    get() {
+        return departDialog.value || showDeleteLoadingDiag.value;
+    },
+    set(val) {
+        // fermer le dialog → on reset les deux flags si nécessaire
+        if (!val) {
+            departDialog.value = false;
+            showDeleteLoadingDiag.value = false;
+        }
+    }
+});
 
 const filters = ref({
     global: { value: '' }
 });
 
-// ajoute dans la liste
+/**
+ * Supprimer le department.
+ * @param id
+ */
+async function deleteById(id) {
+    showDeleteLoadingDiag.value = true;
+    const { error } = await handleAsyncError(
+        () => DepartmentService.deleteById(id),
+        (val) => (loadingDel.value = val),
+        true
+    );
+
+    if (error) {
+        errorDelete.value = error;
+        return;
+    }
+    // Actualise
+    // 2. Mettre à jour le total
+    const newTotal = totalRecords.value - 1;
+
+    // Si la liste devient vide
+    if (newTotal === 0) {
+        first.value = 0;
+        totalRecords.value = 0;
+        filteredDepartments.value = [];
+        return;
+    }
+
+    // Calculer la page actuelle (1-based)
+    const currentPage = Math.floor(first.value / pageSize.value) + 1;
+
+    // Calculer le nombre total de pages après suppression
+    const totalPages = Math.ceil(newTotal / pageSize.value);
+
+    /// Si la page actuelle n'existe plus, aller à la dernière page
+    let pageToLoad = currentPage;
+    if (currentPage > totalPages) {
+        pageToLoad = totalPages;
+        first.value = (totalPages - 1) * pageSize.value;
+    }
+
+    // Mettre à jour le total et recharger
+    totalRecords.value = newTotal;
+    await getDept(pageToLoad, pageSize.value);
+    // Votre fonction de chargement
+    showDeleteLoadingDiag.value = false;
+}
+
+// Liste des départements.
 async function addDepart() {
     await getDept();
 }
 
+// ouvre le modal
 function onAddDepartment() {
     deptEdtId.value = null;
     departDialog.value = true;
 }
 
+// pagination
 const onPage = async (event) => {
     first.value = event.first;
     pageSize.value = event.rows;
@@ -116,7 +193,7 @@ const toggle = (event, id) => {
         <div>
             <DataTable
                 :onPage="onPage"
-                ref="dt"
+                :ref="dt"
                 paginator
                 :first="first"
                 :rows="pageSize"
@@ -170,7 +247,8 @@ const toggle = (event, id) => {
     </PageComponent>
 
     <!-- Modal -->
-    <Dialog v-model:visible="departDialog" :header="!deptEdtId ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-        <AddDepartment @closeModal="() => (departDialog = false)" :id-dept="deptEdtId" @new-depart="(newDepar) => addDepart(newDepar)" @update-depart="() => getDept()" />
+    <Dialog v-model:visible="dialogVisible" :header="showDeleteLoadingDiag ? null : !deptEdtId ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+        <AddDepartment @closeModal="() => (departDialog = false)" :id-dept="deptEdtId" @new-depart="(newDepar) => addDepart(newDepar)" @update-depart="() => getDept()" v-if="departDialog" />
+        <LoadingDialogComponent :onLoading="loadingDel" :errorReq="errorReq" @closeModal="() => (showDeleteLoadingDiag = false)" v-if="showDeleteLoadingDiag" />
     </Dialog>
 </template>

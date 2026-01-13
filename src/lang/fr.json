@@ -59,6 +59,7 @@
 
     "liAjDepart": "Ajouter un département",
     "liMjDepart": "Modifier le département",
+    "liDeptDel": "Supprimer le département",
 
     "liDeptAddSuccess": "Le département a été ajouté avec succès.",
     "liDeptEdtSuccess": "Le département a été mis à jour avec succès.",
