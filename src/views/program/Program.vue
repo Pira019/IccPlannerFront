@@ -8,15 +8,31 @@
 
                     <div class="sm:hidden">
                         <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
+                    </div> 
+                    <Button label="Aujourd'hui" severity="Primary"  class="text-lg font-medium" variant="outlined" rounded />
+                    <div class="calendar-nav">
+                        <Button icon="pi pi-chevron-left"
+                                class="p-button-text"
+                                @click="prev" />
+
+                        <Button icon="pi pi-chevron-right"
+                                class="p-button-text"
+                                @click="next" />
+
+                        <!-- Texte date -->
+                        <span class="ml-2 text-lg font-semibold capitalize">
+                           January 2025
+                        </span>
                     </div>
-                    <span class="text-lg font-medium">Aujourd'hui</span>
                 </div>
 
-                <div class="flex items-center gap-2 flex-wrap mt-2 sm:mt-0">
-                    <Button label="Mois" icon="pi pi-calendar" outlined class="hidden sm:flex" />
-                    <Button label="Filtre appliqué" icon="pi pi-filter" outlined class="hidden sm:flex" />
-                    <Button icon="pi pi-ellipsis-h" text />
-                    <Button label="Nouveau" icon="pi pi-plus" severity="primary" />
+                <div class="flex items-center gap-2 flex-wrap mt-2 sm:mt-2">
+                    <SplitButton :label="view"
+                                 icon="pi pi-calendar"
+                                 outlined 
+                                 class="hidden sm:flex"
+                                 :model="viewItems"
+                                 @click="onMainClick" /> 
                 </div>
             </div>
 
@@ -60,7 +76,30 @@ import SlideContent from './SlideContent.vue';
 
 const panelOpen = ref(false);
 
-const isMobile = ref(false);
+    const isMobile = ref(false);
+
+    const view = ref('month');
+
+    const views = {
+        month: 'Mois',
+        week: 'Semaine',
+        day: 'Jour'
+    };
+
+    const viewItems = [
+        {
+            label: 'Mois',
+            command: () => (view.value = 'month')
+        },
+        {
+            label: 'Semaine',
+            command: () => (view.value = 'week')
+        },
+        {
+            label: 'Jour',
+            command: () => (view.value = 'day')
+        }
+    ];
 
 const checkScreen = () => {
     isMobile.value = window.innerWidth < 640;
@@ -74,4 +113,4 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('resize', checkScreen);
 });
-</script>
+</script> 
