@@ -6,13 +6,16 @@ import FullCalendar from '@fullcalendar/vue3';
 import { ref, watch } from 'vue';
 
 const emit = defineEmits(['month-changed', 'showModal']);
-const props = defineProps(['datesService']);
+const props = defineProps({
+    datesService: Array,
+    showHeader: { type: Boolean, default: true }
+});
 
 const optionCal = ref({
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
-    locale: frLocal,
-    eventColor: '#ffffff',
+    locale: frLocal, 
+    headerToolbar: props.showHeader ? { left: 'prev,next today', center: 'title', right: '' } : false,
     datesSet: (info) => {
         const currentDate = info.view.currentStart;
         const month = currentDate.getMonth() + 1;
@@ -30,6 +33,15 @@ watch(
             ...optionCal.value,
             events: datesToEvents(newDates)
         };
+    },
+    { immediate: true }
+);
+
+// Mettre à jour optionCal.headerToolbar quand showHeader change
+watch(
+    () => props.showHeader,
+    (val) => {
+        optionCal.value.headerToolbar = val ? { left: 'prev,next today', center: 'title', right: '' } : false;
     }
 );
 
