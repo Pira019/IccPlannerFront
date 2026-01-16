@@ -55,6 +55,10 @@
     "liclose": "Close",
     "liNoElement": "No element found.",
 
+    "liMonth": "Month",
+    "liWeek": "Week",
+    "liDay": "Day",
+
     "lblDeleteMinistry": "Delete ministry",
     "liMsgDel": "Are you sure that you want to perform this action?",
 

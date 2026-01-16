@@ -1,7 +1,7 @@
 <template>
     <Accordion :value="['0']" multiple>
         <AccordionPanel value="0">
-            <AccordionHeader>Header I</AccordionHeader>
+            <AccordionHeader>Liste de programmes</AccordionHeader>
             <AccordionContent>
                 <div>
                     <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" />
@@ -9,7 +9,7 @@
             </AccordionContent>
         </AccordionPanel>
         <AccordionPanel value="1">
-            <AccordionHeader>Header II</AccordionHeader>
+            <AccordionHeader>Listes de departements</AccordionHeader>
             <AccordionContent>
                 <div>
                     <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" />

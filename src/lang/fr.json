@@ -39,6 +39,10 @@
 
     "msgSuccess": "L'action a été effectuée avec succès.",
 
+    "liMonth": "Mois",
+    "liWeek": "Semaine",
+    "liDay": "Jour",
+
     "liGestRole": "Gestion des rôles",
     "liAdmin": "Administration",
     "liRole": "Rôle",
