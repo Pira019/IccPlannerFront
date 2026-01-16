@@ -9,14 +9,13 @@
                     <div class="sm:hidden">
                         <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
                     </div>
-                    <Button label="Aujourd'hui" severity="Primary" class="text-lg font-medium" variant="outlined" rounded />
-                    <div class="calendar-nav">
-                        <Button icon="pi pi-chevron-left" class="p-button-text" @click="prev" />
-
-                        <Button icon="pi pi-chevron-right" class="p-button-text" @click="next" />
+                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary" class="text-lg font-medium" variant="outlined" rounded />
+                    <div >
+                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" /> 
+                        <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
                         <!-- Texte date -->
-                        <span class="ml-2 text-lg font-semibold capitalize"> January 2025 </span>
+                        <span class="ml-2 text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
                     </div>
                 </div>
 
@@ -30,29 +29,29 @@
                 <!-- Sidebar -->
                 <div
                     :class="[
-                        'bg-white border-r border-gray-200',
+                        'bg-white border-r border-gray-200 flex flex-col',
                         'w-full sm:w-1/4' // mobile toggle
                     ]"
                 >
                     <div>
-                        <DatePicker inline class="w-full" />
+                        <DatePicker inline class="w-full" v-model="selectedDate"/>
                     </div>
-                    <div :class="['h-full sm:h-auto bg-white border-l p-4 overflow-y-auto', 'w-3/4 sm:w-auto']">
+                    <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
                         <!-- Mobile : Drawer -->
                         <Drawer v-if="isMobile" v-model:visible="panelOpen">
                             <SlideContent />
                         </Drawer>
 
                         <!-- Desktop : contenu normal -->
-                        <div v-else>
+                        <div v-else class="flex-1 overflow-y-auto">
                             <SlideContent />
                         </div>
                     </div>
                 </div>
 
                 <!-- Calendrier principal -->
-                <div class="flex-1 pl-4 flex flex-col overflow-auto">
-                    <CalendarComponent :showHeader="false" v-model:currentView="view" class="flex-1" />
+                <div class="flex-1 flex flex-col overflow-auto">
+                    <CalendarComponent ref="calendar" :showHeader="false" @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view" class="flex-1" />
                 </div>
             </div>
         </div>
@@ -60,41 +59,74 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import SlideContent from './SlideContent.vue';
+    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+    import { useI18n } from 'vue-i18n';
+    import SlideContent from './SlideContent.vue';
 
-const { t } = useI18n();
+    const { t } = useI18n();
 
-const panelOpen = ref(false);
+    const selectedDate = ref(new Date());
+    const currentMonthYear = ref('');
+    const calendar = ref(null);
 
-const isMobile = ref(false);
+    const panelOpen = ref(false);
 
-const view = ref('dayGridMonth');
+    const isMobile = ref(false);
 
-const views = [
-    { key: 'dayGridMonth', label: 'liMonth' },
-    { key: 'timeGridWeek', label: 'liWeek' },
-    { key: 'timeGridDay', label: 'liDay' }
-];
+    const view = ref('dayGridMonth');
 
-const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
+    const views = [
+        { key: 'dayGridMonth', label: 'liMonth' },
+        { key: 'timeGridWeek', label: 'liWeek' },
+        { key: 'timeGridDay', label: 'liDay' }
+    ];
 
-const viewItems = views.map((v) => ({
-    label: t(v.label),
-    command: () => (view.value = v.key)
-}));
+    const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
 
-const checkScreen = () => {
-    isMobile.value = window.innerWidth < 640;
-};
+    const viewItems = views.map((v) => ({
+        label: t(v.label),
+        command: () => (view.value = v.key)
+    }));
 
-onMounted(() => {
-    checkScreen();
-    window.addEventListener('resize', checkScreen);
-});
+    // Methods
+    const onMonthYearChanged = (formattedMonthYear) => {
+        currentMonthYear.value = formattedMonthYear; 
+    };
 
-onUnmounted(() => {
-    window.removeEventListener('resize', checkScreen);
-});
+    const checkScreen = () => {
+        isMobile.value = window.innerWidth < 640;
+    };
+
+    // Méthode pour sélectionner aujourd'hui
+    const selectToday = () => {
+        selectedDate.value = new Date(); // met à jour la date sélectionnée
+    };
+
+    const prev = () => {
+        calendar.value.navigatePrev();
+        const calView = calendar.value.$refs.calendarRef.getApi().view;
+        selectedDate.value = calView.currentStart;
+    };
+
+    const next = () => {
+        calendar.value.navigateNext();
+        const calView = calendar.value.$refs.calendarRef.getApi().view;
+        selectedDate.value = calView.currentStart;
+    };
+
+    // Watch sur selectedDate pour mettre à jour FullCalendar
+    watch(selectedDate, (newDate) => {
+        if (calendar.value && newDate) {
+            calendar.value.gotoDate(newDate);
+        }
+    });
+
+    onMounted(() => {
+        checkScreen();
+        window.addEventListener('resize', checkScreen);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener('resize', checkScreen);
+    });
 </script>

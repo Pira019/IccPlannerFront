@@ -1,81 +1,184 @@
 <script setup>
-import frLocal from '@fullcalendar/core/locales/fr-ca';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin  from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import FullCalendar from '@fullcalendar/vue3';
-import { ref, watch } from 'vue';
+    import dayGridPlugin from '@fullcalendar/daygrid';
+    import timeGridPlugin from '@fullcalendar/timegrid';
+    import interactionPlugin from '@fullcalendar/interaction';
+    import FullCalendar from '@fullcalendar/vue3';
+    import { nextTick, ref, watch } from 'vue';
 
-const emit = defineEmits(['month-changed', 'showModal']);
-const props = defineProps({
-    datesService: Array,
-    showHeader: { type: Boolean, default: true },
-    currentView: { type: String, default: 'dayGridMonth' }
-});
+    import frLocal from '@fullcalendar/core/locales/fr-ca';
+    import enLocal from '@fullcalendar/core/locales/en-gb';
+    import { useI18n } from 'vue-i18n';
 
-const calendarRef = ref(null); // <-- référence du calendrier
-const optionCal = ref({
-    plugins: [dayGridPlugin,timeGridPlugin,interactionPlugin],
-    initialView: props.currentView,
-    locale: frLocal,
-    height: '100%',
-    headerToolbar: props.showHeader ? { left: 'prev,next today', center: 'title', right: '' } : false,
-    datesSet: (info) => {
-        const currentDate = info.view.currentStart;
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-        emit('month-changed', { month, year });
-    },
-    dayHeaderContent: (arg) => {
-    const dayName = arg.date.toLocaleDateString('fr-CA', { weekday: 'short' }); // "Lun", "Mar"...
-    const dayNumber = arg.date.getDate(); // 15, 16...
-    return {
-      html: `<div class="flex flex-col items-center">
-               <span class="text-sm font-medium">${dayName}</span>
-               <span class="text-xs text-gray-500">${dayNumber}</span>
-             </div>`
+
+    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear']);
+    const props = defineProps({
+        datesService: Array,
+        showHeader: { type: Boolean, default: true },
+        currentView: { type: String, default: 'dayGridMonth' }
+    });
+
+    const { locale } = useI18n();
+
+    // Locales disponibles pour le calendrier
+    const calendarLocales = {
+        'fr-FR': frLocal,
+        'en-US': enLocal
     };
-  },
-    events: datesToEvents(props.datesService)
-});
+    // Méthodes exposées au parent pour naviguer dans le calendrier
+    defineExpose({
+        // Naviguer vers la période précédente
+        navigatePrev() {
+            if (!calendarRef.value) return;
+            const calendarApi = calendarRef.value.getApi();
+            const view = calendarApi.view;
 
-// Mettre à jour optionCal.events quand datesService change
-watch(
-    () => props.datesService,
-    (newDates) => {
-        optionCal.value = {
-            ...optionCal.value,
-            events: datesToEvents(newDates)
-        };
-    },
-    { immediate: true }
-);
+            let newDate = new Date(view.currentStart);
 
-// Mettre à jour optionCal.headerToolbar quand showHeader change
-watch(
-    () => props.showHeader,
-    (val) => {
-        optionCal.value.headerToolbar = val ? { left: 'prev,next today', center: 'title', right: '' } : false;
-    }
-);
+            switch (view.type) {
+                case 'timeGridWeek':
+                    newDate.setDate(newDate.getDate() - 7);
+                    break;
+                case 'dayGridMonth':
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    break;
+                case 'timeGridDay':
+                    newDate.setDate(newDate.getDate() - 1);
+                    break;
+                default:
+                    calendarApi.prev();
+                    return;
+            }
 
-// ⚡ Watcher pour suivre les changements de currentView
-watch(
-    () => props.currentView,
-    (newView) => {
-        if (calendarRef.value) {
-            calendarRef.value.getApi().changeView(newView);
+            calendarApi.gotoDate(newDate);
+        },
+
+        // Naviguer vers la période suivante
+        navigateNext() {
+            if (!calendarRef.value) return;
+            const calendarApi = calendarRef.value.getApi();
+            const view = calendarApi.view;
+
+            let newDate = new Date(view.currentStart);
+
+            switch (view.type) {
+                case 'timeGridWeek':
+                    newDate.setDate(newDate.getDate() + 7);
+                    break;
+                case 'dayGridMonth':
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    break;
+                case 'timeGridDay':
+                    newDate.setDate(newDate.getDate() + 1);
+                    break;
+                default:
+                    calendarApi.next();
+                    return;
+            }
+
+            calendarApi.gotoDate(newDate);
+        },
+
+        // Naviguer vers une date spécifique.
+        gotoDate(date) {
+            if (calendarRef.value) {
+                calendarRef.value.getApi().gotoDate(date);
+            }
+        },
+    });
+
+    const calendarRef = ref(null); // <-- référence du calendrier
+    const optionCal = ref({
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+        initialView: props.currentView,
+        timeZone: 'local', // important !
+        firstDay: 0,
+        locale: calendarLocales[locale.value],
+        height: '100%',
+        headerToolbar: props.showHeader ? { left: 'prev,next today', center: 'title', right: '' } : false,
+        datesSet: (info) => {
+            const currentDate = info.view.currentStart;
+            const month = currentDate.getMonth() + 1;
+            const year = currentDate.getFullYear();
+            emit('month-changed', { month, year });
+
+            const formattedMonthYear = currentDate.toLocaleDateString(locale.value, {
+                month: 'long', // "janvier", "February", etc.
+                year: 'numeric' // "2025"
+            });
+
+            emit('CurrentMonthYear', formattedMonthYear);
+        },
+        dayHeaderContent: (arg) => {
+            const dayNumber = arg.date.getDate(); // 15, 16...
+            const viewType = arg.view.type; 
+
+            const showDayNumber = viewType === 'timeGridDay'
+
+            return {
+                html: `
+                    <div class="flex flex-col items-center">
+                      <span class="font-medium mb-2 uppercase">${arg.text}</span>
+                      ${showDayNumber
+                        ? `<span class="text-sm text-gray-500">${dayNumber}</span>`
+                        : ''
+                    }
+                    </div>
+                         `
+            };
+        },
+        events: datesToEvents(props.datesService)
+    });
+
+    // Mettre à jour optionCal.events quand datesService change
+    watch(
+        () => props.datesService,
+        (newDates) => {
+            optionCal.value = {
+                ...optionCal.value,
+                events: datesToEvents(newDates)
+            };
+        },
+        { immediate: true }
+    );
+
+    // Mettre à jour optionCal.headerToolbar quand showHeader change
+    watch(
+        () => props.showHeader,
+        (val) => {
+            optionCal.value.headerToolbar = val ? { left: 'prev,next today', center: 'title', right: '' } : false;
         }
-    },
-    { immediate: true }
-);
+    );
 
-function datesToEvents(dates) {
-    if (!dates) return [];
-    return dates.map((dateStr) => ({
-        date: dateStr
-    }));
-}
+    // ⚡ Watcher pour suivre les changements de currentView
+    watch(
+        () => props.currentView,
+        (newView) => {
+            if (calendarRef.value) {
+                calendarRef.value.getApi().changeView(newView);
+            }
+        },
+        { immediate: true }
+    );
+
+    function datesToEvents(dates) {
+        if (!dates) return [];
+        return dates.map((dateStr) => ({
+            date: dateStr
+        }));
+    }
+    watch(locale, (newLocale) => {
+        if (!calendarRef.value) return;
+
+        const api = calendarRef.value.getApi();
+
+        api.destroy();
+
+        nextTick(() => {
+            api.render();
+            api.setOption('locale', calendarLocales[newLocale]);
+        });
+    });
+
 </script>
 
 <template>
