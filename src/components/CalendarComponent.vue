@@ -110,7 +110,7 @@
         },
         dayHeaderContent: (arg) => {
             const dayNumber = arg.date.getDate(); // 15, 16...
-            const viewType = arg.view.type; 
+            const viewType = arg.view.type;
 
             const showDayNumber = viewType === 'timeGridDay'
 
@@ -192,3 +192,23 @@
         </FullCalendar>
     </div>
 </template>
+
+<style>
+    .fc-day-today .fc-daygrid-day-bg {
+        @apply border-2 border-primary rounded-lg;
+    }
+
+    .fc-day-today,
+    .fc-day-today .fc-daygrid-day-bg,
+    .fc-day-today .fc-daygrid-day-frame {
+        background: transparent !important; /* supprime tout fond */
+        box-shadow: none !important; /* supprime éventuels ombrages */
+    }
+
+        .fc-day-today .fc-daygrid-day-number {
+            @apply bg-primary text-white p-1 w-6 h-6 flex items-center justify-center rounded-full;
+        }
+
+
+</style>
+
