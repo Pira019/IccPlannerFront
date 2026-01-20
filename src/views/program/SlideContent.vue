@@ -1,3 +1,16 @@
+<script setup>
+import { ref } from 'vue';
+
+const selectedCity = ref();
+const cities = ref([
+    { name: 'New York', code: 'NY' },
+    { name: 'Rome', code: 'RM' },
+    { name: 'London', code: 'LDN' },
+    { name: 'Istanbul', code: 'IST' },
+    { name: 'Paris', code: 'PRS' }
+]);
+</script>
+
 <template>
     <Accordion :value="['0']" multiple>
         <AccordionPanel value="0">
@@ -18,19 +31,6 @@
         </AccordionPanel>
     </Accordion>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-
-const selectedCity = ref();
-const cities = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
-</script>
 
 <style scoped>
 .p-listbox {

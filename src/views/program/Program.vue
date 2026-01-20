@@ -1,5 +1,5 @@
 <template>
-    <PageComponent :title-page="$t('Programs')">
+    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd">
         <div class="flex flex-col h-screen">
             <!-- Barre d'outils -->
             <div class="border-b border-gray-200 p-4 flex items-center justify-between flex-wrap">
@@ -56,7 +56,7 @@
             </div>
         </div>
     </PageComponent>
-    <Dialog>
+    <Dialog :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" v-model:visible="dialogVisible" :modal="true">
         <StepperPrg/>
     </Dialog>
 </template>
@@ -76,6 +76,7 @@
     const panelOpen = ref(false);
 
     const isMobile = ref(false);
+    const displayAddPrg = ref(false);
 
     const view = ref('dayGridMonth');
 
@@ -93,6 +94,11 @@
     }));
 
     // Methods
+
+    function openAdd(payload) { 
+        displayAddPrg.value = true;
+    }
+
     const onMonthYearChanged = (formattedMonthYear) => {
         currentMonthYear.value = formattedMonthYear;
     };
@@ -117,6 +123,19 @@
         const calView = calendar.value.$refs.calendarRef.getApi().view;
         selectedDate.value = calView.currentStart;
     };
+
+    // Dialog control
+    const dialogVisible = computed({
+        get() {
+            return displayAddPrg.value;
+        },
+        set(val) {
+            // fermer le dialog → on reset les deux flags si nécessaire
+            if (!val) {
+                displayAddPrg.value = false; 
+            }
+        }
+    });
 
     // Watch sur selectedDate pour mettre à jour FullCalendar
     watch(selectedDate, (newDate) => {
