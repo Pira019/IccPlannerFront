@@ -11,7 +11,7 @@
                     </div>
                     <Button :label="t('liToDay')" @click="selectToday" severity="Primary" class="text-lg font-medium" variant="outlined" rounded />
                     <div >
-                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" /> 
+                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
                         <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
                         <!-- Texte date -->
@@ -56,12 +56,16 @@
             </div>
         </div>
     </PageComponent>
+    <Dialog>
+        <StepperPrg/>
+    </Dialog>
 </template>
 
 <script setup>
     import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
     import { useI18n } from 'vue-i18n';
     import SlideContent from './SlideContent.vue';
+    import StepperPrg from './StepperPrg.vue';
 
     const { t } = useI18n();
 
@@ -90,7 +94,7 @@
 
     // Methods
     const onMonthYearChanged = (formattedMonthYear) => {
-        currentMonthYear.value = formattedMonthYear; 
+        currentMonthYear.value = formattedMonthYear;
     };
 
     const checkScreen = () => {
