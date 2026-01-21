@@ -56,8 +56,8 @@
             </div>
         </div>
     </PageComponent>
-    <Dialog :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" v-model:visible="dialogVisible" :modal="true">
-        <StepperPrg @closeDialog="() => (displayAddPrg = false)" />
+    <Dialog  v-model:visible="dialogVisible" header="bhbhh" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
+        <StepperPrg @closeModal="() => (displayAddPrg = false)" />
     </Dialog>
 </template>
 

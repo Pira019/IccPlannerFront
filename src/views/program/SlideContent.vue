@@ -16,8 +16,23 @@ const cities = ref([
         <AccordionPanel value="0">
             <AccordionHeader>Liste de programmes</AccordionHeader>
             <AccordionContent>
-                <div>
-                    <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" />
+                <div class="flex items-center w-full gap-2">
+                    <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" >
+                        <template #option="slotProps">
+                        <div class="flex items-center justify-between w-full">
+                            <!-- Nom de l'élément -->
+                            <span>{{ slotProps.option.name }}</span>
+                            <div>
+                                <Button
+                                    type="button"
+                                    icon="pi pi-ellipsis-v"
+                                    class="p-button-text p-button-rounded"
+                                />
+                                <!-- Menu spécifique à l'élément -->
+                            </div>
+                        </div>
+                        </template>
+                    </Listbox>
                 </div>
             </AccordionContent>
         </AccordionPanel>

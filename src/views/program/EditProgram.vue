@@ -3,23 +3,17 @@ import ProgramService from '@/service/ProgramService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref } from 'vue';
-import { boolean, z } from 'zod';
+import { z } from 'zod';
 
 
 const loading = ref(false);
+const formRef = ref(null); // ref vers le Form
 
-const emit = defineEmits(['saved', 'closeModal']);
-const props = defineProps({
-    showBtn: {
-        type: boolean,
-        default: true
-    }
-});
+const emit = defineEmits(['saved', 'closeModal','next']);
 
 const { handleAsyncError } = useHandleAsyncError();
 
 const errorReq = ref(null);
-const success = ref(false);
 
 const resolver = zodResolver(
     z.object({
@@ -32,6 +26,7 @@ const resolver = zodResolver(
 const onFormSubmit = async ({ valid, values }) => {
     if (valid) {
         await editPrg(values);
+         emit('next');
     }
 };
 
@@ -49,33 +44,27 @@ async function editPrg(newPrg) {
     );
     errorReq.value = error;
 
-    if (errorReq.value == null) 
+    if (errorReq.value == null)
     {
         emit('saved', {
             programId: result.programId
         });
     }
 }
-
-defineExpose({
-    submit: editPrg,
-    isSubmitting: loading
-});
-
 </script>
 
 <template>
     <Fluid>
         <Form :initialValues :resolver @submit="onFormSubmit">
-            <div class="flex flex-row gap-6 mb-5">
-                <FloatLabel variant="on">
+            <div class="flex flex-col sm:flex-row gap-6 mb-5">
+                <FloatLabel variant="on" class="flex-1 w-full">
                     <FormField v-slot="$field" name="name" class="flex-auto">
-                        <label for="name" class="block font-semibold mb-2">{{ $t('prgName') }} *</label>
+                        <label class="block font-semibold mb-2">{{ $t('prgName') }} *</label>
                         <InputText v-keyfilter.alphanum maxlength="55" placeholder="Ex.: Culte dominical" />
                         <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
                     </FormField>
                 </FloatLabel>
-                <FloatLabel variant="on">
+                <FloatLabel variant="on" class="flex-1 w-full">
                     <FormField v-slot="$field" name="shortName" class="flex-auto">
                         <label for="shortName" class="block font-semibold mb-2">{{ $t('ShortName') }} *</label>
                         <InputText maxlength="15" placeholder="Ex.: CD" v-keyfilter.alphanum />
@@ -95,7 +84,7 @@ defineExpose({
             <div class="flex flex-col gap-2">
                 <ResponseComponent :error="errorReq"/>
             </div>
-            <div class="flex justify-end mt-5" v-if="showBtn">
+            <div class="flex justify-end mt-5">
                 <div class="flex gap-2">
                     <Button type="button" severity="danger" size="small" @click="closeDialog" outlined class="w-1/2" :label="$t('Cancel')" icon="pi pi-times" />
                     <Button type="submit" size="small" :label="$t('Save')" :loading="loading" icon="pi pi-save" />
