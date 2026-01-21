@@ -1,5 +1,31 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
 import EditProgram from './EditProgram.vue';
+
+const emit = defineEmits(['closeModal']);
+
+const editProgramRef = ref(null);
+const programId = ref(null);
+
+const isSubmitting = computed(() => editProgramRef.value?.isSubmitting?.value ?? false);
+
+function submitProgram() {
+    editProgramRef.value?.submit();
+}
+
+function onProgramSaved(payload: { programId: string }) {
+    programId.value = payload.programId;
+    activateCallback('2');
+}
+
+function closeDialog() {
+    emit('closeDialog');
+}
+
+watch(
+    () => editProgramRef.value?.isSubmitting?.value,
+    (val) => console.log('isSubmitting changed:', val)
+)
 </script>
 
 <template>
@@ -12,11 +38,12 @@ import EditProgram from './EditProgram.vue';
             </StepList>
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1">
-                    <div class="flex flex-col h-48">
-                        <EditProgram :showBtn="false" />
+                    <div class="flex flex-col">
+                        <EditProgram :showBtn="false" ref="editProgramRef" />
                     </div>
-                    <div class="flex pt-6 justify-end">
-                        <Button label="Next" icon="pi pi-arrow-right" @click="activateCallback('2')" />
+                    <div class="flex pt-6 gap-2 justify-end">
+                        <Button type="button" severity="danger" size="small" @click="closeDialog" outlined :label="$t('Cancel')" icon="pi pi-times" />
+                        <Button type="submit" size="small" @click="submitProgram" :label="$t('Save')" :loading="isSubmitting" icon="pi pi-save" @saved="onProgramSaved" />
                     </div>
                 </StepPanel>
                 <StepPanel v-slot="{ activateCallback }" value="2">

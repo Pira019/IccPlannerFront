@@ -10,7 +10,7 @@
                         <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
                     </div>
                     <Button :label="t('liToDay')" @click="selectToday" severity="Primary" class="text-lg font-medium" variant="outlined" rounded />
-                    <div >
+                    <div>
                         <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
                         <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
@@ -34,7 +34,7 @@
                     ]"
                 >
                     <div>
-                        <DatePicker inline class="w-full" v-model="selectedDate"/>
+                        <DatePicker inline class="w-full" v-model="selectedDate" />
                     </div>
                     <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
                         <!-- Mobile : Drawer -->
@@ -57,99 +57,99 @@
         </div>
     </PageComponent>
     <Dialog :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" v-model:visible="dialogVisible" :modal="true">
-        <StepperPrg/>
+        <StepperPrg @closeDialog="() => (displayAddPrg = false)" />
     </Dialog>
 </template>
 
 <script setup>
-    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-    import { useI18n } from 'vue-i18n';
-    import SlideContent from './SlideContent.vue';
-    import StepperPrg from './StepperPrg.vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import SlideContent from './SlideContent.vue';
+import StepperPrg from './StepperPrg.vue';
 
-    const { t } = useI18n();
+const { t } = useI18n();
 
-    const selectedDate = ref(new Date());
-    const currentMonthYear = ref('');
-    const calendar = ref(null);
+const selectedDate = ref(new Date());
+const currentMonthYear = ref('');
+const calendar = ref(null);
 
-    const panelOpen = ref(false);
+const panelOpen = ref(false);
 
-    const isMobile = ref(false);
-    const displayAddPrg = ref(false);
+const isMobile = ref(false);
+const displayAddPrg = ref(false);
 
-    const view = ref('dayGridMonth');
+const view = ref('dayGridMonth');
 
-    const views = [
-        { key: 'dayGridMonth', label: 'liMonth' },
-        { key: 'timeGridWeek', label: 'liWeek' },
-        { key: 'timeGridDay', label: 'liDay' }
-    ];
+const views = [
+    { key: 'dayGridMonth', label: 'liMonth' },
+    { key: 'timeGridWeek', label: 'liWeek' },
+    { key: 'timeGridDay', label: 'liDay' }
+];
 
-    const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
+const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
 
-    const viewItems = views.map((v) => ({
-        label: t(v.label),
-        command: () => (view.value = v.key)
-    }));
+const viewItems = views.map((v) => ({
+    label: t(v.label),
+    command: () => (view.value = v.key)
+}));
 
-    // Methods
+// Methods
 
-    function openAdd(payload) { 
-        displayAddPrg.value = true;
+function openAdd(payload) {
+    displayAddPrg.value = true;
+}
+
+const onMonthYearChanged = (formattedMonthYear) => {
+    currentMonthYear.value = formattedMonthYear;
+};
+
+const checkScreen = () => {
+    isMobile.value = window.innerWidth < 640;
+};
+
+// Méthode pour sélectionner aujourd'hui
+const selectToday = () => {
+    selectedDate.value = new Date(); // met à jour la date sélectionnée
+};
+
+const prev = () => {
+    calendar.value.navigatePrev();
+    const calView = calendar.value.$refs.calendarRef.getApi().view;
+    selectedDate.value = calView.currentStart;
+};
+
+const next = () => {
+    calendar.value.navigateNext();
+    const calView = calendar.value.$refs.calendarRef.getApi().view;
+    selectedDate.value = calView.currentStart;
+};
+
+// Dialog control
+const dialogVisible = computed({
+    get() {
+        return displayAddPrg.value;
+    },
+    set(val) {
+        // fermer le dialog → on reset les deux flags si nécessaire
+        if (!val) {
+            displayAddPrg.value = false;
+        }
     }
+});
 
-    const onMonthYearChanged = (formattedMonthYear) => {
-        currentMonthYear.value = formattedMonthYear;
-    };
+// Watch sur selectedDate pour mettre à jour FullCalendar
+watch(selectedDate, (newDate) => {
+    if (calendar.value && newDate) {
+        calendar.value.gotoDate(newDate);
+    }
+});
 
-    const checkScreen = () => {
-        isMobile.value = window.innerWidth < 640;
-    };
+onMounted(() => {
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+});
 
-    // Méthode pour sélectionner aujourd'hui
-    const selectToday = () => {
-        selectedDate.value = new Date(); // met à jour la date sélectionnée
-    };
-
-    const prev = () => {
-        calendar.value.navigatePrev();
-        const calView = calendar.value.$refs.calendarRef.getApi().view;
-        selectedDate.value = calView.currentStart;
-    };
-
-    const next = () => {
-        calendar.value.navigateNext();
-        const calView = calendar.value.$refs.calendarRef.getApi().view;
-        selectedDate.value = calView.currentStart;
-    };
-
-    // Dialog control
-    const dialogVisible = computed({
-        get() {
-            return displayAddPrg.value;
-        },
-        set(val) {
-            // fermer le dialog → on reset les deux flags si nécessaire
-            if (!val) {
-                displayAddPrg.value = false; 
-            }
-        }
-    });
-
-    // Watch sur selectedDate pour mettre à jour FullCalendar
-    watch(selectedDate, (newDate) => {
-        if (calendar.value && newDate) {
-            calendar.value.gotoDate(newDate);
-        }
-    });
-
-    onMounted(() => {
-        checkScreen();
-        window.addEventListener('resize', checkScreen);
-    });
-
-    onUnmounted(() => {
-        window.removeEventListener('resize', checkScreen);
-    });
+onUnmounted(() => {
+    window.removeEventListener('resize', checkScreen);
+});
 </script>
