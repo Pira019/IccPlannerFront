@@ -2,30 +2,31 @@
     <PageComponent :title-page="$t('Programs')" @btn-add="openAdd">
         <div class="flex flex-col h-screen">
             <!-- Barre d'outils -->
-            <div class="border-b border-gray-200 p-4 flex items-center justify-between flex-wrap">
-                <div class="flex items-center gap-2">
+            <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     <!-- Hamburger mobile -->
 
-                    <div class="sm:hidden">
+                    <div class="sm:hidden self-start">
                         <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
                     </div>
-                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary" class="text-lg font-medium" variant="outlined" rounded />
-                    <div>
+                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary"
+                    class="text-sm sm:text-base md:text-lg font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 w-full sm:w-auto" variant="outlined" rounded />
+                    <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-0 flex-wrap">
                         <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
                         <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
                         <!-- Texte date -->
-                        <span class="ml-2 text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
+                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 flex-wrap mt-2 sm:mt-2">
+                <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto mt-2 sm:mt-0 justify-start sm:justify-end">
                     <SplitButton :label="t(currentViewLabel)" icon="pi pi-calendar" outlined class="hidden sm:flex" :model="viewItems" />
                 </div>
             </div>
 
             <!-- Contenu principal -->
-            <div class="flex flex-col sm:flex-row w-full h-full overflow-hidden">
+            <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
                 <!-- Sidebar -->
                 <div
                     :class="[
@@ -50,14 +51,15 @@
                 </div>
 
                 <!-- Calendrier principal -->
-                <div class="flex-1 flex flex-col overflow-auto">
-                    <CalendarComponent ref="calendar" :showHeader="false" @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view" class="flex-1" />
+                <div class="flex-1 flex flex-col overflow-auto min-h-0" >
+                    <CalendarComponent ref="calendar" :showHeader="false" @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
+                    class="flex-1 min-h-0" />
                 </div>
             </div>
         </div>
     </PageComponent>
-    <Dialog  v-model:visible="dialogVisible" header="bhbhh" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
-        <StepperPrg @closeModal="() => (displayAddPrg = false)" />
+    <Dialog  v-model:visible="dialogVisible" :header="modalTitle" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
+        <StepperPrg @closeModal="() => (displayAddPrg = false)" @step-title="modalTitle=$event" />
     </Dialog>
 </template>
 
@@ -72,6 +74,7 @@ const { t } = useI18n();
 const selectedDate = ref(new Date());
 const currentMonthYear = ref('');
 const calendar = ref(null);
+const modalTitle = ref(null);
 
 const panelOpen = ref(false);
 

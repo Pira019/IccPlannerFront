@@ -136,10 +136,10 @@ watch(
                 <ResponseComponent :error="errorMessage" />
             </div>
             <div class="flex items-center mt-5">
-                <slot name="btnPreview">tete</slot>
-                <div class="ml-auto flex gap-2">
-                    <Button variant="text" @click="$emit('closeModal')" outlined class="mr-2 mb-2" :label="$t('Cancel')" icon="pi pi-times" />
-                    <Button type="submit" size="small" class="mr-2 mb-2" :label="$t('Save')" :loading="isSubmitting" icon="pi pi-save" />
+                <slot name="btnPreview"/>
+                <div class="flex gap-2 justify-end w-full overflow-hidden">
+                    <Button variant="text" size="small"  @click="$emit('closeModal')" outlined class="mr-2 mb-2 truncate" :label="$t('Cancel')" icon="pi pi-times" />
+                    <Button type="submit" size="small" class="mr-2 mb-2 truncate" :label="$t('Save')" :loading="isSubmitting" icon="pi pi-save" />
                 </div>
             </div>
         </div>

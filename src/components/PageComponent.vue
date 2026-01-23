@@ -12,7 +12,7 @@ const props = defineProps({
             <template #btn-add v-if="showAddBtn">
                 <Button class="text-[clamp(0.875rem,2vw,1.25rem)]
                                px-[clamp(0.75rem,2vw,1rem)]
-                               py-[clamp(0.5rem,1vw,0.75rem)] rounded-md" type="button" :label="$t('Add')" icon="pi pi-plus" @click="$emit('btn-add')" />
+                               py-[clamp(0.5rem,1vw,0.75rem)] rounded-md  flex items-center justify-center" type="button" :label="$t('Add')" icon="pi pi-plus" @click="$emit('btn-add')" />
             </template>
         </HeaderComponent>
         <slot></slot>

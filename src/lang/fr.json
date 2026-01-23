@@ -43,6 +43,13 @@
     "liWeek": "Semaine",
     "liDay": "Jour",
 
+    "msgEdtPrg": "Le programme a été mis à jour avec succès!",
+    "liBtnNext": "Suivant",
+
+    "liModalAddPrg" : "Ajouter le programme",
+    "liModalAdDetail" : "Ajouter les détails",
+    "liModalAddService" : "Ajouter les services",
+
     "liGestRole": "Gestion des rôles",
     "liAdmin": "Administration",
     "liRole": "Rôle",

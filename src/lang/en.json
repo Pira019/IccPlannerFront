@@ -37,6 +37,13 @@
 
     "msgAvailability": "Your availability has been successfully added.",
 
+    "liModalAddPrg": "Add the program",
+    "liModalAdDetail": "Add details",
+    "liModalAddService": "Add services",
+
+    "msgEdtPrg": "The program has been successfully updated!",
+    "liBtnNext": "Next",
+
     "liAdmin": "Administration",
     "liGestRole": "Role Management",
     "liRole": "Role",
