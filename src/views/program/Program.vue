@@ -1,5 +1,5 @@
 <template>
-    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd">
+    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
         <div class="flex flex-col h-screen">
             <!-- Barre d'outils -->
             <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -64,10 +64,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import SlideContent from './SlideContent.vue';
-import StepperPrg from './StepperPrg.vue';
+    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+    import { useI18n } from 'vue-i18n';
+    import SlideContent from './SlideContent.vue';
+    import StepperPrg from './StepperPrg.vue';
+    import { hasPermission } from '@/utils/hasPermission';
+    import { Permission } from '@/model/Enum/Permission'; 
 
 const { t } = useI18n();
 
@@ -79,7 +81,11 @@ const modalTitle = ref(null);
 const panelOpen = ref(false);
 
 const isMobile = ref(false);
-const displayAddPrg = ref(false);
+    const displayAddPrg = ref(false);
+
+const canAddAccess = computed(() =>
+    hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)  
+);
 
 const view = ref('dayGridMonth');
 

@@ -3,21 +3,22 @@ import { useRouter } from "vue-router"
 import { checkRequiredClaims } from "./claims"
 
  export function filterMenuByPermissions(menuItems) {
-    const router = useRouter()
+     const router = useRouter()
+     const auth = useAuthStore();
     
     function filterMenuItem(item) {
         // Si l'item a un lien (to), vérifier ses permissions
         if (item.to) {
             const route = router.resolve(item.to)
             const routeMeta = route.meta
-            
-            // Vérifier si la route nécessite une authentification
-            if (routeMeta?.requiresAuth && !useAuthStore().isAuthenticated) {
-                return null // Exclure si pas authentifié
+
+            // Vérifier l'authentification
+            if (routeMeta?.requiresAuth && !auth.isAuthenticated) {
+                return null; // Exclure si pas authentifié
             }
             
             // Vérifier les claims requis
-            if (!routeMeta?.requiredClaim) {
+            if (routeMeta?.requiredClaim) {
                 if (!checkRequiredClaims(routeMeta.requiredClaim)) {
                     return null // Exclure si pas les bonnes permissions
                 }

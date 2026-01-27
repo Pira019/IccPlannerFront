@@ -11,17 +11,18 @@ const router = createRouter({
         {
             path: '/',
             component: AppLayout,
+            meta: { requiresAuth: true},
             children: [
                 {
                     path: '/',
-                    name: 'dashboard',
-                    meta: { requiresAuth: true , requiredClaim:{}},
-                    component: () => import('@/views/Dashboard.vue')
+                    name: 'dashboard', 
+                    component: () => import('@/views/Dashboard.vue'), 
                 },
                 {
                     path: '/ministry',
                     name: 'ministry',
                     component: () => import('@/views/ministry/Ministry.vue')
+
                 },
                 {
                     path: '/profil',
@@ -30,26 +31,22 @@ const router = createRouter({
                 },
                 {
                     path: '/members',
-                    name: 'members',
-                    meta: { requiresAuth: true },
+                    name: 'members', 
                     component: () => import('@/views/pages/Profil.vue')
                 },
                 {
-                    path: '/departments',
-                    meta: { requiresAuth: true, requiredClaim: {} },
+                    path: '/departments', 
                     children: [
                         {
                         path:'',
                         name: 'department-list',
-                        component: () => import('@/views/department/Department.vue'),
-                        meta: { requiresAuth: true, requiredClaim: {} },
+                        component: () => import('@/views/department/Department.vue'), 
                         },
                         {
                         path: ':id',
                         name: 'department-details',
                         props: true,
-                        component: () => import('@/views/department/DepartmentDetails.vue'),
-                        meta: { requiresAuth: true, requiredClaim: {} },
+                        component: () => import('@/views/department/DepartmentDetails.vue'), 
                         }
                     ]
                 },
@@ -57,7 +54,7 @@ const router = createRouter({
                 {
                     path: '/programs',
                     name: 'programs',
-                    component: () => import('@/views/program/Program.vue')
+                    component: () => import('@/views/program/Program.vue'), 
                 },
                 {
                     path: '/availability',
@@ -71,11 +68,7 @@ const router = createRouter({
                 },
                 {
                     path: '/role-management',
-                    name: 'role-management',
-                    meta: { requiresAuth: true, requiredClaim: [ { key: Role.Roles , value: [ Role.Admin ] },
-                                                                 { key: Permission.Permissions, value: [] }
-                                                                ] },
-
+                    name: 'role-management', 
                     component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
@@ -109,16 +102,17 @@ router.beforeEach( async (to, from, next) => {
 
     const auth = useAuthStore();
      // Vérifier si on a besoin d'authentification pour cette route
-    const requiresAuth = to.meta?.requiresAuth
-    const requiredClaim = to.meta?.requiredClaim
+    const requiresAuth = to.meta?.requiresAuth;
+    const requiredClaim = to.meta?.requiredClaim;
 
+    // Si la route n'a besoin ni d'auth ni de claims → continuer
     if (!requiresAuth && !requiredClaim ) {
       return next()
     }
 
-     if (!auth.isFetchingClaims  && !auth.claimsLoaded && !auth.isAuthenticated ) {
+     if (!auth.isFetchingClaims  && !auth.claimsLoaded ) {
 
-             await auth.authUser();
+         await auth.authUser(); 
     }
 
     if (auth.authError) {
