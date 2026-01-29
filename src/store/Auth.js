@@ -15,10 +15,10 @@ export const useAuthStore = defineStore('auth', {
 
      saveUserClaims(claims) {
       this.isAuthenticated = true
-      this.claims.roles = Array.isArray(claims?.roles) ? [...claims.roles] : [];
-      this.claims.permissions = Array.isArray(claims?.permissions) ? [...claims.permissions] : []; 
+      this.claims.roles = normalizeClaimsArray(claims?.roles);
+      this.claims.permissions = normalizeClaimsArray(claims?.permissions);
       this.claimsLoaded = true;
-      this.authError = false; 
+      this.authError = false;
     },
 
     /* Permet de récupérer les permissions d'un utilisateur */
@@ -27,7 +27,7 @@ export const useAuthStore = defineStore('auth', {
           this.authError = false;
 
         try {
-       
+
         const authService = await AccountService.claims()
 
         if (authService.status === 200) {
@@ -40,7 +40,7 @@ export const useAuthStore = defineStore('auth', {
             this.authError = true;
         }
     } catch (error)
-    { 
+    {
         if (error.response?.status === 401) {
            // Token expiré -> logout
             this.claims = { roles: [], permissions: [] };
@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
         }
           }
         finally {
-            this.isFetchingClaims = false; 
+            this.isFetchingClaims = false;
         }
     },
 
@@ -74,3 +74,21 @@ export const useAuthStore = defineStore('auth', {
   }
 })
 
+function normalizeClaimsArray(arr) {
+    if (!Array.isArray(arr)) return [];
+
+    return arr.flatMap(item => {
+        // Cas 1 : string JSON → ["ADMIN"]
+        if (typeof item === "string") {
+            try {
+                const parsed = JSON.parse(item);
+                return Array.isArray(parsed) ? parsed : [item];
+            } catch {
+                return [item];
+            }
+        }
+
+        // Cas 2 : déjà correct
+        return item;
+    });
+}
