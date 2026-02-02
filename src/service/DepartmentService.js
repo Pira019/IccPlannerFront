@@ -15,6 +15,11 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.post(this.authBaseUrl, payload)
     }
 
+    static async Departprogram(payload) {
+         const endpoint = `${this.authBaseUrl}programs`
+        return await this.axiosInstance.post(endpoint, payload)
+    }
+
     static async getById(idDept)
     {
         const endpoint = `${this.authBaseUrl}${idDept}`
@@ -31,7 +36,16 @@ export default class DepartmentService extends BaseService
      */
     static async get(pageNumber,pageSize)
     {
-        var endPoint = `${this.authBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    const params = new URLSearchParams();
+    if (pageNumber !== undefined) params.append('pageNumber', pageNumber);
+    if (pageSize !== undefined) params.append('pageSize', pageSize);
+
+    const endPoint = params.toString()
+        ? `${this.authBaseUrl}?${params.toString()}`
+        : this.authBaseUrl;
+
+    const response = await this.axiosInstance.get(endPoint);
+
         return await this.axiosInstance.get(endPoint)
     }
 

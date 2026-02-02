@@ -45,6 +45,7 @@
 
     "msgEdtPrg": "Le programme a été mis à jour avec succès!",
     "liBtnNext": "Suivant",
+    "liBtnBack": "Précédent",
 
     "liModalAddPrg" : "Ajouter le programme",
     "liModalAdDetail" : "Ajouter les détails",
@@ -63,6 +64,17 @@
     "liPermission": "Permissions",
     "liProfil": "Mon profil",
     "liDepart": "Départements",
+
+    "liDescRecurrent": "Un programme récurrent, c’est une activité qui se répète chaque semaine. Par exemple, le culte de célébration ou l’atmosphère de prière prophétique qui ont lieu régulièrement.",
+    "liDescNonRecurrent": "Un programme non récurrent, c’est une activité qui n’a lieu qu’une seule fois ou de façon exceptionnelle. Par exemple, un mariage, un baptême ou un événement spécial organisé pour une occasion particulière.",
+    "liRecurrent": "Récurrent",
+    "liNonRecurrent": "Non récurrent",
+    "liDays": "Jours",
+    "liDateStart": "Date de début",
+    "liDateEnd": "Date de fin",
+    "liDates": "Dates",
+
+    "endDateMustBeAfterStartDate": "La date de fin doit être supérieure ou égale à la date de début.",
 
     "lblDeleteMinistry": "Supprimer le ministère",
     "liToDay": "Aujourd'hui",
@@ -96,6 +108,8 @@
 
     "msgAvailability": "Votre disponibilité a été ajoutée avec succès.",
     "msgUnAvailability": "Mise à jour effectuée – vous n’êtes plus disponible pour ce service.",
+
+    "msgDeptPrgSuccess": "Le(s) département(s) ont été ajouté(s) avec succès au programme.",
 
     "msgAddPrg": "Le programme a été ajoutée avec succès.",
 
@@ -188,5 +202,13 @@
             "inclusive": "La date doit être antérieure ou égale à {maximum}",
             "notInclusive": "La date doit être antérieure à {maximum}"
         }
-    }
+    },
+
+  "liMonday": "Lundi",
+  "liTuesday": "Mardi",
+  "liWednesday": "Mercredi",
+  "liThursday": "Jeudi",
+  "liFriday": "Vendredi",
+  "liSaturday": "Samedi",
+  "liSunday": "Dimanche"
 }

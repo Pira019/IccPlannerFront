@@ -59,7 +59,6 @@ watch(activeStep, () => {
             <StepList ref="stepListRef">
                 <Step value="1">{{ $t('liModalAddPrg') }}</Step>
                 <Step value="2">{{ $t('liModalAdDetail') }}</Step>
-                <Step value="3">{{ $t('liModalAddService') }}</Step>
             </StepList>
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1">
@@ -75,19 +74,11 @@ watch(activeStep, () => {
                 </StepPanel>
                 <StepPanel v-slot="{ activateCallback }" value="2">
                     <div class="flex flex-col">
-                        <DetailPrg @closeModal="closeDialog">
+                        <DetailPrg @closeModal="closeDialog" :prgId="programId">
                             <template #btnPreview>
-                                 <Button label="Back" size="small" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                                 <Button :label="$t('liBtnBack')" size="small" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
                             </template>
                         </DetailPrg>
-                    </div>
-                </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="3">
-                    <div class="flex flex-col h-48">
-                        <div class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">Content III</div>
-                    </div>
-                    <div class="pt-6">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
                     </div>
                 </StepPanel>
             </StepPanels>
