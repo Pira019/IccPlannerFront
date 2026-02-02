@@ -32,4 +32,9 @@ export default class ProgramService extends BaseService
         return await this.axiosInstance.post(endPoint,payload)
     }
 
+    static async EdtPrg(idPrg, payload)
+    {
+        const endPoint = `${this.authBaseUrl}${idPrg}`;
+        return await this.axiosInstance.put(endPoint,payload)
+    }
 }

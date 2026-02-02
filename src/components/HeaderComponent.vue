@@ -1,17 +1,9 @@
 <template>
-    <div className="card">
-        <div class="flex">
-            <div class="font-semibold text-xl mb-4 w-14">
-                <h1 class="text-primary">
-                    {{ titlePage }}
-                </h1>
-            </div>
-
-            <div class="w-32">
-                <button>dd</button>
-            </div>
-            
-        </div>
+    <div class="flex justify-between items-center">
+        <h1 class="text-[clamp(1.5rem,5vw,3rem)] font-semibold text-primary">
+            {{ titlePage }}
+        </h1>
+        <slot name="btn-add" />
     </div>
 </template>
 

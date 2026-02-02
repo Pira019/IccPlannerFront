@@ -5,9 +5,11 @@
     "Ministries": "Ministères",
     "Department": "Départements",
     "AddMinistry": "Ajouter un ministère",
+    "EditMinistry": "Modifier un ministère",
     "AddProgram": "Ajouter un programme",
     "UpdateProgram": "Modifier un programme",
     "Cancel": "Annuler",
+    "liclose": "Fermer",
     "Save": "Enregistrer",
     "MinistryExample": "COMMUNICATION, DATAS ET PRODUCTION AUDIOVISUELLE",
     "DepartmentExample": "Régie",
@@ -33,8 +35,21 @@
     "btnDel": "Supprimer",
     "btnUpdate": "Modifier",
     "prgName": "Nom du programme",
+    "liNoElement": "Aucun élément trouvé.",
 
     "msgSuccess": "L'action a été effectuée avec succès.",
+
+    "liMonth": "Mois",
+    "liWeek": "Semaine",
+    "liDay": "Jour",
+
+    "msgEdtPrg": "Le programme a été mis à jour avec succès!",
+    "liBtnNext": "Suivant",
+    "liBtnBack": "Précédent",
+
+    "liModalAddPrg" : "Ajouter le programme",
+    "liModalAdDetail" : "Ajouter les détails",
+    "liModalAddService" : "Ajouter les services",
 
     "liGestRole": "Gestion des rôles",
     "liAdmin": "Administration",
@@ -50,17 +65,40 @@
     "liProfil": "Mon profil",
     "liDepart": "Départements",
 
-     "liAjDepart": "Ajouter un département",
-     "liMjDepart" : "Modifier le département",
+    "liDescRecurrent": "Un programme récurrent, c’est une activité qui se répète chaque semaine. Par exemple, le culte de célébration ou l’atmosphère de prière prophétique qui ont lieu régulièrement.",
+    "liDescNonRecurrent": "Un programme non récurrent, c’est une activité qui n’a lieu qu’une seule fois ou de façon exceptionnelle. Par exemple, un mariage, un baptême ou un événement spécial organisé pour une occasion particulière.",
+    "liRecurrent": "Récurrent",
+    "liNonRecurrent": "Non récurrent",
+    "liDays": "Jours",
+    "liDateStart": "Date de début",
+    "liDateEnd": "Date de fin",
+    "liDates": "Dates",
 
+    "endDateMustBeAfterStartDate": "La date de fin doit être supérieure ou égale à la date de début.",
+
+    "lblDeleteMinistry": "Supprimer le ministère",
+    "liToDay": "Aujourd'hui",
+    "liMsgDel": "Êtes-vous sûr de vouloir effectuer cette action ?",
+
+    "liAjDepart": "Ajouter un département",
+    "liMjDepart": "Modifier le département",
+    "liDeptDel": "Supprimer le département",
+
+    "liDeptAddSuccess": "Le département a été ajouté avec succès.",
+    "liDeptEdtSuccess": "Le département a été mis à jour avec succès.",
     "_commentDepart": "Libellé du département",
     "liListDepart": "Liste des départements",
     "colDepartNam": "Nom du département",
     "colDepartResp": "Responsable",
-    "colDepartNbrMemb": "Nombre de membres",
+    "colDepartNbrMemb": "Nombre des Stars",
     "colDepartReunion": "Réunion",
+    "colName": "Nom",
+    "colDesc": "Description",
     "noDepart": "Aucun département trouvé.",
     "colDepartStat": "Statut",
+    "colNbrPrg": "Nombre de programmes",
+
+    "liDetail": "Voir le détail",
 
     "liOnlyMembersCanView": "Seuls les membres de ce département peuvent voir.",
 
@@ -70,6 +108,8 @@
 
     "msgAvailability": "Votre disponibilité a été ajoutée avec succès.",
     "msgUnAvailability": "Mise à jour effectuée – vous n’êtes plus disponible pour ce service.",
+
+    "msgDeptPrgSuccess": "Le(s) département(s) ont été ajouté(s) avec succès au programme.",
 
     "msgAddPrg": "Le programme a été ajoutée avec succès.",
 
@@ -162,5 +202,13 @@
             "inclusive": "La date doit être antérieure ou égale à {maximum}",
             "notInclusive": "La date doit être antérieure à {maximum}"
         }
-    }
+    },
+
+  "liMonday": "Lundi",
+  "liTuesday": "Mardi",
+  "liWednesday": "Mercredi",
+  "liThursday": "Jeudi",
+  "liFriday": "Vendredi",
+  "liSaturday": "Samedi",
+  "liSunday": "Dimanche"
 }

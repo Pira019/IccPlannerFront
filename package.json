@@ -10,9 +10,10 @@
         "coverage": "vitest run --coverage"
     },
     "dependencies": {
-        "@fullcalendar/core": "^6.1.17",
+        "@fullcalendar/core": "^6.1.20",
         "@fullcalendar/daygrid": "^6.1.17",
         "@fullcalendar/interaction": "^6.1.17",
+        "@fullcalendar/timegrid": "^6.1.20",
         "@fullcalendar/vue3": "^6.1.17",
         "@primeuix/themes": "^1.0.0",
         "@primevue/forms": "^4.3.6",

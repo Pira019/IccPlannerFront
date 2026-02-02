@@ -4,6 +4,7 @@
     "Add": "Add",
     "AddMinistry": "Add ministry",
     "AddProgram": "Add program",
+    "EditMinistry": "Edit a ministry",
     "Ministries": "Ministries",
     "UpdateProgram": "Update a program",
     "Department": "Department",
@@ -36,6 +37,25 @@
 
     "msgAvailability": "Your availability has been successfully added.",
 
+    "liModalAddPrg": "Add the program",
+    "liModalAdDetail": "Add details",
+    "liModalAddService": "Add services",
+
+    "msgEdtPrg": "The program has been successfully updated!",
+    "liBtnNext": "Next",
+    "liBtnBack": "Back",
+
+    "liDescRecurrent": "A recurring program is an activity that happens every week. For example, the celebration service or the prophetic prayer gathering that take place regularly.",
+    "liDescNonRecurrent": "A non-recurring program is an activity that happens only once or on a special occasion. For example, a wedding, a baptism, or a special event organized for a particular occasion.",
+    "liRecurrent": "Recurring",
+    "liNonRecurrent": "Non-recurring",
+    "liDays": "Days",
+    "liDateStart": "Start Date",
+    "liDateEnd": "End Date",
+    "liDates": "Dates",
+
+    "endDateMustBeAfterStartDate": "End date must be greater than or equal to start date.",
+
     "liAdmin": "Administration",
     "liGestRole": "Role Management",
     "liRole": "Role",
@@ -50,18 +70,35 @@
     "liProfil": "Profil",
     "liDepart": "Department",
     "liAjDepart": "Add a department",
-    "liMjDepart" : "Update department",
+    "liMjDepart": "Update department",
+    "liclose": "Close",
+    "liNoElement": "No element found.",
 
+    "liToDay": "Today",
+    "liMonth": "Month",
+    "liWeek": "Week",
+    "liDay": "Day",
+
+    "lblDeleteMinistry": "Delete ministry",
+    "liMsgDel": "Are you sure that you want to perform this action?",
+
+    "liDeptAddSuccess": "The department has been added successfully.",
+    "liDeptEdtSuccess": "The department has been updated successfully.",
+    "liDeptDel": "Delete a department",
     "_commentDepart": "Departement libelle",
     "liListDepart": "List department",
     "colDepartNam": "Department Name",
     "colDepartResp": "Manager",
-    "colDepartNbrMemb": "Member",
+    "colDepartNbrMemb": "Number of Stars",
     "colDepartReunion": "Meeting",
     "noDepart": "No department found.",
     "colDepartStat": "Status",
+    "colName": "Name",
+    "colDesc": "Description",
+    "colNbrPrg": "Nomber of programs",
+    "liDetail": "See more",
 
-    "liOrganisation" : "Organisation", 
+    "liOrganisation": "Organisation",
 
     "liOnlyMembersCanView": "Only members of this department can view.",
 
@@ -70,6 +107,7 @@
     "msgUnAvailability": "Update completed – you are no longer available for this service.",
 
     "msgAddPrg": "The program has been successfully added.",
+    "msgDeptPrgSuccess": "The department(s) have been successfully added to the program.",
 
     "AvailabilityTitlePage": "Availabilities",
 
@@ -160,5 +198,13 @@
             "inclusive": "Date must be on or before {maximum}",
             "notInclusive": "Date must be before {maximum}"
         }
-    }
+    },
+
+  "liMonday": "Monday",
+  "liTuesday": "Tuesday",
+  "liWednesday": "Wednesday",
+  "liThursday": "Thursday",
+  "liFriday": "Friday",
+  "liSaturday": "Saturday",
+  "liSunday": "Sunday"
 }

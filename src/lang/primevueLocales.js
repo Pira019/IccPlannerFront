@@ -1,13 +1,13 @@
 // primevueLocales.js
 export const primevueLocales = {
   'fr-FR': {
-    firstDayOfWeek: 1,
+    firstDayOfWeek: 0,
     dayNames: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
     dayNamesShort: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
     dayNamesMin: ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"],
     monthNames: [
-      "janvier","février","mars","avril","mai","juin",
-      "juillet","août","septembre","octobre","novembre","décembre"
+      "Janvier","Février","Mars","Avril","Mai","Juin",
+      "Juillet","Août","Septembre","Octobre","Novembre","Décembre"
     ],
     monthNamesShort: [
       "janv.","févr.","mars","avr.","mai","juin",

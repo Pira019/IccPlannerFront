@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.p-datatable-thead > tr > th .p-datatable-column-header-content {
+    padding: 0.5rem 1rem; /* contrôle exact de l’espace */
+}
+
+.p-datatable-thead > tr > th {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    text-align: center;
+}

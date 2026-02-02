@@ -1,191 +1,164 @@
+<template>
+    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
+        <div class="flex flex-col h-screen">
+            <!-- Barre d'outils -->
+            <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                    <!-- Hamburger mobile -->
+
+                    <div class="sm:hidden self-start">
+                        <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
+                    </div>
+                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary"
+                    class="text-sm sm:text-base md:text-lg font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 w-full sm:w-auto" variant="outlined" rounded />
+                    <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-0 flex-wrap">
+                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
+                        <Button icon="pi pi-chevron-right" variant="text" @click="next" />
+
+                        <!-- Texte date -->
+                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto mt-2 sm:mt-0 justify-start sm:justify-end">
+                    <SplitButton :label="t(currentViewLabel)" icon="pi pi-calendar" outlined class="hidden sm:flex" :model="viewItems" />
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
+                <!-- Sidebar -->
+                <div
+                    :class="[
+                        'bg-white border-r border-gray-200 flex flex-col',
+                        'w-full sm:w-1/4' // mobile toggle
+                    ]"
+                >
+                    <div>
+                        <DatePicker inline class="w-full" v-model="selectedDate" />
+                    </div>
+                    <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
+                        <!-- Mobile : Drawer -->
+                        <Drawer v-if="isMobile" v-model:visible="panelOpen">
+                            <SlideContent />
+                        </Drawer>
+
+                        <!-- Desktop : contenu normal -->
+                        <div v-else class="flex-1 overflow-y-auto">
+                            <SlideContent />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendrier principal -->
+                <div class="flex-1 flex flex-col overflow-auto min-h-0" >
+                    <CalendarComponent ref="calendar" :showHeader="false" @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
+                    class="flex-1 min-h-0" />
+                </div>
+            </div>
+        </div>
+    </PageComponent>
+    <Dialog  v-model:visible="dialogVisible" :header="modalTitle" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
+        <StepperPrg @closeModal="() => (displayAddPrg = false)" @step-title="modalTitle=$event" />
+    </Dialog>
+</template>
+
 <script setup>
-import ProgramService from '@/service/ProgramService';
-import { useHandleAsyncError } from '@/utils/handleAsyncError';
-import { useDialog } from 'primevue';
-import { defineAsyncComponent, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+    import { useI18n } from 'vue-i18n';
+    import SlideContent from './SlideContent.vue';
+    import StepperPrg from './StepperPrg.vue';
+    import { hasPermission } from '@/utils/hasPermission';
+    import { Permission } from '@/model/Enum/Permission'; 
 
 const { t } = useI18n();
-const loading = ref(false);
-const { handleAsyncError } = useHandleAsyncError();
-// Permet de savoir si c'est en mode édition.
-const isEdit = ref(false);
-const errorReq = ref(null);
-const nodes = ref([]);
-const filters = ref({});
 
-const currentRow = ref(null); // pour stocker la ligne sélectionnée
-const items = ref([]); // pour stocker la ligne sélectionnée
-const menu = ref([]);
+const selectedDate = ref(new Date());
+const currentMonthYear = ref('');
+const calendar = ref(null);
+const modalTitle = ref(null);
 
-const dialog = useDialog();
-const EditProgramDialog = defineAsyncComponent(() => import('@/views/program/EditProgram.vue'));
+const panelOpen = ref(false);
 
-function showEditProgram() {
-    dialog.open(EditProgramDialog, {
-        emits: {
-            onSaved: (e) => {
-                nodes.value.push({
-                    key: `prog-${nodes.value.length}`,
-                    data: {
-                        name: e.name,
-                        nodeType: 'program',
-                    }
-                });
-            }
-        },
-        props: {
-            header: isEdit.value ? t('UpdateProgram') : t('AddProgram'),
-            style: {
-                width: '30vw'
-            },
-            breakpoints: {
-                '960px': '75vw',
-                '640px': '90vw'
-            },
-            modal: true
-        }
-    });
-}
+const isMobile = ref(false);
+    const displayAddPrg = ref(false);
 
-const buildItems = (row) => [
-    {
-        items: [
-            {
-                label: t('btnUpdate'),
-                icon: 'pi pi-pencil',
-                command: () => onEdit(row)
-            },
-            {
-                label: t('btnDel'),
-                icon: 'pi pi-trash',
-                command: () => onDelete(row)
-            }
-        ]
-    }
+const canAddAccess = computed(() =>
+    hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)  
+);
+
+const view = ref('dayGridMonth');
+
+const views = [
+    { key: 'dayGridMonth', label: 'liMonth' },
+    { key: 'timeGridWeek', label: 'liWeek' },
+    { key: 'timeGridDay', label: 'liDay' }
 ];
 
-// Toggle du menu
-const toggle = (event, row) => {
-    currentRow.value = row;
-    items.value = buildItems(row);
-    menu.value.toggle(event);
+const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
+
+const viewItems = views.map((v) => ({
+    label: t(v.label),
+    command: () => (view.value = v.key)
+}));
+
+// Methods
+
+function openAdd(payload) {
+    displayAddPrg.value = true;
+}
+
+const onMonthYearChanged = (formattedMonthYear) => {
+    currentMonthYear.value = formattedMonthYear;
 };
 
-onMounted(async () => {
-    await getData();
+const checkScreen = () => {
+    isMobile.value = window.innerWidth < 640;
+};
+
+// Méthode pour sélectionner aujourd'hui
+const selectToday = () => {
+    selectedDate.value = new Date(); // met à jour la date sélectionnée
+};
+
+const prev = () => {
+    calendar.value.navigatePrev();
+    const calView = calendar.value.$refs.calendarRef.getApi().view;
+    selectedDate.value = calView.currentStart;
+};
+
+const next = () => {
+    calendar.value.navigateNext();
+    const calView = calendar.value.$refs.calendarRef.getApi().view;
+    selectedDate.value = calView.currentStart;
+};
+
+// Dialog control
+const dialogVisible = computed({
+    get() {
+        return displayAddPrg.value;
+    },
+    set(val) {
+        // fermer le dialog → on reset les deux flags si nécessaire
+        if (!val) {
+            displayAddPrg.value = false;
+        }
+    }
 });
 
-async function getData() {
-    const { result, error } = await handleAsyncError(
-        () => ProgramService.getProgramsFilter({}), 
-        (val) => (loading.value = val)
-    );
-    errorReq.value = error;
-    nodes.value = mapToTreeTable(result);
-}
+// Watch sur selectedDate pour mettre à jour FullCalendar
+watch(selectedDate, (newDate) => {
+    if (calendar.value && newDate) {
+        calendar.value.gotoDate(newDate);
+    }
+});
 
-// Méthodes pour les actions
-const onEdit = (row) => {
-    showEditProgram();
-};
+onMounted(() => {
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+});
 
-const onDelete = (row) => {
-    console.log('Supprimer ligne:', row);
-    // ta logique ici
-};
-
-function mapToTreeTable(programmes) {
-    return programmes?.map((program, progIndex) => ({
-        key: `prog-${progIndex}`,
-        data: {
-            name: program.name,
-            type: program?.typeProgram ? program.typeProgram : '-',
-            department: Array.isArray(program?.departments) && program.departments.length ? program.departments.map((d) => d.shortName).join(', ') : '-',
-            nodeType: 'program'
-        },
-        children: program?.dates?.map((date, dateIndex) => ({
-            key: `prog-${progIndex}-date-${dateIndex}`,
-            data: {
-                name: date.date ? new Date(date.date).toLocaleDateString() : null,
-                type: `${date.nbrService} service(s)`,
-                department: date.department?.name,
-                nodeType: 'date'
-            },
-            children: date?.services.map((srv, srvIndex) => ({
-                key: `prog-${progIndex}-date-${dateIndex}-srv-${srvIndex}`,
-                data: {
-                    name: srv.name,
-                    type: srv.hours,
-                    department: srv.arrivalHours ? `Heure d'arrivée ${srv.arrivalHours}` : "Pas d'heure d'arrivée",
-                    nodeType: 'service'
-                }
-            }))
-        }))
-    }));
-}
+onUnmounted(() => {
+    window.removeEventListener('resize', checkScreen);
+});
 </script>
-
-<template>
-    <HeaderComponent :title-page="$t('Programs')" />
-    <Fluid>
-        <div class="card">
-            <section id="search" class="flex flex-col gap-4">
-                <h3>{{ $t('search') }}</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <div class="font-semibold text-xl mb-1">{{ $t('Department') }}</div>
-                        <MultiSelect
-                            :emptyFilterMessage="$t('NoResultsFound')"
-                            :emptyMessage="$t('FilterEmptyMessage')"
-                            v-model="selectedCities"
-                            :options="cities"
-                            filter
-                            optionLabel="name"
-                            :placeholder="$t('selectDepartment')"
-                            :maxSelectedLabels="3"
-                            class="w-full md:w-80"
-                        />
-                    </div>
-                    <div>
-                        <div class="font-semibold text-xl mb-1">{{ $t('monthAndYear') }}</div>
-                        <DatePicker v-model="date" view="month" dateFormat="mm/yy" :placeholder="$t('selectMonthAndYear')" />
-                    </div>
-                </div>
-                <div class="self-end">
-                    <Button icon="pi pi-search" :label="$t('search')" />
-                </div>
-            </section>
-
-            <Divider />
-
-            <!-- Tableau resulat-->
-            <section id="result" class="mt-10 flex flex-col gap-4 border-top">
-                <div class="self-start">
-                    <Button icon="pi pi-plus" :label="$t('Add')" @click="showEditProgram" />
-                </div>
-
-                <TreeTable :value="nodes" :metaKeySelection="false" selectionMode="single" :filters="filters" filterMode="strict" scrollable scrollHeight="600px" tableStyle="min-width: 100rem" :loading="loading">
-                    <template #header>
-                        <div class="flex justify-end">
-                            <IconField>
-                                <InputIcon class="pi pi-search" />
-                                <InputText v-model="filters['global']" placeholder="Global Search" />
-                            </IconField>
-                        </div>
-                    </template>
-                    <Column field="name" expander frozen sortable header="Nom" style="min-width: 150px" />
-                    <Column field="type" sortable header="Type" style="min-width: 12rem" />
-                    <Column field="department" sortable header="Départements" style="min-width: 12rem" />
-                    <Column header="Action" style="min-width: 12rem">
-                        <template #body="slotProps">
-                            <Button type="button" @click="toggle($event, slotProps.node)" icon="pi pi-ellipsis-v" aria-haspopup="true" aria-controls="overlay_menu" />
-                            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-                        </template>
-                    </Column>
-                </TreeTable>
-            </section>
-        </div>
-    </Fluid>
-    <DynamicDialog />
-</template>
