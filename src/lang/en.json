@@ -96,7 +96,10 @@
     "colName": "Name",
     "colDesc": "Description",
     "colNbrPrg": "Nomber of programs",
+
     "liDetail": "See more",
+    "liLstPrgs": "List of Programs",
+    "liSeeMore": "See All",
 
     "liOrganisation": "Organisation",
 

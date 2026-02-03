@@ -84,6 +84,8 @@
     "liMjDepart": "Modifier le département",
     "liDeptDel": "Supprimer le département",
 
+    "liLstPrgs": "Liste des programmes",
+
     "liDeptAddSuccess": "Le département a été ajouté avec succès.",
     "liDeptEdtSuccess": "Le département a été mis à jour avec succès.",
     "_commentDepart": "Libellé du département",
@@ -99,6 +101,7 @@
     "colNbrPrg": "Nombre de programmes",
 
     "liDetail": "Voir le détail",
+    "liSeeMore": "Voir tous",
 
     "liOnlyMembersCanView": "Seuls les membres de ce département peuvent voir.",
 

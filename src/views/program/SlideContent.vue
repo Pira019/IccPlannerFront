@@ -1,7 +1,13 @@
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
+const selectedPrgs = ref();
 
 const selectedCity = ref();
+
 const cities = ref([
     { name: 'New York', code: 'NY' },
     { name: 'Rome', code: 'RM' },
@@ -14,25 +20,35 @@ const cities = ref([
 <template>
     <Accordion :value="['0']" multiple>
         <AccordionPanel value="0">
-            <AccordionHeader>Liste de programmes</AccordionHeader>
+            <AccordionHeader>{{ $t("liLstPrgs") }} </AccordionHeader>
             <AccordionContent>
                 <div class="flex items-center w-full gap-2">
-                    <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" >
+                    <Listbox v-model="selectedCity" :options="cities" filter optionLabel="name" class="w-full border-none" >
                         <template #option="slotProps">
-                        <div class="flex items-center justify-between w-full">
-                            <!-- Nom de l'élément -->
-                            <span>{{ slotProps.option.name }}</span>
-                            <div>
+                            <div class="flex items-center justify-between w-full">
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                    <Checkbox
+                                        v-model="selectedPrgs"
+                                        :inputId="slotProps.option.id"
+                                        name="prgs"
+                                        :value="slotProps.option.id"
+                                    />
+                                    <label :for="slotProps.option.id" class="truncate">
+                                        {{ slotProps.option.name }}
+                                    </label>
+                                </div>
+
                                 <Button
                                     type="button"
                                     icon="pi pi-ellipsis-v"
                                     class="p-button-text p-button-rounded"
                                 />
-                                <!-- Menu spécifique à l'élément -->
                             </div>
-                        </div>
                         </template>
                     </Listbox>
+                </div>
+                <div class="mt-5">
+                    <Button :label="t('liSeeMore')" variant="link" />
                 </div>
             </AccordionContent>
         </AccordionPanel>

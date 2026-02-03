@@ -1,75 +1,11 @@
-<template>
-    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
-        <div class="flex flex-col h-screen">
-            <!-- Barre d'outils -->
-            <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                    <!-- Hamburger mobile -->
-
-                    <div class="sm:hidden self-start">
-                        <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
-                    </div>
-                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary"
-                    class="text-sm sm:text-base md:text-lg font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 w-full sm:w-auto" variant="outlined" rounded />
-                    <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-0 flex-wrap">
-                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
-                        <Button icon="pi pi-chevron-right" variant="text" @click="next" />
-
-                        <!-- Texte date -->
-                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto mt-2 sm:mt-0 justify-start sm:justify-end">
-                    <SplitButton :label="t(currentViewLabel)" icon="pi pi-calendar" outlined class="hidden sm:flex" :model="viewItems" />
-                </div>
-            </div>
-
-            <!-- Contenu principal -->
-            <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
-                <!-- Sidebar -->
-                <div
-                    :class="[
-                        'bg-white border-r border-gray-200 flex flex-col',
-                        'w-full sm:w-1/4' // mobile toggle
-                    ]"
-                >
-                    <div>
-                        <DatePicker inline class="w-full" v-model="selectedDate" />
-                    </div>
-                    <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
-                        <!-- Mobile : Drawer -->
-                        <Drawer v-if="isMobile" v-model:visible="panelOpen">
-                            <SlideContent />
-                        </Drawer>
-
-                        <!-- Desktop : contenu normal -->
-                        <div v-else class="flex-1 overflow-y-auto">
-                            <SlideContent />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Calendrier principal -->
-                <div class="flex-1 flex flex-col overflow-auto min-h-0" >
-                    <CalendarComponent ref="calendar" :showHeader="false" @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
-                    class="flex-1 min-h-0" />
-                </div>
-            </div>
-        </div>
-    </PageComponent>
-    <Dialog  v-model:visible="dialogVisible" :header="modalTitle" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
-        <StepperPrg @closeModal="() => (displayAddPrg = false)" @step-title="modalTitle=$event" />
-    </Dialog>
-</template>
 
 <script setup>
-    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-    import { useI18n } from 'vue-i18n';
-    import SlideContent from './SlideContent.vue';
-    import StepperPrg from './StepperPrg.vue';
-    import { hasPermission } from '@/utils/hasPermission';
-    import { Permission } from '@/model/Enum/Permission'; 
+    import { Permission } from '@/model/Enum/Permission';
+import { hasPermission } from '@/utils/hasPermission';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import SlideContent from './SlideContent.vue';
+import StepperPrg from './StepperPrg.vue';
 
 const { t } = useI18n();
 
@@ -84,7 +20,7 @@ const isMobile = ref(false);
     const displayAddPrg = ref(false);
 
 const canAddAccess = computed(() =>
-    hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)  
+    hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)
 );
 
 const view = ref('dayGridMonth');
@@ -162,3 +98,68 @@ onUnmounted(() => {
     window.removeEventListener('resize', checkScreen);
 });
 </script>
+
+
+<template>
+    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
+        <div class="flex flex-col h-screen">
+            <!-- Barre d'outils -->
+            <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+
+                    <div class="sm:hidden self-start">
+                        <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
+                    </div>
+                    <Button :label="t('liToDay')" @click="selectToday" severity="Primary"
+                    class="text-sm sm:text-base md:text-lg font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 w-full sm:w-auto" variant="outlined" rounded />
+                    <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-0 flex-wrap">
+                        <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
+                        <Button icon="pi pi-chevron-right" variant="text" @click="next" />
+
+                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto mt-2 sm:mt-0 justify-start sm:justify-end">
+                    <SplitButton :label="t(currentViewLabel)" icon="pi pi-calendar" outlined class="hidden sm:flex" :model="viewItems" />
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
+                <!-- Sidebar -->
+                <div
+                    :class="[
+                        'bg-white border-r border-gray-200 flex flex-col',
+                        'w-full sm:w-1/4' // mobile toggle
+                    ]"
+                >
+                    <div>
+                        <DatePicker inline class="w-full" v-model="selectedDate" />
+                    </div>
+                    <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
+                        <!-- Mobile : Drawer -->
+                        <Drawer v-if="isMobile" v-model:visible="panelOpen">
+                            <SlideContent />
+                        </Drawer>
+
+                        <!-- Desktop : contenu normal -->
+                        <div v-else class="flex-1 overflow-y-auto">
+                            <SlideContent />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendrier principal -->
+                <div class="flex-1 flex flex-col overflow-auto min-h-0" >
+                    <CalendarComponent ref="calendar" :showHeader="false"
+                        @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
+                    class="flex-1 min-h-0" />
+                </div>
+            </div>
+        </div>
+    </PageComponent>
+    <Dialog  v-model:visible="dialogVisible" :header="modalTitle" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
+        <StepperPrg @closeModal="() => (displayAddPrg = false)" @step-title="modalTitle=$event" />
+    </Dialog>
+</template>
