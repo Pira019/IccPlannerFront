@@ -36,7 +36,7 @@ const model = ref([
         items: [
             { label: 'Ministry', icon: 'pi pi-fw pi-warehouse', to: '/ministry' },
             { label: 'Department', icon: 'pi pi-fw pi-sitemap', to: '/departments' },
-            { label: 'Membres', icon: 'pi pi-fw pi-users', to: '/members' }
+            { label: 'Members', icon: 'pi pi-fw pi-users', to: '/members' }
         ]
     },
     {

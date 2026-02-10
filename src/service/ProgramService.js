@@ -23,6 +23,13 @@ export default class ProgramService extends BaseService
         return await this.axiosInstance.post(endPoint,payload)
     }
 
+    // Obtenir par mois et annee
+     static async getByMonthYear(month,year)
+    {
+        const endPoint = `${this.authBaseUrl}${month}/${year}`;
+        return await this.axiosInstance.get(endPoint)
+    }
+
      /*
         Ajouter un programme
     */

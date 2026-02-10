@@ -7,6 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import DepartmentService from '../../service/DepartmentService';
+import SendInviation from '../membre/invitation/SendInviation.vue';
 import AddDepartment from './AddDepartment.vue';
 
 const { handleAsyncError } = useHandleAsyncError();
@@ -29,6 +30,8 @@ const menus = ref({});
 const selectedDepart = ref();
 const departsList = ref({});
 
+const showSendInvitEdit = ref(false);
+
 var deptEdtId = ref(null);
 
 // menu
@@ -38,6 +41,14 @@ const getItems = (rowData) => [
         icon: 'pi pi-eye',
         command: () => {
             router.push({ name: 'department-details', params: { id: rowData.id } });
+        }
+    },
+    {
+        label: t('liSendInv'),
+        icon: 'pi pi-user-plus',
+        command: () => {
+             deptEdtId.value = rowData.id;
+            showSendInvitEdit.value=true;
         }
     },
     {
@@ -70,18 +81,34 @@ const getItems = (rowData) => [
 const pageSize = ref(10);
 const totalRecords = ref(null);
 const first = ref(0);
+
 const dialogVisible = computed({
     get() {
-        return departDialog.value || showDeleteLoadingDiag.value;
+        return departDialog.value || showDeleteLoadingDiag.value || showSendInvitEdit.value;
     },
     set(val) {
         // fermer le dialog → on reset les deux flags si nécessaire
         if (!val) {
             departDialog.value = false;
             showDeleteLoadingDiag.value = false;
+            showSendInvitEdit.value = false;
         }
     }
 });
+
+const dialogHeader = computed(() => {
+  if (showDeleteLoadingDiag.value) return null
+
+  if (showSendInvitEdit.value) {
+    return t('liSendInv')
+  }
+
+  if (!deptEdtId.value) {
+    return t('liAjDepart')
+  }
+
+  return t('liMjDepart')
+})
 
 const filters = ref({
     global: { value: '' }
@@ -227,7 +254,7 @@ const toggle = (event, id) => {
                 </template>
 
                 <Column field="name" :header="$t('colDepartNam')" style="min-width: 12rem">
-                    <template #body="slotProps" class="font-semibold">
+                    <template #body="slotProps">
                         <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
                         <Tag severity="Primary" class="uppercase mx-2"> {{ slotProps.data.shortName }} </Tag>
                     </template>
@@ -247,8 +274,9 @@ const toggle = (event, id) => {
     </PageComponent>
 
     <!-- Modal -->
-    <Dialog v-model:visible="dialogVisible" :header="showDeleteLoadingDiag ? null : !deptEdtId ? $t('liAjDepart') : $t('liMjDepart')" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <Dialog v-model:visible="dialogVisible" :header="dialogHeader" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
         <AddDepartment @closeModal="() => (departDialog = false)" :id-dept="deptEdtId" @new-depart="(newDepar) => addDepart(newDepar)" @update-depart="() => getDept()" v-if="departDialog" />
         <LoadingDialogComponent :onLoading="loadingDel" :errorReq="errorReq" @closeModal="() => (showDeleteLoadingDiag = false)" v-if="showDeleteLoadingDiag" />
+        <SendInviation v-if="showSendInvitEdit" :id-dept="deptEdtId" @closeDialog="() => (showSendInvitEdit = false)"/>
     </Dialog>
 </template>

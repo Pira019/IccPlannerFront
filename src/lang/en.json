@@ -15,6 +15,7 @@
     "SucceedSave": "Successfully saved!",
     "AddDepartment": "Add department",
     "Ministry": "Ministry",
+    "Members": "Members",
     "SelectMinistry": "Select ministry",
     "NoResultsFound": "No results found",
     "ShortName": "Short name",
@@ -35,11 +36,19 @@
     "btnUpdate": "Update",
     "prgName": "Program name",
 
+    "liMsgSendInv": "The invitation was successfully sent to the user.",
+
     "msgAvailability": "Your availability has been successfully added.",
 
     "liModalAddPrg": "Add the program",
     "liModalAdDetail": "Add details",
     "liModalAddService": "Add services",
+
+     "lifirstName": "First name",
+
+     "liSendOther": "Send another",
+
+    "liSendInv": "Invite a new member",
 
     "msgEdtPrg": "The program has been successfully updated!",
     "liBtnNext": "Next",
@@ -96,7 +105,10 @@
     "colName": "Name",
     "colDesc": "Description",
     "colNbrPrg": "Nomber of programs",
+
     "liDetail": "See more",
+    "liLstPrgs": "List of Programs",
+    "liSeeMore": "See All",
 
     "liOrganisation": "Organisation",
 

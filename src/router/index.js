@@ -1,6 +1,4 @@
 import AppLayout from '@/layout/AppLayout.vue';
-import { Permission } from '@/model/Enum/Permission';
-import { Role } from '@/model/Enum/Role';
 import { useAuthStore } from '@/store/Auth';
 import { checkRequiredClaims } from '@/utils/claims';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -15,8 +13,8 @@ const router = createRouter({
             children: [
                 {
                     path: '/',
-                    name: 'dashboard', 
-                    component: () => import('@/views/Dashboard.vue'), 
+                    name: 'dashboard',
+                    component: () => import('@/views/Dashboard.vue'),
                 },
                 {
                     path: '/ministry',
@@ -31,22 +29,22 @@ const router = createRouter({
                 },
                 {
                     path: '/members',
-                    name: 'members', 
-                    component: () => import('@/views/pages/Profil.vue')
+                    name: 'members',
+                    component: () => import('@/views/membre/Membre.vue')
                 },
                 {
-                    path: '/departments', 
+                    path: '/departments',
                     children: [
                         {
                         path:'',
                         name: 'department-list',
-                        component: () => import('@/views/department/Department.vue'), 
+                        component: () => import('@/views/department/Department.vue'),
                         },
                         {
                         path: ':id',
                         name: 'department-details',
                         props: true,
-                        component: () => import('@/views/department/DepartmentDetails.vue'), 
+                        component: () => import('@/views/department/DepartmentDetails.vue'),
                         }
                     ]
                 },
@@ -54,7 +52,7 @@ const router = createRouter({
                 {
                     path: '/programs',
                     name: 'programs',
-                    component: () => import('@/views/program/Program.vue'), 
+                    component: () => import('@/views/program/Program.vue'),
                 },
                 {
                     path: '/availability',
@@ -68,7 +66,7 @@ const router = createRouter({
                 },
                 {
                     path: '/role-management',
-                    name: 'role-management', 
+                    name: 'role-management',
                     component: () => import('@/views/pages/RoleManag.vue')
                 }
             ]
@@ -112,7 +110,7 @@ router.beforeEach( async (to, from, next) => {
 
      if (!auth.isFetchingClaims  && !auth.claimsLoaded ) {
 
-         await auth.authUser(); 
+         await auth.authUser();
     }
 
     if (auth.authError) {

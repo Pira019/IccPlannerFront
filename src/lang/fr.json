@@ -16,6 +16,7 @@
     "SucceedSave": "Enregistrement réussi!",
     "AddDepartment": "Ajouter un département",
     "Ministry": "Ministère",
+    "Members": "Membres",
     "SelectMinistry": "Sélectionner un ministère",
     "NoResultsFound": "Aucun résultat trouvé",
     "ShortName": "Nom abrégé",
@@ -43,9 +44,15 @@
     "liWeek": "Semaine",
     "liDay": "Jour",
 
+    "lifirstName": "Prénom",
+    "liSendOther": "Envoyer un autre",
+    "liMsgSendInv": "L’invitation a bien été envoyée à l’utilisateur.",
+
     "msgEdtPrg": "Le programme a été mis à jour avec succès!",
     "liBtnNext": "Suivant",
     "liBtnBack": "Précédent",
+
+    "liSendInv": "Inviter un nouveau membre",
 
     "liModalAddPrg" : "Ajouter le programme",
     "liModalAdDetail" : "Ajouter les détails",
@@ -84,6 +91,8 @@
     "liMjDepart": "Modifier le département",
     "liDeptDel": "Supprimer le département",
 
+    "liLstPrgs": "Liste des programmes",
+
     "liDeptAddSuccess": "Le département a été ajouté avec succès.",
     "liDeptEdtSuccess": "Le département a été mis à jour avec succès.",
     "_commentDepart": "Libellé du département",
@@ -99,6 +108,7 @@
     "colNbrPrg": "Nombre de programmes",
 
     "liDetail": "Voir le détail",
+    "liSeeMore": "Voir tous",
 
     "liOnlyMembersCanView": "Seuls les membres de ce département peuvent voir.",
 

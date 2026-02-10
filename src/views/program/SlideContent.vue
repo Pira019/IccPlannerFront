@@ -1,38 +1,60 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const selectedCity = ref();
-const cities = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
+const { t } = useI18n();
+
+const props = defineProps({
+  prgs: {
+    type: Array,
+    default: () => []
+  }
+});
+
+const selectedPrgs = ref([]);
+
+watch(
+  () => props.prgs,
+  (newPrograms) => {
+    selectedPrgs.value = newPrograms.map(p => p.id);
+  },
+  { immediate: true, deep: true }
+);
+
 </script>
 
 <template>
     <Accordion :value="['0']" multiple>
         <AccordionPanel value="0">
-            <AccordionHeader>Liste de programmes</AccordionHeader>
+            <AccordionHeader>{{ $t("liLstPrgs") }} </AccordionHeader>
             <AccordionContent>
                 <div class="flex items-center w-full gap-2">
-                    <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" >
+                    <Listbox  :options="prgs" filter  optionLabel="name" class="w-full border-none" >
                         <template #option="slotProps">
-                        <div class="flex items-center justify-between w-full">
-                            <!-- Nom de l'élément -->
-                            <span>{{ slotProps.option.name }}</span>
-                            <div>
+                            <div class="flex items-center justify-between w-full">
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                    <Checkbox
+                                        v-model="selectedPrgs"
+                                        :inputId="'prg-' + slotProps.option.id"
+                                        name="prgs"
+                                        :value="slotProps.option.id"
+                                    />
+                                    <label :for="'prg-' + slotProps.option.id" class="truncate">
+                                        {{ slotProps.option.name }}
+                                    </label>
+                                </div>
+
                                 <Button
                                     type="button"
                                     icon="pi pi-ellipsis-v"
                                     class="p-button-text p-button-rounded"
                                 />
-                                <!-- Menu spécifique à l'élément -->
                             </div>
-                        </div>
                         </template>
                     </Listbox>
+                </div>
+                <div class="mt-5">
+                    <Button :label="t('liSeeMore')" variant="link" />
                 </div>
             </AccordionContent>
         </AccordionPanel>
