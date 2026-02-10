@@ -1,18 +1,18 @@
 <script setup>
     import dayGridPlugin from '@fullcalendar/daygrid';
-    import timeGridPlugin from '@fullcalendar/timegrid';
-    import interactionPlugin from '@fullcalendar/interaction';
-    import FullCalendar from '@fullcalendar/vue3';
-    import { nextTick, ref, watch } from 'vue';
+import interactionPlugin from '@fullcalendar/interaction';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import FullCalendar from '@fullcalendar/vue3';
+import { nextTick, ref, watch } from 'vue';
 
-    import frLocal from '@fullcalendar/core/locales/fr-ca';
     import enLocal from '@fullcalendar/core/locales/en-gb';
-    import { useI18n } from 'vue-i18n';
+import frLocal from '@fullcalendar/core/locales/fr-ca';
+import { useI18n } from 'vue-i18n';
 
 
     const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear']);
     const props = defineProps({
-        datesService: Array,
+        lstEvents: Array,
         showHeader: { type: Boolean, default: true },
         currentView: { type: String, default: 'dayGridMonth' }
     });
@@ -92,6 +92,10 @@
         initialView: props.currentView,
         timeZone: 'local', // important !
         firstDay: 0,
+        displayEventTime: false,
+        eventDisplay: 'block',
+        dayMaxEvents: true,
+        fixedWeekCount: false,
         locale: calendarLocales[locale.value],
         height: '100%',
         headerToolbar: props.showHeader ? { left: 'prev,next today', center: 'title', right: '' } : false,
@@ -103,10 +107,22 @@
 
             const formattedMonthYear = currentDate.toLocaleDateString(locale.value, {
                 month: 'long', // "janvier", "February", etc.
-                year: 'numeric' // "2025"
+                year: 'numeric' // "2025",
             });
 
-            emit('CurrentMonthYear', formattedMonthYear);
+            const monthInt = currentDate.getMonth() + 1;
+            emit('CurrentMonthYear', {formattedMonthYear, month,year});
+        },
+        eventClick(info) {
+        info.jsEvent.preventDefault();
+        console.log("Event:", info.event);
+        },
+
+        dateClick(info) {
+            console.log("Date:", info.dateStr);
+        },
+        eventDidMount: function(info) {
+            info.el.style.cursor = 'pointer';
         },
         dayHeaderContent: (arg) => {
             const dayNumber = arg.date.getDate(); // 15, 16...
@@ -126,16 +142,16 @@
                          `
             };
         },
-        events: datesToEvents(props.datesService)
+        events: eventsToCalendarEvents(props.lstEvents)
     });
 
-    // Mettre à jour optionCal.events quand datesService change
+    // Mettre à jour optionCal.events quand lstEvents change
     watch(
-        () => props.datesService,
+        () => props.lstEvents,
         (newDates) => {
             optionCal.value = {
                 ...optionCal.value,
-                events: datesToEvents(newDates)
+                events: eventsToCalendarEvents(newDates)
             };
         },
         { immediate: true }
@@ -160,10 +176,18 @@
         { immediate: true }
     );
 
-    function datesToEvents(dates) {
-        if (!dates) return [];
-        return dates.map((dateStr) => ({
-            date: dateStr
+    function eventsToCalendarEvents(events) {
+        if (!events) return [];
+
+        return events.map(e => ({
+            id: e.id,
+            title: e.title,
+            start: e.date,   // FullCalendar utilise "start"
+            allDay: true,
+            extendedProps: {
+                idPrg: e.idPrg,
+                indRecurrent: e.indRecurrent
+            }
         }));
     }
     watch(locale, (newLocale) => {
@@ -184,8 +208,8 @@
 <template>
     <div>
         <FullCalendar :options="optionCal" ref="calendarRef">
-            <template v-slot:eventContent="arg">
-                <div class="flex justify-center mt-3 flex-wrap">
+            <template v-slot:eventContent="arg" v-if="false">
+                <div class="flex justify-center mt-3 flex-wrap" >
                     <Button class="text-wrap" label="Ajouter" @click="$emit('showModal', arg.event.startStr)" v-tooltip="'Ajouter mes disponibilite'" severity="help" icon="pi pi-calendar-plus" size="large" />
                 </div>
             </template>
@@ -194,6 +218,13 @@
 </template>
 
 <style>
+.fc-event {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+    cursor: pointer;
+}
+
     .fc-day-today .fc-daygrid-day-bg {
         @apply border-2 border-primary rounded-lg;
     }

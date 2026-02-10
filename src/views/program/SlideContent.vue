@@ -1,20 +1,26 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const selectedPrgs = ref();
+const props = defineProps({
+  prgs: {
+    type: Array,
+    default: () => []
+  }
+});
 
-const selectedCity = ref();
+const selectedPrgs = ref([]);
 
-const cities = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
+watch(
+  () => props.prgs,
+  (newPrograms) => {
+    selectedPrgs.value = newPrograms.map(p => p.id);
+  },
+  { immediate: true, deep: true }
+);
+
 </script>
 
 <template>
@@ -23,17 +29,17 @@ const cities = ref([
             <AccordionHeader>{{ $t("liLstPrgs") }} </AccordionHeader>
             <AccordionContent>
                 <div class="flex items-center w-full gap-2">
-                    <Listbox v-model="selectedCity" :options="cities" filter optionLabel="name" class="w-full border-none" >
+                    <Listbox  :options="prgs" filter  optionLabel="name" class="w-full border-none" >
                         <template #option="slotProps">
                             <div class="flex items-center justify-between w-full">
                                 <div class="flex items-center gap-2 flex-1 min-w-0">
                                     <Checkbox
                                         v-model="selectedPrgs"
-                                        :inputId="slotProps.option.id"
+                                        :inputId="'prg-' + slotProps.option.id"
                                         name="prgs"
                                         :value="slotProps.option.id"
                                     />
-                                    <label :for="slotProps.option.id" class="truncate">
+                                    <label :for="'prg-' + slotProps.option.id" class="truncate">
                                         {{ slotProps.option.name }}
                                     </label>
                                 </div>

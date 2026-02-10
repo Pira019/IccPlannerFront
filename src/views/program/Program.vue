@@ -1,6 +1,9 @@
 
 <script setup>
-    import { Permission } from '@/model/Enum/Permission';
+    import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
+import { Permission } from '@/model/Enum/Permission';
+import ProgramService from '@/service/ProgramService';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { hasPermission } from '@/utils/hasPermission';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -8,11 +11,18 @@ import SlideContent from './SlideContent.vue';
 import StepperPrg from './StepperPrg.vue';
 
 const { t } = useI18n();
+const { handleAsyncError } = useHandleAsyncError();
 
 const selectedDate = ref(new Date());
-const currentMonthYear = ref('');
+const currentMonthYear = ref(null);
 const calendar = ref(null);
 const modalTitle = ref(null);
+
+const loading = ref(false);
+const errorReq = ref(false);
+
+const lstEvents = ref();
+const lstPrg = ref();
 
 const panelOpen = ref(false);
 
@@ -82,6 +92,22 @@ const dialogVisible = computed({
     }
 });
 
+async function getEvent(month,year)
+{
+      const { error, result } = await handleAsyncError(
+        () => ProgramService.getByMonthYear(month, year),
+        (val) => (loading.value = val),
+    );
+
+    if(error){
+        errorReq.value = error
+        return;
+    }
+
+    lstEvents.value = result?.events;
+    lstPrg.value = result?.prgs;
+}
+
 // Watch sur selectedDate pour mettre à jour FullCalendar
 watch(selectedDate, (newDate) => {
     if (calendar.value && newDate) {
@@ -89,9 +115,20 @@ watch(selectedDate, (newDate) => {
     }
 });
 
-onMounted(() => {
+watch(
+    () => [currentMonthYear.value?.month, currentMonthYear.value?.year],
+    async ([newMonth, newYear], [oldMonth, oldYear]) => {
+
+        if (newMonth !== oldMonth || newYear !== oldYear) {
+            await getEvent(newMonth, newYear);
+        }
+    }
+);
+onMounted( async () => {
+    await getEvent(currentMonthYear.value.month,currentMonthYear.value.year);
     checkScreen();
     window.addEventListener('resize', checkScreen);
+    //Appelle L'API
 });
 
 onUnmounted(() => {
@@ -103,6 +140,7 @@ onUnmounted(() => {
 <template>
     <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
         <div class="flex flex-col h-screen">
+            <LoadingDialogComponent :onLoading="loading" :errorReq="errorReq"/>
             <!-- Barre d'outils -->
             <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
@@ -116,7 +154,7 @@ onUnmounted(() => {
                         <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
                         <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
-                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear }} </span>
+                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear?.formattedMonthYear }} </span>
                     </div>
                 </div>
 
@@ -124,7 +162,6 @@ onUnmounted(() => {
                     <SplitButton :label="t(currentViewLabel)" icon="pi pi-calendar" outlined class="hidden sm:flex" :model="viewItems" />
                 </div>
             </div>
-
             <!-- Contenu principal -->
             <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
                 <!-- Sidebar -->
@@ -140,19 +177,19 @@ onUnmounted(() => {
                     <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
                         <!-- Mobile : Drawer -->
                         <Drawer v-if="isMobile" v-model:visible="panelOpen">
-                            <SlideContent />
+                            <SlideContent :prgs="lstPrg"/>
                         </Drawer>
 
                         <!-- Desktop : contenu normal -->
                         <div v-else class="flex-1 overflow-y-auto">
-                            <SlideContent />
+                            <SlideContent :prgs="lstPrg" />
                         </div>
                     </div>
                 </div>
 
                 <!-- Calendrier principal -->
                 <div class="flex-1 flex flex-col overflow-auto min-h-0" >
-                    <CalendarComponent ref="calendar" :showHeader="false"
+                    <CalendarComponent ref="calendar" :showHeader="false" :lstEvents="lstEvents"
                         @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
                     class="flex-1 min-h-0" />
                 </div>
