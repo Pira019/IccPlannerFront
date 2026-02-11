@@ -45,12 +45,19 @@
     "liDay": "Jour",
 
     "lifirstName": "Prénom",
+
+    "liFemale": "Féminin",
+    "liMale": "Masculin",
+    "liTel": "Téléphone",
+
     "liSendOther": "Envoyer un autre",
     "liMsgSendInv": "L’invitation a bien été envoyée à l’utilisateur.",
 
     "msgEdtPrg": "Le programme a été mis à jour avec succès!",
     "liBtnNext": "Suivant",
     "liBtnBack": "Précédent",
+    "liCity": "Ville",
+    "liQuarter": "Secteur",
 
     "liSendInv": "Inviter un nouveau membre",
 
@@ -116,6 +123,9 @@
 
     "errorOccured": "Erreur",
 
+    "liSex": "Sexe",
+    "liCode": "Code",
+
     "msgAvailability": "Votre disponibilité a été ajoutée avec succès.",
     "msgUnAvailability": "Mise à jour effectuée – vous n’êtes plus disponible pour ce service.",
 
@@ -132,8 +142,14 @@
     "singInText": "Se connecter pour continuer",
     "email": "Email",
     "password": "Mot de passe",
+
+    "passwordConfir": "Confirmation du mot de passe",
+    "createCompte": "S’inscrire",
+
+
     "emailAddress": "Adresse e-mail",
     "internalError": "Une erreur interne est survenue. Veuillez réessayer plus tard.",
+    "liIncorrectLink": "Le lien d'invitation est incorrect. veuillez contacter un administrateur.",
 
     "invalidType": "Type invalide : attendu {expected}, reçu {received}",
     "invalidTypeReceivedUndefined": "Obligatoire",
@@ -159,6 +175,18 @@
         "startsWith": "Valeur invalide : doit commencer par {startsWith}",
         "endsWith": "Valeur invalide : doit se terminer par {endsWith}"
     },
+    "validations": {
+        "regex": "Format invalide"
+    },
+    "lipassword": {
+        "required": "Le mot de passe est requis",
+        "minLength": "Le mot de passe doit contenir au moins 8 caractères",
+        "uppercase": "Le mot de passe doit contenir au moins une majuscule",
+        "digit": "Le mot de passe doit contenir au moins un chiffre",
+        "invalidChars": "Le mot de passe contient des caractères invalides",
+        "confirmMismatch": "Les mots de passe ne correspondent pas",
+        "confirmRequired": "La confirmation du mot de passe est requise"
+  },
     "tooSmall": {
         "array": {
             "exact": "Insérez {minimum} éléments",

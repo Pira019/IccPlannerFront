@@ -185,7 +185,7 @@ const resolver = zodResolver(
 </script>
 
 <template>
-    <Form @submit="onFormSubmit" :resolver>
+    <Form @submit="onFormSubmit" :resolver="resolver">
         <div class="flex flex-col">
             <div class="flex flex-col gap-2 mb-4">
                 <FloatLabel class="w-full" variant="on">

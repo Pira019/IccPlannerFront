@@ -36,7 +36,11 @@
     "btnUpdate": "Update",
     "prgName": "Program name",
 
+    "liFemale": "Female",
+    "liMale": "Male",
+
     "liMsgSendInv": "The invitation was successfully sent to the user.",
+    "liTel": "Phone number",
 
     "msgAvailability": "Your availability has been successfully added.",
 
@@ -44,7 +48,11 @@
     "liModalAdDetail": "Add details",
     "liModalAddService": "Add services",
 
+    "liCity": "City",
+    "liQuarter": "Area",
+
      "lifirstName": "First name",
+    "liSex": "Sex",
 
      "liSendOther": "Send another",
 
@@ -109,6 +117,7 @@
     "liDetail": "See more",
     "liLstPrgs": "List of Programs",
     "liSeeMore": "See All",
+    "liCode": "Code",
 
     "liOrganisation": "Organisation",
 
@@ -123,6 +132,23 @@
 
     "AvailabilityTitlePage": "Availabilities",
 
+    "createCompte": "Sign Up",
+    "liIncorrectLink": "The invitation link is invalid. please contact an administrator.",
+
+    "validations": {
+        "regex": "Invalid format"
+    },
+
+    "lipassword": {
+        "required": "Password is required",
+        "minLength": "Password must contain at least 8 characters",
+        "uppercase": "Password must contain at least one uppercase letter",
+        "digit": "Password must contain at least one digit",
+        "invalidChars": "Password contains invalid characters",
+        "confirmMismatch": "Passwords do not match",
+        "confirmRequired": "Password confirmation is required"
+    },
+
     "msgSuccess": "The action was completed successfully.",
 
     "forgotPassword": "Forgot password?",
@@ -130,6 +156,7 @@
     "signIn": "Sign In",
     "singInText": "Sign in to continue",
     "password": "Password",
+    "passwordConfir": "Confirm Password",
     "emailAddress": "Email address",
     "internalError": "An internal error has occurred. Please try again later.",
 

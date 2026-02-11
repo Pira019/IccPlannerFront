@@ -60,43 +60,46 @@ const [remember, rememberAttrs] = defineField('remember');
                         <span class="text-muted-color font-medium">{{ $t('singInText') }}</span>
                     </div>
 
-                    <div class="fw-full md:w-[30rem] mb-4" v-if="errorMessage">
-                        <div class="text-wrap">
-                            <ErrorComponent :error="errorMessage" />
-                        </div>
-                    </div>
-
-                    <form @submit="onSubmit">
-                        <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <InputText id="email1" :invalid="!!errors.email" type="email" v-model="email" name="email" :emailAttrs :placeholder="$t('emailAddress')" class="w-full md:w-[30rem]" :class="errors.email ? 'mb-2' : 'mb-8'" />
-                            <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.email"> {{ errors.email }}</Message>
-
-                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ $t('password') }}</label>
-                            <Password
-                                id="password1"
-                                :invalid="!!errors.password"
-                                name="password"
-                                v-model="password"
-                                :passwordAttrs
-                                :placeholder="$t('password')"
-                                :toggleMask="true"
-                                :class="errors.email ? 'mb-2' : 'mb-4'"
-                                fluid
-                                :feedback="false"
-                            ></Password>
-                            <Message size="small" severity="error" variant="simple" v-if="errors.password" class="mb-4"> {{ errors.password }}</Message>
-
-                            <div class="flex items-center justify-between mt-2 mb-8 gap-8">
-                                <div class="flex items-center">
-                                    <Checkbox id="remember1" binary class="mr-2" v-model="remember" :rememberAttrs></Checkbox>
-                                    <label for="remember1">{{ $t('rememberMe') }}</label>
-                                </div>
-                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
+                    <slot name="errorContent">
+                        <div class="fw-full md:w-[30rem] mb-4" v-if="errorMessage">
+                            <div class="text-wrap">
+                                <ErrorComponent :error="errorMessage" />
                             </div>
-                            <Button :label="$t('signIn')" :loading="isSubmitting" type="submit" class="w-full mr-2"></Button>
                         </div>
-                    </form>
+                    </slot>
+                    <slot name="content">
+                        <form @submit="onSubmit">
+                            <div>
+                                <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
+                                <InputText id="email1" :invalid="!!errors.email" type="email" v-model="email" name="email" :emailAttrs :placeholder="$t('emailAddress')" class="w-full md:w-[30rem]" :class="errors.email ? 'mb-2' : 'mb-8'" />
+                                <Message size="small" severity="error" variant="simple" class="mb-6" v-if="errors.email"> {{ errors.email }}</Message>
+
+                                <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ $t('password') }}</label>
+                                <Password
+                                    id="password1"
+                                    :invalid="!!errors.password"
+                                    name="password"
+                                    v-model="password"
+                                    :passwordAttrs
+                                    :placeholder="$t('password')"
+                                    :toggleMask="true"
+                                    :class="errors.email ? 'mb-2' : 'mb-4'"
+                                    fluid
+                                    :feedback="false"
+                                ></Password>
+                                <Message size="small" severity="error" variant="simple" v-if="errors.password" class="mb-4"> {{ errors.password }}</Message>
+
+                                <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                                    <div class="flex items-center">
+                                        <Checkbox id="remember1" binary class="mr-2" v-model="remember" :rememberAttrs="rememberAttrs"></Checkbox>
+                                        <label for="remember1">{{ $t('rememberMe') }}</label>
+                                    </div>
+                                    <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
+                                </div>
+                                <Button :label="$t('signIn')" :loading="isSubmitting" type="submit" class="w-full mr-2"></Button>
+                            </div>
+                        </form>
+                    </slot>
                 </div>
             </div>
         </div>

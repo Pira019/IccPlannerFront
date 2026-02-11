@@ -13,4 +13,10 @@ export default class InvitationService extends BaseService
         return await this.axiosInstance.post(this.authBaseUrl,payload)
     }
 
+    static async findInvalid(idInvitation)
+    {
+        const endPoint = `${this.authBaseUrl}${idInvitation}`;
+        return await this.axiosInstance.get(endPoint)
+    }
+
 }
