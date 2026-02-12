@@ -53,6 +53,7 @@
 
      "lifirstName": "First name",
     "liSex": "Sex",
+    "liDisplayName": "Display Name",
 
      "liSendOther": "Send another",
 
@@ -90,6 +91,7 @@
     "liMjDepart": "Update department",
     "liclose": "Close",
     "liNoElement": "No element found.",
+    "liSelectDepart": "Select a department",
 
     "liToDay": "Today",
     "liMonth": "Month",
@@ -109,10 +111,13 @@
     "colDepartNbrMemb": "Number of Stars",
     "colDepartReunion": "Meeting",
     "noDepart": "No department found.",
+    "liNoMembers": "No members found.",
     "colDepartStat": "Status",
+    "colStat": "Statut",
     "colName": "Name",
     "colDesc": "Description",
     "colNbrPrg": "Nomber of programs",
+     "colFonction": "Fonction",
 
     "liDetail": "See more",
     "liLstPrgs": "List of Programs",
