@@ -71,10 +71,12 @@
     "liDateStart": "Start Date",
     "liDateEnd": "End Date",
     "liDates": "Dates",
+    "liReset": "Reset",
 
     "endDateMustBeAfterStartDate": "End date must be greater than or equal to start date.",
 
     "liAdmin": "Administration",
+    "liNonPrg": "No programs at the moment. Please check back later!",
     "liGestRole": "Role Management",
     "liRole": "Role",
     "liDesc": "Description",
@@ -92,6 +94,10 @@
     "liclose": "Close",
     "liNoElement": "No element found.",
     "liSelectDepart": "Select a department",
+
+    "servicesCulte": "Service/Worship",
+
+    "msgCompteCreer": "The account has been successfully created. Welcome!",
 
     "liToDay": "Today",
     "liMonth": "Month",

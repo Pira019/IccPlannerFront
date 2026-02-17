@@ -1,16 +1,20 @@
 <script setup>
 import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
+import AccountService from '@/service/AccountService';
 import InvitationService from '@/service/InvitationService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { useSetFieldValue } from 'vee-validate';
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { z } from 'zod';
 import Login from '../pages/auth/Login.vue';
 
 const route = useRoute()
+const router = useRouter()
 const { handleAsyncError } = useHandleAsyncError();
 
+const formReady = ref(false)
 const isSubmitting = ref(false);
 
 const invitationId = route.query.invitation;    // "1"
@@ -23,7 +27,7 @@ const errorReq = ref(null)
 
 const invitationData = ref({
   email: '',
-  firstName: '',
+  name: '',
 })
 
 const loadingReq = ref(false)
@@ -37,8 +41,29 @@ const onFormSubmit = async ({ valid, values }) => {
 
  if (!valid || passwordsMismatch.value) return; // les autres validations Zod ont échoué
 
- console.log(values)
- console.log(valid)
+
+    const payload = {
+        ...values,
+        invitationId
+    }
+
+    console.log(payload)
+
+    const { error } = await handleAsyncError(
+    () =>  AccountService.register(payload),
+    (val) => (loadingReq.value = val),
+    true,
+    'msgCompteCreer'
+    );
+
+    if(!error)
+    {
+        router.push({name:'login',
+                    state:{email: invitationData.value.email}
+        });
+        return;
+    }
+    errorReq.value = error;
 
 }
 
@@ -48,12 +73,17 @@ const { error, result } = await handleAsyncError(
         (val) => (loadingReq.value = val)
     );
 
+    formReady.value = true;;
     if(error){
         errorReq.value = error
         desabledBtn.value = true;
         return;
     }
-    invitationData.value = result
+    invitationData.value.email = result.email ?? ''
+    invitationData.value.name = result.firstName ?? ''
+
+    useSetFieldValue
+
     desabledBtn.value = false;
 });
 // Validator
@@ -73,7 +103,7 @@ const schema = z.object({
   ),
   name: z.preprocess((val) => val ?? "", z.string().nonempty().max(55)),
   lastName: z.preprocess((val) => val ?? "", z.string().nonempty().max(55)),
-  sex: z.preprocess((val) => val ?? "", z.enum(["M", "F"])),
+  sexe: z.preprocess((val) => val ?? "", z.enum(["M", "F"])),
   tel: z.preprocess(
     (val) => val ?? "",
     z.string().regex(/^\+?[0-9]{10,15}$/).optional().or(z.literal(""))
@@ -102,7 +132,7 @@ const resolver = zodResolver(schema);
         </template>
         <template #content>
             <Fluid>
-                <Form :resolver="resolver" @submit="onFormSubmit" novalidate>
+                <Form v-if="formReady" :resolver="resolver" :initial-values="invitationData" @submit="onFormSubmit" novalidate>
                     <div class="flex flex-col sm:flex-row gap-6 mb-5">
                         <FloatLabel variant="on" class="flex-1 w-full">
                             <FormField v-slot="$field" name="code" class="flex-auto">
@@ -116,7 +146,7 @@ const resolver = zodResolver(schema);
                         <FloatLabel variant="on" class="flex-1 w-full">
                             <FormField v-slot="$field" name="name" class="flex-auto">
                                 <label class="block font-semibold mb-2">{{ $t('lifirstName') }} <span class="text-red-500">*</span></label>
-                                <InputText v-model="invitationData.firstName" maxlength="55" />
+                                <InputText  v-model="$field.value" maxlength="55" />
                                 <Message v-if="$field?.invalid" class="my-1" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
                             </FormField>
                         </FloatLabel>
@@ -137,9 +167,9 @@ const resolver = zodResolver(schema);
                         </FloatLabel>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-6 mb-5">
-                        <FormField v-slot="$field" name="sex" class="w-full">
+                        <FormField v-slot="$field" name="sexe" class="w-full">
                             <label :class="{'text-red-500' : $field.invalid }" class="block mb-3 font-medium">{{ $t('liSex') }} <span class="text-red-500">*</span></label>
-                                <RadioButtonGroup  v-model="$field.value" name="sex" class="flex gap-6">
+                                <RadioButtonGroup  v-model="$field.value" name="sexe" class="flex gap-6">
                                     <div class="flex items-center gap-2">
                                         <RadioButton inputId="fem" value="F" />
                                         <label for="fem" class="cursor-pointer">{{ $t('liFemale')}}</label>

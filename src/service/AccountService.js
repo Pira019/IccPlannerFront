@@ -19,7 +19,7 @@ export default class AccountService extends BaseService
     }
 
      static get axiosInstance() {
-        return BaseService.axiosInstance // ✅ Délégation explicite
+        return BaseService.axiosInstance //
     }
 
     /**
@@ -30,5 +30,12 @@ export default class AccountService extends BaseService
     {
         const endPoint = `${this.authBaseUrl}claims`;
         return await this.axiosInstance.get(endPoint)
+    }
+
+    // Enregistrer un compte
+     static async register(loginRequest)
+    {
+        const endPoint = `${this.authBaseUrl}register`;
+        return await this.axiosInstance.post(endPoint, loginRequest)
     }
 }

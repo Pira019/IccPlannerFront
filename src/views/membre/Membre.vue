@@ -5,26 +5,29 @@
         scrollable scrollHeight="flex" class="w-full"
         :filters="filters"
         stripedRows :loading="membersLoading">
-            <template #header>
-                <div class="flex flex-col md:flex-row gap-3 md:justify-between md:items-center">
-                    <Select v-model="departmentSelected" :options="departmentLst"
-                         optionValue="id" :loading="departLoading" filter optionLabel="name"
-                         :placeholder="$t('liSelectDepart')"
-                         class="w-full md:w-64 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
-                        <template #option="slotProps">
-                            <div class="flex items-center">
-                                <div>{{ slotProps.option.name }}</div>
-                            </div>
-                        </template>
-                    </Select>
-                        <IconField class="w-full md:w-64">
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText :placeholder="$t('search')" v-model="filters['global'].value"/>
-                        </IconField>
-                    </div>
+                <template #header>
+                    <Fieldset class="w-full block">
+                        <div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">
+                            <Select v-model="departmentSelected" :options="departmentLst"
+                                optionValue="id" :loading="departLoading" filter optionLabel="name"
+                                :placeholder="$t('liSelectDepart')"
+                                class="w-full md:w-[350px] bg-white border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
+                                <template #option="slotProps">
+                                    <div class="flex items-center">
+                                        <div>{{ slotProps.option.name }}</div>
+                                    </div>
+                                </template>
+                            </Select>
+                            <IconField class="w-full md:w-[350px]" >
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText fluid :placeholder="$t('search')" v-model="filters['global'].value"/>
+                            </IconField>
+                        </div>
+                     </Fieldset>
                 </template>
+
                  <template #empty>
                     <div>
                         <ResponseComponent show-success-message="false" :error="errorReq" />
