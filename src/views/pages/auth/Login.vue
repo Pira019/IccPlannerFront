@@ -8,15 +8,16 @@ import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { RouteName } from '@/utils/RouteName';
 import { LoginValidator } from '@/validations/LoginValidator';
 import { useForm } from 'vee-validate';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const { handleAsyncError } = useHandleAsyncError();
 const router = useRouter();
+const route = useRoute();
 
 const appName = import.meta.env.VITE_APP_NAME;
 
-const { errors, defineField, handleSubmit, isSubmitting } = useForm({
+const { errors, defineField, handleSubmit, isSubmitting,setFieldValue } = useForm({
     validationSchema: LoginValidator
 });
 
@@ -45,6 +46,14 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 const [email, emailAttrs] = defineField('email');
 const [password, passwordAttrs] = defineField('password');
 const [remember, rememberAttrs] = defineField('remember');
+
+
+onMounted(() => {
+    if(route.state?.email){
+       email.value = route.state.email;
+    }
+});
+
 </script>
 
 <template>
@@ -80,7 +89,7 @@ const [remember, rememberAttrs] = defineField('remember');
                                     :invalid="!!errors.password"
                                     name="password"
                                     v-model="password"
-                                    :passwordAttrs
+                                    :passwordAttrs="passwordAttrs"
                                     :placeholder="$t('password')"
                                     :toggleMask="true"
                                     :class="errors.email ? 'mb-2' : 'mb-4'"
@@ -91,7 +100,7 @@ const [remember, rememberAttrs] = defineField('remember');
 
                                 <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                     <div class="flex items-center">
-                                        <Checkbox id="remember1" binary class="mr-2" v-model="remember" :rememberAttrs="rememberAttrs"></Checkbox>
+                                        <Checkbox inputId="remember1" binary class="mr-2" v-model="remember"></Checkbox>
                                         <label for="remember1">{{ $t('rememberMe') }}</label>
                                     </div>
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
