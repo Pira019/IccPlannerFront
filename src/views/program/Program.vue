@@ -50,7 +50,7 @@ const viewItems = views.map((v) => ({
 
 // Methods
 
-function openAdd(payload) {
+function openAdd() {
     displayAddPrg.value = true;
 }
 

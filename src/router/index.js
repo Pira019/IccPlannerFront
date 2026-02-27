@@ -62,7 +62,19 @@ const router = createRouter({
                 {
                     path: '/availability',
                     name: 'Availability',
-                    component: () => import('@/views/Availability/Availability.vue')
+                    component: () => import('@/views/availability/Availability.vue'),
+                    children: [
+                        {
+                        path:'',
+                        name: 'planning',
+                        component: () => import('@/views/availability/Planning.vue'),
+                        },
+                        {
+                        path: 'disponibility',
+                        name: 'disponibility',
+                        component: () => import('@/views/availability/Disponibility.vue'),
+                        }
+                    ]
                 },
                 {
                     path: '/pages/empty',
