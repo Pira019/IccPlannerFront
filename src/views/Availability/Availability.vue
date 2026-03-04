@@ -1,5 +1,5 @@
 <template>
-   <page-component :title-page="$t('liOverview')">
+   <page-component :title-page="$t('liOverview')" :showAddBtn="false">
         <Tabs :value="$route.name" class="mb-5">
             <TabList>
                 <Tab
@@ -33,7 +33,8 @@
               </Fieldset>
         </div>
         <router-view v-slot="{ Component }">
-            <component :is="Component" :department-selected="departValue"/>
+            <component :is="Component" :department-selected="departValue"
+             />
         </router-view>
    </page-component>
 </template>

@@ -1,14 +1,13 @@
 <template>
-    <div>
-        {{
-            departmentSelected
-     }}
-    </div>
-  <div class="my-calendar">
-    <CalendarEventComponent :add-calendar-content="true" :lst-events="listService">
+<div class="my-calendar">
+    {{ departmentSelected }}
+    <CalendarEventComponent :add-calendar-content="true"
+    :loading="loading"
+    :errorReq="errorReq"
+    :lstEvents="lstDisponibility" @CurrentMonthYear="CurrentMonthYear=$event">
       <template v-slot:fullCalendarContent="{ arg }">
-        <div class="flex flex-col gap-1 p-2">
-          <p class="font-semibold text-sm truncate m-0">{{ arg.event.title }}</p>
+        <div class="flex flex-col gap-1 p-2"  v-if="arg.event.id">
+          <p class="font-semibold text-sm truncate m-0">{{ arg?.event?.title }}</p>
           <p class="text-sm truncate">{{ arg.event.title }}</p>
           <span class="flex items-center text-xs">
             <i class="pi pi-bell mr-1"></i> {{ arg.event.extendedProps.startTime }}
@@ -20,54 +19,65 @@
           </span>
         </div>
       </template>
+      <template #rightContent>
+        <Button :label="$t('addDispo')"
+        @click="dialogVisible=true"
+        icon="pi pi-fw pi-calendar-plus" />
+      </template>
     </CalendarEventComponent>
-  </div>
+</div>
+
+  <Dialog v-model:visible="dialogVisible" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <AddAvailability/>
+  </Dialog>
 </template>
 
 <script setup>
 import CalendarEventComponent from "@/components/CalendarEventComponent.vue";
+import ServicePrgService from "@/service/ServicePrgService";
+import { useHandleAsyncError } from "@/utils/handleAsyncError";
+import { ref, watch } from "vue";
+import AddAvailability from "./AddAvailability.vue";
 
 const props = defineProps({
   departmentSelected: [String, Number]
 });
 
-const listService = [
-  {
-    id: 1,
-    title: "Rendez-vous",
-    date: "2026-02-01",
-    startTime: "14:30",
-    endTime: "15:30",
-  },
-  {
-    id: 2,
-    title: "Consultation",
-    date: "2026-02-05",
-    startTime: "09:00",
-    endTime: "10:00",
-  },
-  {
-    id: 2,
-    title: "Consultation",
-    date: "2026-02-05",
-    startTime: "09:00",
-    endTime: "10:00",
-  },
-  {
-    id: 2,
-    title: "Consultation",
-    date: "2026-02-05",
-    startTime: "09:00",
-    endTime: "10:00",
-  },
-];
+const { handleAsyncError } = useHandleAsyncError();
+
+const dialogVisible = ref(false)
+
+const CurrentMonthYear = ref(null)
+
+const loading = ref(true)
+const errorReq = ref(null)
+
+const lstDisponibility = ref(null);
+
+async function getDisponibility(){
+ const { error, result } = await handleAsyncError(
+        () => ServicePrgService.getDatesAsync( CurrentMonthYear.value?.month,CurrentMonthYear.value?.year,props.departmentSelected),
+        (val) => (loading.value = val)
+    );
+
+    if(error)
+    {
+        errorReq.value = error;
+        return;
+    }
+
+     lstDisponibility.value = result
+}
+
+watch(
+  () => [props.departmentSelected, CurrentMonthYear.value],
+  async ()  => {
+    if(props.departmentSelected){
+       await getDisponibility()
+    }
+  }
+)
 </script>
 
 <style>
-.my-calendar .fc-event {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: white !important;
-  cursor: pointer;
-}
 </style>

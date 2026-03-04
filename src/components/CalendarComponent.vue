@@ -1,12 +1,12 @@
 <script setup>
-    import dayGridPlugin from '@fullcalendar/daygrid';
+import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import FullCalendar from '@fullcalendar/vue3';
 import { nextTick, ref, watch } from 'vue';
 
-    import enLocal from '@fullcalendar/core/locales/en-gb';
+import enLocal from '@fullcalendar/core/locales/en-gb';
 import frLocal from '@fullcalendar/core/locales/fr-ca';
 import { useI18n } from 'vue-i18n';
 
@@ -118,7 +118,6 @@ import { useI18n } from 'vue-i18n';
         },
         eventClick(info) {
         info.jsEvent.preventDefault();
-        console.log("Event:", info.event);
         },
 
         dateClick(info) {
@@ -127,6 +126,17 @@ import { useI18n } from 'vue-i18n';
         eventDidMount: function(info) {
             info.el.style.cursor = 'pointer';
         },
+         dayCellClassNames(arg) {
+            const events = props.lstEvents || [];
+            const dateStr = arg.date.toISOString().split('T')[0];
+            const hasEvent = events.some(e => e.date === dateStr);
+
+            if (!hasEvent) {
+                return ["bg-gray-100", "opacity-70", "cursor-not-allowed"];
+            }
+
+            return ["cursor-pointer"];
+            },
         dayHeaderContent: (arg) => {
             const dayNumber = arg.date.getDate(); // 15, 16...
             const viewType = arg.view.type;
@@ -168,7 +178,6 @@ import { useI18n } from 'vue-i18n';
         }
     );
 
-    // ⚡ Watcher pour suivre les changements de currentView
     watch(
         () => props.currentView,
         (newView) => {
@@ -184,36 +193,37 @@ import { useI18n } from 'vue-i18n';
 
   return events
     .map(e => {
+
       if (!e.date) return null; // sécurité, mais on suppose qu'elle existe
 
       let startDate, endDate;
       let allDay = true;
 
-      // Si startTime fourni → événement horaire précis
+      // Si startTime fourni - événement horaire précis
       if (e.startTime) {
         startDate = new Date(`${e.date}T${e.startTime}`);
         endDate = e.endTime ? new Date(`${e.date}T${e.endTime}`) : startDate;
         allDay = false;
       } else {
-        // date seule → journée entière
-        startDate = new Date(e.date);
+        startDate = new Date(`${e.date}T00:00:00`);
         endDate = startDate;
       }
 
-
       return {
-        id: e.id,
-        title: e.title,
+        id: e?.id || '',
+        title:e?.title || '',
         start: startDate.toISOString(),
-        end: endDate.toISOString(),
+        end: endDate?.toISOString(),
         allDay: allDay,
         extendedProps: {
-          idPrg: e.idPrg || null,
-          indRecurrent: e.indRecurrent || false,
-          startTime: e.startTime || null,
-          endTime: e.endTime || null,
+          idPrg: e?.idPrg || null,
+          indRecurrent: e?.indRecurrent || false,
+          startTime: e?.startTime || null,
+          endTime: e?.endTime || null,
         }
       };
+
+
     })
     .filter(Boolean);
 }
@@ -230,6 +240,7 @@ import { useI18n } from 'vue-i18n';
             api.setOption('locale', calendarLocales[newLocale]);
         });
     });
+
 
 </script>
 
