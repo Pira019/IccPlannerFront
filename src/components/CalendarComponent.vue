@@ -11,7 +11,7 @@ import frLocal from '@fullcalendar/core/locales/fr-ca';
 import { useI18n } from 'vue-i18n';
 
 
-    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear']);
+    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear','clickedDate']);
     const props = defineProps({
         lstEvents: Array,
         showHeader: { type: Boolean, default: true },
@@ -121,7 +121,7 @@ import { useI18n } from 'vue-i18n';
         },
 
         dateClick(info) {
-            console.log("Date:", info.dateStr);
+            emit('clickedDate', info.dateStr);
         },
         eventDidMount: function(info) {
             info.el.style.cursor = 'pointer';
@@ -137,6 +137,7 @@ import { useI18n } from 'vue-i18n';
 
             return ["cursor-pointer"];
             },
+
         dayHeaderContent: (arg) => {
             const dayNumber = arg.date.getDate(); // 15, 16...
             const viewType = arg.view.type;
@@ -240,7 +241,6 @@ import { useI18n } from 'vue-i18n';
             api.setOption('locale', calendarLocales[newLocale]);
         });
     });
-
 
 </script>
 

@@ -1,24 +1,35 @@
 <script setup lang="ts">
+import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
 import AvailabilityService from '@/service/AvailabilityService';
 import ServicePrgService from '@/service/ServicePrgService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
-import { ProgressSpinner } from 'primevue';
-import { inject, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { onMounted, ref } from 'vue';
 
-const dialogRef = inject('dialogRef');
-const { t } = useI18n();
+
+const { handleAsyncError } = useHandleAsyncError();
+
 const loading = ref(false);
 const errorReq = ref(null);
-const data = ref([]);
-const { handleAsyncError } = useHandleAsyncError();
+const data = ref(null);
+
+const props = defineProps({
+  datePrg: {
+    type: [String],
+    required: true
+  },
+  idDepart: {
+    type: [Number],
+    default:null
+  }
+});
+
 //
 const availableLoading = ref(false);
 var errorReqToggle = ref(null);
 
 onMounted(async () => {
     const { result, error } = await handleAsyncError(
-        () => ServicePrgService.getDepartmentServicesByDate(dialogRef.value.data.dateService),
+        () => ServicePrgService.GetServicePrgByDepartAsync(props.idDepart,props.datePrg),
         (val: boolean) => (loading.value = val)
     );
     errorReq.value = error;
@@ -45,9 +56,6 @@ async function deleteAvailable(serviceProgramId) {
     errorReqToggle.value = error;
 }
 
-function closeDialog() {
-    dialogRef.value.close();
-}
 
 async function toggleAvailable(serviceProgramId, indexDept, indexServicePrg) {
     errorReqToggle.value = null;
@@ -61,29 +69,57 @@ async function toggleAvailable(serviceProgramId, indexDept, indexServicePrg) {
 </script>
 
 <template>
-    <div class="text-center">
-        <ProgressSpinner v-if="loading" />
-        <Message v-else-if="errorReq != null" severity="error">{{ errorReq?.message }}</Message>
-        <div class="p-4 space-y-4" v-else>
-            <div v-if="data != null">
-                <section id="listService" class="mb-10" v-for="(item, indexDept) in data" :key="indexDept">
-                    <h3 class="h1 font-bold text-wrap">{{ item.departmentName }}</h3>
-                    <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg shadow mb-3" v-for="(prg, indexServicePrg) in item.servicePrograms" :key="indexServicePrg">
-                        <p>
-                            <i class="pi pi-info-circle pr-1" v-tooltip="prg.programName + ' ' + prg.startTime + ' - ' + prg.endTime"></i>
-                            <span class="font-bold" v-if="prg.programShortName != null"> {{ prg.programShortName.toUpperCase() }} - </span> {{ prg.displayName.toUpperCase() }} — Heure d'arrivée :
-                            <span class="font-bold"> {{ prg.servantArrivalTime }}</span>
-                        </p>
-                        <Button :loading="availableLoading" :severity="prg.isAvailable ? 'success' : 'contrast'" icon="pi pi-verified" @click="toggleAvailable(prg.serviceProgramId, indexDept, indexServicePrg)" />
-                    </div>
-                    <Message v-if="errorReqToggle != null" severity="error">{{ errorReqToggle?.message }}</Message>
-                </section>
-            </div>
-            <Message v-else severity="info">{{ $t('noServices') }}</Message>
+    <div >
+        <LoadingDialogComponent :onLoading="loading" :error-req="errorReq"/>
+        <div id="header">
+            <p class="h2 font-bold text-wrap">Me disponibile - {{ datePrg }}</p>
         </div>
+        <section
+        id="listService"
+        class="mb-10 text-center"
+        v-for="(item, indexDept) in data?.servicePrgDates"
+        :key="indexDept"
+        >
+            <h3 class="h2 font-bold text-wrap">{{ item.prgName }}</h3>
+            <div
+                class="flex items-center justify-between bg-gray-100 p-3 rounded-lg shadow mb-3"
+                v-for="(servicePrg, indexServicePrg) in item.servicePrg"
+                :key="indexServicePrg"
+            >
+                <div class="flex flex-col">
+                <div class="flex items-center">
+                    <span class="font-bold">{{ servicePrg.displayName }} - </span>
+                    <span class="mx-1">{{ servicePrg.startTime }} - {{ servicePrg.endTime }}</span>
+                </div>
 
+                <div class="mt-1 text-sm text-yellow-600 flex items-center" v-if="servicePrg.arrivalTime">
+                    <i class="pi pi-exclamation-triangle pr-1"></i>
+                    <span>{{ servicePrg.arrivalTime }}</span>cc
+                </div>
+
+                <!-- Commentaire -->
+                <div class="mt-1 text-sm text-blue-500 flex items-center" v-if="servicePrg.comment">
+                    <i class="pi pi-comment pr-1"></i>
+                    <span>{{ servicePrg.comment }}</span>
+                </div>
+            </div>
+
+                <!-- Bouton de disponibilité à droite -->
+            <Button
+                :loading="availableLoading"
+                :severity="servicePrg.isAvailable ? 'success' : 'contrast'"
+                icon="pi pi-verified"
+                @click="toggleAvailable(servicePrg.serviceProgramId, indexDept, indexServicePrg)"
+                />
+            </div>
+
+            <!-- Message d'erreur -->
+            <Message v-if="errorReqToggle != null" severity="error">
+                {{ errorReqToggle?.message }}
+            </Message>
+        </section>
         <div class="text-right mt-5">
-            <Button severity="contrast" @click="closeDialog" :label="$t('bntClose')" />
+            <Button severity="contrast" @click="$emit('closeModal')" :label="$t('bntClose')" />
         </div>
     </div>
 </template>

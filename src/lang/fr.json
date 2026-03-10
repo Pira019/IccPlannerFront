@@ -93,6 +93,8 @@
     "liDates": "Dates",
     "liReset": "Réinitialiser",
     "liNonPrg": "Pas de programme pour le moment. Revenez plus tard !",
+    "liAddService": "Ajouter un service",
+    "liModifier": "Modifier",
 
     "endDateMustBeAfterStartDate": "La date de fin doit être supérieure ou égale à la date de début.",
 

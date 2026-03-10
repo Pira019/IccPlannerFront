@@ -72,6 +72,8 @@
     "liDateEnd": "End Date",
     "liDates": "Dates",
     "liReset": "Reset",
+    "liAddService": "Add service",
+    "liModifier": "Edit",
 
     "endDateMustBeAfterStartDate": "End date must be greater than or equal to start date.",
 

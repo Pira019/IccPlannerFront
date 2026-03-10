@@ -1,10 +1,10 @@
 <template>
 <div class="my-calendar">
-    {{ departmentSelected }}
     <CalendarEventComponent :add-calendar-content="true"
     :loading="loading"
     :errorReq="errorReq"
-    :lstEvents="lstDisponibility" @CurrentMonthYear="CurrentMonthYear=$event">
+    :lstEvents="lstDisponibility" @CurrentMonthYear="CurrentMonthYear=$event"
+    @clickedDate="openDialog">
       <template v-slot:fullCalendarContent="{ arg }">
         <div class="flex flex-col gap-1 p-2"  v-if="arg.event.id">
           <p class="font-semibold text-sm truncate m-0">{{ arg?.event?.title }}</p>
@@ -27,8 +27,8 @@
     </CalendarEventComponent>
 </div>
 
-  <Dialog v-model:visible="dialogVisible" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <AddAvailability/>
+  <Dialog v-model:visible="dialogVisible" :modal="true" @hide="onDialogClose" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <AddAvailability @closeModal="onDialogClose" :date-prg="clickedDate" :id-depart="departmentSelected"/>
   </Dialog>
 </template>
 
@@ -48,11 +48,17 @@ const { handleAsyncError } = useHandleAsyncError();
 const dialogVisible = ref(false)
 
 const CurrentMonthYear = ref(null)
+const clickedDate = ref(null)
 
 const loading = ref(true)
 const errorReq = ref(null)
 
 const lstDisponibility = ref(null);
+
+const onDialogClose = () => {
+  clickedDate.value = null;
+  dialogVisible.value = false
+}
 
 async function getDisponibility(){
  const { error, result } = await handleAsyncError(
@@ -77,6 +83,11 @@ watch(
     }
   }
 )
+
+const openDialog = (date) => {
+  clickedDate.value = date
+  dialogVisible.value = true
+}
 </script>
 
 <style>
