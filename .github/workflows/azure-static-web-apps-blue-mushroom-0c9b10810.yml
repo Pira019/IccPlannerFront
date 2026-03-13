@@ -22,9 +22,9 @@ jobs:
           lfs: false
 
       # 2️⃣ Charger les variables de .env.developpement
-      - name: Load .env.developpement
+      - name: Load .env.development
         run: |
-          echo "Loading .env.developpement"
+          echo "Loading .env.development"
           export $(grep -v '^#' .env.developpement | xargs)
       
       # 3️⃣ Installer les dépendances (si nécessaire)
@@ -57,3 +57,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_MUSHROOM_0C9B10810 }}
           action: "close"
+
