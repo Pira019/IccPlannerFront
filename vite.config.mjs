@@ -11,6 +11,7 @@ export default defineConfig(({ command }) => {
 
   return {
     server: {
+         base: '/',
       host: 'localhost',
       port: 5173,
       strictPort: true,
