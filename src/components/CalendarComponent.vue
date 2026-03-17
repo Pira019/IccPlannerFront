@@ -1,20 +1,22 @@
 <script setup>
-    import dayGridPlugin from '@fullcalendar/daygrid';
+import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import FullCalendar from '@fullcalendar/vue3';
 import { nextTick, ref, watch } from 'vue';
 
-    import enLocal from '@fullcalendar/core/locales/en-gb';
+import enLocal from '@fullcalendar/core/locales/en-gb';
 import frLocal from '@fullcalendar/core/locales/fr-ca';
 import { useI18n } from 'vue-i18n';
 
 
-    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear']);
+    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear','clickedDate']);
     const props = defineProps({
         lstEvents: Array,
         showHeader: { type: Boolean, default: true },
-        currentView: { type: String, default: 'dayGridMonth' }
+        currentView: { type: String, default: 'dayGridMonth' },
+        addCalendarContent: { type: Boolean}
     });
 
     const { locale } = useI18n();
@@ -88,13 +90,14 @@ import { useI18n } from 'vue-i18n';
 
     const calendarRef = ref(null); // <-- référence du calendrier
     const optionCal = ref({
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin,listPlugin ],
         initialView: props.currentView,
         timeZone: 'local', // important !
         firstDay: 0,
         displayEventTime: false,
-        eventDisplay: 'block',
-        dayMaxEvents: true,
+        eventDisplay: 'auto',
+        allDaySlot: false,
+        dayMaxEvents: false,
         fixedWeekCount: false,
         locale: calendarLocales[locale.value],
         height: '100%',
@@ -115,15 +118,26 @@ import { useI18n } from 'vue-i18n';
         },
         eventClick(info) {
         info.jsEvent.preventDefault();
-        console.log("Event:", info.event);
         },
 
         dateClick(info) {
-            console.log("Date:", info.dateStr);
+            emit('clickedDate', info.dateStr);
         },
         eventDidMount: function(info) {
             info.el.style.cursor = 'pointer';
         },
+         dayCellClassNames(arg) {
+            const events = props.lstEvents || [];
+            const dateStr = arg.date.toISOString().split('T')[0];
+            const hasEvent = events.some(e => e.date === dateStr);
+
+            if (!hasEvent) {
+                return ["bg-gray-100", "opacity-70", "cursor-not-allowed"];
+            }
+
+            return ["cursor-pointer"];
+            },
+
         dayHeaderContent: (arg) => {
             const dayNumber = arg.date.getDate(); // 15, 16...
             const viewType = arg.view.type;
@@ -165,7 +179,6 @@ import { useI18n } from 'vue-i18n';
         }
     );
 
-    // ⚡ Watcher pour suivre les changements de currentView
     watch(
         () => props.currentView,
         (newView) => {
@@ -176,20 +189,46 @@ import { useI18n } from 'vue-i18n';
         { immediate: true }
     );
 
-    function eventsToCalendarEvents(events) {
-        if (!events) return [];
+  function eventsToCalendarEvents(events) {
+  if (!events) return [];
 
-        return events.map(e => ({
-            id: e.id,
-            title: e.title,
-            start: e.date,   // FullCalendar utilise "start"
-            allDay: true,
-            extendedProps: {
-                idPrg: e.idPrg,
-                indRecurrent: e.indRecurrent
-            }
-        }));
-    }
+  return events
+    .map(e => {
+
+      if (!e.date) return null; // sécurité, mais on suppose qu'elle existe
+
+      let startDate, endDate;
+      let allDay = true;
+
+      // Si startTime fourni - événement horaire précis
+      if (e.startTime) {
+        startDate = new Date(`${e.date}T${e.startTime}`);
+        endDate = e.endTime ? new Date(`${e.date}T${e.endTime}`) : startDate;
+        allDay = false;
+      } else {
+        startDate = new Date(`${e.date}T00:00:00`);
+        endDate = startDate;
+      }
+
+      return {
+        id: e?.id || '',
+        title:e?.title || '',
+        start: startDate.toISOString(),
+        end: endDate?.toISOString(),
+        allDay: allDay,
+        extendedProps: {
+          idPrg: e?.idPrg || null,
+          indRecurrent: e?.indRecurrent || false,
+          startTime: e?.startTime || null,
+          endTime: e?.endTime || null,
+        }
+      };
+
+
+    })
+    .filter(Boolean);
+}
+
     watch(locale, (newLocale) => {
         if (!calendarRef.value) return;
 
@@ -207,11 +246,10 @@ import { useI18n } from 'vue-i18n';
 
 <template>
     <div>
+
         <FullCalendar :options="optionCal" ref="calendarRef">
-            <template v-slot:eventContent="arg" v-if="false">
-                <div class="flex justify-center mt-3 flex-wrap" >
-                    <Button class="text-wrap" label="Ajouter" @click="$emit('showModal', arg.event.startStr)" v-tooltip="'Ajouter mes disponibilite'" severity="help" icon="pi pi-calendar-plus" size="large" />
-                </div>
+            <template v-slot:eventContent="arg" v-if="addCalendarContent">
+                <slot name="fullCalendarContent" :arg="arg"></slot>
             </template>
         </FullCalendar>
     </div>

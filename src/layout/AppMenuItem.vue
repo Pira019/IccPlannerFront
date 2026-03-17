@@ -64,11 +64,11 @@ function itemClick(event, item) {
 }
 
 function checkActiveRoute(item) {
-    return route.path === item.to;
+    return route.path === item.to || route.name === item.name;
 }
 </script>
 <template>
-    <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }"> 
+    <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
         <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ $t(item.label) }}</span>

@@ -15,9 +15,10 @@ const model = ref([
         label: 'AvailabilityTitlePage',
         items: [
             {
-                label: 'Mon calendrier',
+                label: 'liMydisponibility',
                 icon: 'pi pi-fw pi-calendar-plus',
-                to: '/availability'
+                to: '/availability/disponibility',
+                name: 'availability'
             },
             {
                 label: 'Signaler une absence',
