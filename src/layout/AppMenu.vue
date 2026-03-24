@@ -14,22 +14,9 @@ const model = ref([
     {
         label: 'AvailabilityTitlePage',
         items: [
-            {
-                label: 'liMydisponibility',
-                icon: 'pi pi-fw pi-calendar-plus',
-                to: '/availability/disponibility',
-                name: 'availability'
-            },
-            {
-                label: 'Signaler une absence',
-                icon: 'pi pi-fw pi-times-circle',
-                to: '/signaler-absence'
-            },
-            {
-                label: 'Vue globale des dispos',
-                icon: 'pi pi-fw pi-calendar',
-                to: '/auth/error'
-            }
+            { label: 'myPlanning.menuLabel', icon: 'pi pi-fw pi-user', to: '/my-planning' },
+            { label: 'liMydisponibility', icon: 'pi pi-fw pi-calendar-plus', to: '/availability/disponibility', name: 'availability' },
+            { label: 'planning.menuLabel', icon: 'pi pi-fw pi-calendar', to: '/availability' }
         ]
     },
     {
@@ -42,34 +29,16 @@ const model = ref([
         ]
     },
     {
-        label: 'Rapports',
-        items: [
-            {
-                label: 'Rapports généraux',
-                icon: 'pi pi-fw pi-chart-bar',
-                to: '/role-management'
-            }
-        ]
-    },
-    {
         label: 'liAdmin',
         to: '/admin',
         items: [
-            {
-                label: 'liGestRole',
-                icon: 'pi pi-shield',
-                to: '/role-management'
-            },
-            {
-                label: 'Paramètres des rappels',
-                icon: 'pi pi-fw pi-cog',
-                to: '/jj'
-            }
+            { label: 'liGestRole', icon: 'pi pi-shield', to: '/role-management' },
+            { label: 'settings.menuLabel', icon: 'pi pi-fw pi-cog', to: '/settings' }
         ]
     }
 ]);
 
-const accessibleMenu = filterMenuByPermissions(model.value); // Utilisez .value pour extraire le contenu du ref
+const accessibleMenu = filterMenuByPermissions(model.value);
 </script>
 
 <template>
@@ -80,5 +49,3 @@ const accessibleMenu = filterMenuByPermissions(model.value); // Utilisez .value 
         </template>
     </ul>
 </template>
-
-<style lang="scss" scoped></style>

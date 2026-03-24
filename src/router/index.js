@@ -60,6 +60,11 @@ const router = createRouter({
                     component: () => import('@/views/program/Program.vue'),
                 },
                 {
+                    path: '/my-planning',
+                    name: 'my-planning',
+                    component: () => import('@/views/availability/MyPlanning.vue')
+                },
+                {
                     path: '/availability',
                     name: 'Availability',
                     component: () => import('@/views/availability/Availability.vue'),
@@ -67,7 +72,7 @@ const router = createRouter({
                         {
                         path:'',
                         name: 'planning',
-                        component: () => import('@/views/availability/Planning.vue'),
+                        component: () => import('@/views/availability/PlanningBoard.vue'),
                         },
                         {
                         path: 'disponibility',
@@ -77,9 +82,9 @@ const router = createRouter({
                     ]
                 },
                 {
-                    path: '/pages/empty',
-                    name: 'empty',
-                    component: () => import('@/views/pages/Empty.vue')
+                    path: '/settings',
+                    name: 'settings',
+                    component: () => import('@/views/pages/Settings.vue')
                 },
                 {
                     path: '/role-management',

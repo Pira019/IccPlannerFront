@@ -56,5 +56,49 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.delete(endPoint)
     }
 
+    /**
+     * Obtenir le planning d'un département (services par mois/année)
+     */
+    static async getPlanning(idDept, month, year)
+    {
+        const endPoint = `${this.authBaseUrl}${idDept}/planning/${month}/${year}`
+        return await this.axiosInstance.get(endPoint)
+    }
+
+    /**
+     * Obtenir les membres d'un département avec leurs disponibilités pour une date
+     */
+    static async getMembersAvailability(idDept, date)
+    {
+        const endPoint = `${this.authBaseUrl}${idDept}/members/availability/${date}`
+        return await this.axiosInstance.get(endPoint)
+    }
+
+    /**
+     * Affecter un membre à un service du planning
+     */
+    static async assignMember(idDept, payload)
+    {
+        const endPoint = `${this.authBaseUrl}${idDept}/planning/assign`
+        return await this.axiosInstance.post(endPoint, payload)
+    }
+
+    /**
+     * Retirer un membre d'un service du planning
+     */
+    static async unassignMember(idDept, assignmentId)
+    {
+        const endPoint = `${this.authBaseUrl}${idDept}/planning/assign/${assignmentId}`
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+    /**
+     * Obtenir toutes les assignations d'un département pour un mois donné
+     */
+    static async getMonthlyAssignments(idDept, month, year)
+    {
+        const endPoint = `${this.authBaseUrl}${idDept}/planning/monthly/${month}/${year}`
+        return await this.axiosInstance.get(endPoint)
+    }
 
 }

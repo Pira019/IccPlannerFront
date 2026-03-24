@@ -1,20 +1,54 @@
 <script setup>
-import HeaderComponent from '@/components/HeaderComponent.vue';
-
 const props = defineProps({
     titlePage: { type: String, required: true },
-    showAddBtn: { type: Boolean, default: true }
+    subtitle: { type: String, default: null },
+    icon: { type: String, default: null },
+    showAddBtn: { type: Boolean, default: true },
+    addBtnLabel: { type: String, default: null },
+    breadcrumbs: { type: Array, default: () => [] },
+    actions: { type: Array, default: () => [] }
 });
+
+const emit = defineEmits(['btn-add']);
+
+const home = { icon: 'pi pi-home', to: '/' };
 </script>
+
 <template>
-    <div className="card">
-        <HeaderComponent class="mb-10" :title-page="titlePage">
-            <template #btn-add v-if="showAddBtn">
-                <Button class="text-[clamp(0.875rem,2vw,1.25rem)]
-                               px-[clamp(0.75rem,2vw,1rem)]
-                               py-[clamp(0.5rem,1vw,0.75rem)] rounded-md  flex items-center justify-center" type="button" :label="$t('Add')" icon="pi pi-plus" @click="$emit('btn-add')" />
-            </template>
-        </HeaderComponent>
+    <div class="card">
+        <!-- Breadcrumbs -->
+        <Breadcrumb v-if="breadcrumbs.length > 0" :home="home" :model="breadcrumbs" class="mb-4 !bg-transparent !p-0" />
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <i v-if="icon" :class="icon" class="text-2xl text-primary"></i>
+                    <h1 class="text-[clamp(1.5rem,5vw,2.5rem)] font-semibold text-primary m-0">{{ titlePage }}</h1>
+                </div>
+                <p v-if="subtitle" class="text-muted-color mt-1 mb-0">{{ subtitle }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Custom actions -->
+                <Button
+                    v-for="(action, i) in actions"
+                    :key="i"
+                    :label="$t(action.label)"
+                    :icon="action.icon"
+                    :severity="action.severity || 'secondary'"
+                    @click="action.action"
+                    outlined
+                />
+                <!-- Default add button -->
+                <Button
+                    v-if="showAddBtn"
+                    :label="addBtnLabel || $t('Add')"
+                    icon="pi pi-plus"
+                    @click="emit('btn-add')"
+                />
+            </div>
+        </div>
+
         <slot></slot>
     </div>
 </template>

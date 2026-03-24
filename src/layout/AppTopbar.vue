@@ -1,19 +1,43 @@
 <script setup>
 import LangConfiguration from '@/components/LangConfiguration.vue';
 import { useLayout } from '@/layout/composables/layout';
-import AppConfigurator from './AppConfigurator.vue';
+import { useAuthStore } from '@/store/Auth';
+import { computed, ref } from 'vue';
 import { redirigeVers } from '../router';
 
-function navigateTo(routeName) {
-    redirigeVers(routeName);
-}
+const { toggleMenu } = useLayout();
+const auth = useAuthStore();
 
+const notificationCount = ref(3); // Demo — will come from API
+const userMenuRef = ref(null);
 
-const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+const userMenuItems = ref([
+    { label: 'liProfil', icon: 'pi pi-user', command: () => redirigeVers('profil') },
+    { separator: true },
+    { label: 'logout', icon: 'pi pi-sign-out', command: () => handleLogout() }
+]);
+
+const userInitials = computed(() => {
+    const claims = auth.claims;
+    if (!claims) return '?';
+    const name = claims.name || claims.email || '';
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+});
+
+const handleLogout = () => {
+    auth.logout();
+    redirigeVers('login');
+};
+
+const toggleUserMenu = (event) => {
+    userMenuRef.value?.toggle(event);
+};
 </script>
 
 <template>
-    <AppConfigurator />
     <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
@@ -26,38 +50,30 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
         </div>
 
         <div class="layout-topbar-actions">
-            <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
-                    <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
-                </button>
-            </div>
-
-            <button
-                class="layout-topbar-menu-button layout-topbar-action"
-                v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
-            >
-                <i class="pi pi-ellipsis-v"></i>
+            <!-- Notifications -->
+            <button type="button" class="layout-topbar-action relative">
+                <i class="pi pi-bell"></i>
+                <Badge v-if="notificationCount > 0" :value="notificationCount" severity="danger" class="absolute -top-1 -right-1 !min-w-5 !h-5 !text-xs" />
             </button>
 
-            <div class="layout-topbar-menu hidden lg:block">
-                <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action" @click="navigateTo('profil')">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+            <!-- Language -->
+            <LangConfiguration />
+
+            <!-- User profile -->
+            <button type="button" class="layout-topbar-action flex items-center gap-2" @click="toggleUserMenu">
+                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+                    {{ userInitials }}
                 </div>
-            </div>
-            <div class="layout-config-menu">
-                <LangConfiguration />
-            </div>
+                <i class="pi pi-chevron-down text-xs hidden lg:block"></i>
+            </button>
+            <Menu ref="userMenuRef" :model="userMenuItems" popup>
+                <template #item="{ item, props: itemProps }">
+                    <a v-bind="itemProps.action" class="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700">
+                        <i :class="item.icon"></i>
+                        <span>{{ $t(item.label) }}</span>
+                    </a>
+                </template>
+            </Menu>
         </div>
     </div>
 </template>

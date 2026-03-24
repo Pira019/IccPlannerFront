@@ -31,7 +31,19 @@ export default class BaseService
             return config;
         });
 
-
+        this.axiosInstance.interceptors.response.use(
+            response => response,
+            error => {
+                if (error.response?.status === 401) {
+                    // Token expiré ou non authentifié → rediriger vers login
+                    const currentPath = window.location.pathname;
+                    if (currentPath !== '/auth/login') {
+                        window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+                    }
+                }
+                return Promise.reject(error);
+            }
+        );
     }
 }
 

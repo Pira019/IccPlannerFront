@@ -82,6 +82,7 @@
     "liDepart": "Départements",
     "liMydisponibility": "Mes disponibilités",
     "addDispo": "Ajouter mes disponibilités",
+    "liAvailability": "Mes disponibilités",
 
     "liDescRecurrent": "Un programme récurrent, c’est une activité qui se répète chaque semaine. Par exemple, le culte de célébration ou l’atmosphère de prière prophétique qui ont lieu régulièrement.",
     "liDescNonRecurrent": "Un programme non récurrent, c’est une activité qui n’a lieu qu’une seule fois ou de façon exceptionnelle. Par exemple, un mariage, un baptême ou un événement spécial organisé pour une occasion particulière.",
@@ -263,5 +264,112 @@
   "liThursday": "Jeudi",
   "liFriday": "Vendredi",
   "liSaturday": "Samedi",
-  "liSunday": "Dimanche"
+  "liSunday": "Dimanche",
+
+  "logout": "Déconnexion",
+
+  "dashboard": {
+      "upcomingPrograms": "Prochains programmes",
+      "memberActivity": "Activité des membres",
+      "notifications": "Notifications",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "days": "jours",
+      "noProgramsTitle": "Aucun programme à venir",
+      "noProgramsDesc": "Les prochains programmes apparaîtront ici",
+      "noActivityTitle": "Aucune activité récente",
+      "noActivityDesc": "Les activités des membres apparaîtront ici",
+      "activityInscription": "Inscription",
+      "activityDisponibilite": "Disponibilité",
+      "minutesAgo": "{n} min",
+      "hoursAgo": "{n}h",
+      "daysAgo": "{n}j",
+      "retry": "Réessayer"
+  },
+
+  "footer": {
+      "by": "Par"
+  },
+
+  "empty": {
+      "ministries": "Aucun ministère",
+      "ministriesDesc": "Commencez par créer votre premier ministère",
+      "departments": "Aucun département",
+      "departmentsDesc": "Commencez par créer votre premier département",
+      "members": "Aucun membre",
+      "membersDesc": "Invitez des membres pour commencer",
+      "programs": "Aucun programme",
+      "programsDesc": "Créez votre premier programme",
+      "services": "Aucun service",
+      "servicesDesc": "Ajoutez un service pour commencer"
+  },
+
+  "planning": {
+      "title": "Planning départemental",
+      "menuLabel": "Planning",
+      "selectDeptTitle": "Sélectionnez un département",
+      "selectDeptDesc": "Choisissez un département pour voir et gérer son planning.",
+      "assignMembers": "Affecter les membres",
+      "available": "Disponible",
+      "unavailable": "Indisponible",
+      "assigned": "Affecté(s)",
+      "assign": "Affecter",
+      "unassign": "Retirer",
+      "assignSuccess": "Le membre a été affecté avec succès.",
+      "unassignSuccess": "Le membre a été retiré avec succès.",
+      "searchMembers": "Rechercher un membre...",
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "actions": "Actions",
+      "exportPdf": "Exporter en PDF",
+      "share": "Partager le lien",
+      "publish": "Publier le planning",
+      "totalMembers": "Total",
+      "noMembersForDate": "Aucun membre trouvé pour cette date.",
+      "viewCalendar": "Calendrier",
+      "viewTable": "Tableau",
+      "noAssignments": "Aucune assignation pour ce mois.",
+      "legendAssigned": "Assigné",
+      "legendAvailable": "Disponible",
+      "legendUnavailable": "Indisponible",
+      "totalAssignments": "assignations",
+      "slotsToFill": "créneaux à pourvoir",
+      "member": "Membre"
+    },
+    "myPlanning": {
+      "title": "Mon Planning",
+      "subtitle": "Vos assignations pour le mois",
+      "menuLabel": "Mon planning",
+      "assignments": "assignations",
+      "noAssignments": "Aucune assignation ce mois-ci"
+    },
+    "profil": {
+      "edit": "Modifier",
+      "personalInfo": "Informations personnelles",
+      "contact": "Coordonnées",
+      "ministry": "Ministère et département",
+      "memberSince": "Membre depuis",
+      "birthDate": "Date de naissance"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "subtitle": "Configurez les règles de fonctionnement de l'application",
+      "menuLabel": "Paramètres",
+      "globalSection": "Délai par défaut",
+      "globalSectionDesc": "S'applique à tous les programmes et départements sauf si une règle spécifique est définie.",
+      "programSection": "Par programme",
+      "programSectionDesc": "Définir un délai spécifique pour chaque programme.",
+      "deptSection": "Par département",
+      "deptSectionDesc": "Définir un délai spécifique pour chaque département.",
+      "deadlineLabel": "Délai de modification",
+      "beforeProgram": "avant le programme",
+      "deadlineHelp": "Passé ce délai, les membres ne pourront plus modifier leur disponibilité.",
+      "noProgramRules": "Aucune règle par programme. Le délai par défaut s'applique.",
+      "noDeptRules": "Aucune règle par département. Le délai par défaut s'applique.",
+      "addProgramRule": "Ajouter une règle programme",
+      "editProgramRule": "Modifier la règle programme",
+      "addDeptRule": "Ajouter une règle département",
+      "editDeptRule": "Modifier la règle département",
+      "selectProgram": "Sélectionner un programme"
+    }
 }

@@ -19,7 +19,7 @@ const { t } = useI18n();
                         </div>
                         <h1 class="text-surface-900 dark:text-surface-0 font-bold text-5xl mb-2"> {{t?.('errorOccured')}} </h1>
                         <span class="text-muted-color mb-8">{{t?.('internalError')}}</span>
-                        <img src="/demo/images/error/asset-error.svg" alt="Error" class="mb-8" width="80%" />
+                        <img src="/images/asset-error.svg" alt="Error" class="mb-8" width="80%" />
                         <div class="col-span-12 mt-8 text-center">
                             <Button as="router-link" label="Go to Dashboard" to="/" severity="danger" />
                         </div>

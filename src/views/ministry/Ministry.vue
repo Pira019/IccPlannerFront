@@ -140,7 +140,14 @@ onMounted(async () => {
                 <template #empty>
                     <div id="msg">
                         <ResponseComponent show-success-message="false" :error="errorReq" />
-                        <Message v-if="!loading && !errorReq" severity="info" icon="pi pi-info-circle">{{ $t('liNoElement') }}</Message>
+                        <EmptyStateComponent
+                            v-if="!loading && !errorReq"
+                            icon="pi pi-warehouse"
+                            title="empty.ministries"
+                            description="empty.ministriesDesc"
+                            action-label="Add"
+                            @action="openAdd"
+                        />
                     </div>
                 </template>
 

@@ -1,7 +1,6 @@
 <script setup>
 import LangConfiguration from '@/components/LangConfiguration.vue';
 import ErrorComponent from '@/components/ResponseComponent.vue';
-import AppConfigurator from '@/layout/AppConfigurator.vue';
 import AccountService from '@/service/AccountService';
 import { useAuthStore } from '@/store/Auth';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
@@ -58,7 +57,6 @@ onMounted(() => {
 
 <template>
     <LangConfiguration is-login-page="true" />
-    <AppConfigurator />
     <div class="bg-surface-50 dark:bg-surface-950 flex flex-col items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">

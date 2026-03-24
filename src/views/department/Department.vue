@@ -249,7 +249,14 @@ const toggle = (event, id) => {
                 <template #empty>
                     <div>
                         <ResponseComponent show-success-message="false" :error="errorReq" />
-                        <Message v-if="!loading && !errorReq" severity="info" icon="pi pi-info-circle">{{ $t('noDepart') }}</Message>
+                        <EmptyStateComponent
+                            v-if="!loading && !errorReq"
+                            icon="pi pi-sitemap"
+                            title="empty.departments"
+                            description="empty.departmentsDesc"
+                            action-label="Add"
+                            @action="onAddDepartment"
+                        />
                     </div>
                 </template>
 

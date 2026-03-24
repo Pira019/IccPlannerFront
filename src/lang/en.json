@@ -99,6 +99,7 @@
     "liNoElement": "No element found.",
     "liSelectDepart": "Select a department",
     "addDispo": "Add my availability",
+    "liAvailability": "My Availability",
 
     "servicesCulte": "Service/Worship",
 
@@ -261,5 +262,112 @@
   "liThursday": "Thursday",
   "liFriday": "Friday",
   "liSaturday": "Saturday",
-  "liSunday": "Sunday"
+  "liSunday": "Sunday",
+
+  "logout": "Logout",
+
+  "dashboard": {
+      "upcomingPrograms": "Upcoming Programs",
+      "memberActivity": "Member Activity",
+      "notifications": "Notifications",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "days": "days",
+      "noProgramsTitle": "No upcoming programs",
+      "noProgramsDesc": "Upcoming programs will appear here",
+      "noActivityTitle": "No recent activity",
+      "noActivityDesc": "Member activities will appear here",
+      "activityInscription": "Registration",
+      "activityDisponibilite": "Availability",
+      "minutesAgo": "{n} min",
+      "hoursAgo": "{n}h",
+      "daysAgo": "{n}d",
+      "retry": "Retry"
+  },
+
+  "footer": {
+      "by": "By"
+  },
+
+  "empty": {
+      "ministries": "No ministries",
+      "ministriesDesc": "Start by creating your first ministry",
+      "departments": "No departments",
+      "departmentsDesc": "Start by creating your first department",
+      "members": "No members",
+      "membersDesc": "Invite members to get started",
+      "programs": "No programs",
+      "programsDesc": "Create your first program",
+      "services": "No services",
+      "servicesDesc": "Add a service to get started"
+  },
+
+  "planning": {
+      "title": "Department Planning",
+      "menuLabel": "Planning",
+      "selectDeptTitle": "Select a department",
+      "selectDeptDesc": "Choose a department to view and manage its planning.",
+      "assignMembers": "Assign Members",
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "assigned": "Assigned",
+      "assign": "Assign",
+      "unassign": "Remove",
+      "assignSuccess": "Member has been assigned successfully.",
+      "unassignSuccess": "Member has been removed successfully.",
+      "searchMembers": "Search a member...",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "actions": "Actions",
+      "exportPdf": "Export as PDF",
+      "share": "Share link",
+      "publish": "Publish planning",
+      "totalMembers": "Total",
+      "noMembersForDate": "No members found for this date.",
+      "viewCalendar": "Calendar",
+      "viewTable": "Table",
+      "noAssignments": "No assignments for this month.",
+      "legendAssigned": "Assigned",
+      "legendAvailable": "Available",
+      "legendUnavailable": "Unavailable",
+      "totalAssignments": "assignments",
+      "slotsToFill": "slots to fill",
+      "member": "Member"
+  },
+  "myPlanning": {
+      "title": "My Planning",
+      "subtitle": "Your assignments for the month",
+      "menuLabel": "My planning",
+      "assignments": "assignments",
+      "noAssignments": "No assignments this month"
+  },
+  "profil": {
+      "edit": "Edit",
+      "personalInfo": "Personal information",
+      "contact": "Contact details",
+      "ministry": "Ministry and department",
+      "memberSince": "Member since",
+      "birthDate": "Date of birth"
+  },
+  "settings": {
+      "title": "Settings",
+      "subtitle": "Configure application rules and behavior",
+      "menuLabel": "Settings",
+      "globalSection": "Default deadline",
+      "globalSectionDesc": "Applies to all programs and departments unless a specific rule is defined.",
+      "programSection": "By program",
+      "programSectionDesc": "Set a specific deadline for each program.",
+      "deptSection": "By department",
+      "deptSectionDesc": "Set a specific deadline for each department.",
+      "deadlineLabel": "Modification deadline",
+      "beforeProgram": "before the program",
+      "deadlineHelp": "After this deadline, members will no longer be able to modify their availability.",
+      "noProgramRules": "No program rules. The default deadline applies.",
+      "noDeptRules": "No department rules. The default deadline applies.",
+      "addProgramRule": "Add program rule",
+      "editProgramRule": "Edit program rule",
+      "addDeptRule": "Add department rule",
+      "editDeptRule": "Edit department rule",
+      "selectProgram": "Select a program"
+  }
 }

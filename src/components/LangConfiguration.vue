@@ -1,44 +1,47 @@
-<script setup lang="ts">
+<script setup>
 import { ref, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { boolean } from 'zod';
 
 const props = defineProps({
-    isLoginPage: { type: boolean, required: false }
+    isLoginPage: { type: Boolean, required: false }
 });
 
-// Initialiser useI18n
 const { locale } = useI18n();
 
-// Array of available languages
 const language = ref([{ name: 'fr-FR' }, { name: 'en-US' }]);
 
 const savedLanguage = localStorage.getItem('Accept-Language');
 const currentLanguage = ref(language.value.some((lang) => lang.name === savedLanguage) ? savedLanguage : 'fr-FR');
 
-// Met à jour localStorage et i18n avec la langue courante
 localStorage.setItem('Accept-Language', currentLanguage.value);
 locale.value = currentLanguage.value;
 
-// Function to switch language
 function switchLang() {
-    const nextLang = currentLanguage.value === 'fr-FR' ? 'en-US' : 'fr-FR'; // Toggle between fr-FR and en-US
-    localStorage.setItem('Accept-Language', nextLang); // Save the selected language to localStorage
-    currentLanguage.value = nextLang; // Update the currentLanguage ref
+    const nextLang = currentLanguage.value === 'fr-FR' ? 'en-US' : 'fr-FR';
+    localStorage.setItem('Accept-Language', nextLang);
+    currentLanguage.value = nextLang;
 }
 
 watchEffect(() => {
     locale.value = currentLanguage.value;
 });
+
+const flagSrc = (lang) => (lang === 'fr-FR' ? '/images/flag-fr.svg' : '/images/flag-gb.svg');
 </script>
 
 <template>
     <div :class="props.isLoginPage ? 'fixed flex gap-4 top-8 right-8' : ''">
-        <div class="relative">
-            <button @click="switchLang">
-                <!-- Dynamically update the flag based on currentLanguage -->
-                <span class="flag" :class="currentLanguage === 'fr-FR' ? 'flag-us' : 'flag-fr'"></span>
-            </button>
-        </div>
+        <button
+            @click="switchLang"
+            class="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
+            :title="currentLanguage === 'fr-FR' ? 'Switch to English' : 'Passer en Français'"
+        >
+            <img
+                :src="flagSrc(currentLanguage === 'fr-FR' ? 'en-US' : 'fr-FR')"
+                :alt="currentLanguage === 'fr-FR' ? 'English' : 'Français'"
+                class="w-6 h-4 rounded-sm object-cover shadow-sm border border-surface-200"
+            />
+            <span class="text-sm font-medium hidden sm:inline">{{ currentLanguage === 'fr-FR' ? 'EN' : 'FR' }}</span>
+        </button>
     </div>
 </template>
