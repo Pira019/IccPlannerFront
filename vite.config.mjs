@@ -10,8 +10,9 @@ export default defineConfig(({ command }) => {
   const isDev = command === 'serve'
 
   return {
+    base: '/',
     server: {
-         base: '/',
+
       host: 'localhost',
       port: 5173,
       strictPort: true,
