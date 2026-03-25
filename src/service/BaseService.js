@@ -35,9 +35,10 @@ export default class BaseService
             response => response,
             error => {
                 if (error.response?.status === 401) {
-                    // Token expiré ou non authentifié → rediriger vers login
                     const currentPath = window.location.pathname;
-                    if (currentPath !== '/auth/login') {
+                    // Ne pas rediriger si on est sur login ou si c'est un appel claims (géré par le store)
+                    const isClaims = error.config?.url?.includes('claims');
+                    if (currentPath !== '/auth/login' && !isClaims) {
                         window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
                     }
                 }
