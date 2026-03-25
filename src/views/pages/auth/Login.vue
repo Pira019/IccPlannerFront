@@ -38,7 +38,14 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     }
 
     // Charger les claims avant de naviguer (évite un 401 dans le guard)
+    // Sur mobile, le cookie peut ne pas être immédiatement disponible → retry
     await useAuth.authUser();
+
+    if (!useAuth.isAuthenticated) {
+        // Retry après un court délai (propagation cookie mobile)
+        await new Promise((r) => setTimeout(r, 500));
+        await useAuth.authUser();
+    }
 
     if (!useAuth.isAuthenticated) {
         errorMessage.value = { message: t('errorLoadingPermissions') };
