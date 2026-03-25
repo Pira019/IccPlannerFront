@@ -22,4 +22,3 @@ localhost-key.pem
 .vs/slnx.sqlite-journal
 .vs
 azure-pipelines.yml
-staticwebapp.config.json

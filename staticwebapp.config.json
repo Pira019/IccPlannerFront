@@ -1,0 +1,15 @@
+{
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": ["/images/*.{png,jpg,jpeg,gif,svg,webp,ico}", "/css/*.css", "/js/*.{js,mjs}", "/api/*", "/*.{png,jpg,jpeg,gif,svg,webp,ico,css,js,mjs,json,xml,txt}"]
+    },
+    "mimeTypes": {
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".json": "application/json"
+    },
+    "platform": {
+        "apiRuntime": "node:18"
+    },
+    "trailingSlash": "never"
+}
