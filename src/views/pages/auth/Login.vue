@@ -38,17 +38,20 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     }
 
     // Charger les claims avant de naviguer (évite un 401 dans le guard)
-    // Sur mobile, le cookie peut ne pas être immédiatement disponible → retry
-    await useAuth.authUser();
-
-    if (!useAuth.isAuthenticated) {
-        // Retry après un court délai (propagation cookie mobile)
-        await new Promise((r) => setTimeout(r, 500));
+    // Sur mobile, le cookie peut ne pas être immédiatement disponible → retry progressif
+    const maxRetries = 3;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        if (attempt > 0) {
+            await new Promise((r) => setTimeout(r, 600 * attempt));
+        }
         await useAuth.authUser();
+        if (useAuth.isAuthenticated) break;
     }
 
     if (!useAuth.isAuthenticated) {
-        errorMessage.value = { message: t('errorLoadingPermissions') };
+        // Debug: afficher le détail de l'erreur sur mobile
+        const debugInfo = `authError=${useAuth.authError} | claimsLoaded=${useAuth.claimsLoaded}`;
+        errorMessage.value = { message: `${t('errorLoadingPermissions')} [${debugInfo}]` };
         return;
     }
 
