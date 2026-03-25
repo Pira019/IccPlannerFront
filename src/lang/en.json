@@ -169,6 +169,7 @@
     "msgSuccess": "The action was completed successfully.",
 
     "forgotPassword": "Forgot password?",
+    "errorLoadingPermissions": "Error loading permissions.",
     "rememberMe": "Remember me",
     "signIn": "Sign In",
     "singInText": "Sign in to continue",

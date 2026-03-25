@@ -153,6 +153,7 @@
     "defaultMsgAvailability": "Par défaut, vous êtes indisponible. Veuillez cliquer sur le bouton dans le calendrier pour indiquer vos disponibilités pour un ou plusieurs services.",
 
     "forgotPassword": "Mot de passe oublié ?",
+    "errorLoadingPermissions": "Erreur lors du chargement des permissions.",
     "rememberMe": "Se souvenir de moi",
     "signIn": "Se connecter",
     "singInText": "Se connecter pour continuer",
