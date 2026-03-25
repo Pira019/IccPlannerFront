@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/Auth';
 import axios from "axios";
 
 /**
@@ -28,6 +29,17 @@ export default class BaseService
     {
         this.axiosInstance.interceptors.request.use(config => {
             config.headers['Accept-Language'] = this.getLang()
+
+            // Fallback mobile : envoyer le token en header si disponible
+            try {
+                const auth = useAuthStore();
+                if (auth.accessToken) {
+                    config.headers['Authorization'] = `Bearer ${auth.accessToken}`;
+                }
+            } catch {
+                // Store pas encore initialisé (avant Pinia), on ignore
+            }
+
             return config;
         });
 

@@ -30,28 +30,23 @@ const useAuth = useAuthStore();
  */
 const onSubmit = handleSubmit.withControlled(async (values) => {
     const credentials = JSON.stringify(values);
-    const { error } = await handleAsyncError(async () => await AccountService.login(credentials));
+    const { result, error } = await handleAsyncError(async () => await AccountService.login(credentials));
 
     if (error) {
         errorMessage.value = error;
         return;
     }
 
-    // Charger les claims avant de naviguer (évite un 401 dans le guard)
-    // Sur mobile, le cookie peut ne pas être immédiatement disponible → retry progressif
-    const maxRetries = 3;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        if (attempt > 0) {
-            await new Promise((r) => setTimeout(r, 600 * attempt));
-        }
-        await useAuth.authUser();
-        if (useAuth.isAuthenticated) break;
+    // Stocker le token en mémoire (fallback mobile quand le cookie HttpOnly est bloqué)
+    if (result?.accessToken) {
+        useAuth.accessToken = result.accessToken;
     }
 
+    // Charger les claims avant de naviguer
+    await useAuth.authUser();
+
     if (!useAuth.isAuthenticated) {
-        // Debug: afficher le détail de l'erreur sur mobile
-        const debugInfo = `authError=${useAuth.authError} | claimsLoaded=${useAuth.claimsLoaded}`;
-        errorMessage.value = { message: `${t('errorLoadingPermissions')} [${debugInfo}]` };
+        errorMessage.value = { message: t('errorLoadingPermissions') };
         return;
     }
 

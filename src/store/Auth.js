@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', {
     authError : false,
     redirectPath : null,
     claimsLoaded: false,
+    accessToken: null,
   }),
   actions: {
 
@@ -23,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
 
     /* Permet de récupérer les permissions d'un utilisateur */
       async authUser() {
-          this.isFetchingClaims = true;  // ⚡ Mettre à true dès le début
+          this.isFetchingClaims = true;
           this.authError = false;
 
         try {
@@ -33,7 +34,6 @@ export const useAuthStore = defineStore('auth', {
         if (authService.status === 200) {
              this.saveUserClaims(authService.data)
          } else {
-            // Statut inattendu
             this.claims = { roles: [], permissions: [] };
             this.isAuthenticated = false;
             this.claimsLoaded = false;
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
            // Token expiré -> logout
             this.claims = { roles: [], permissions: [] };
             this.isAuthenticated = false;
-            this.authError = false; // pas une erreur "technique"
+            this.authError = false;
             this.claimsLoaded = false;
             this.isFetchingClaims = false;
         } else {
@@ -70,6 +70,7 @@ export const useAuthStore = defineStore('auth', {
       this.authError = false;
       this.isFetchingClaims = false;
       this.claimsLoaded = false;
+      this.accessToken = null;
     }
   }
 })
