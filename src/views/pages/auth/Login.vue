@@ -8,11 +8,13 @@ import { RouteName } from '@/utils/RouteName';
 import { LoginValidator } from '@/validations/LoginValidator';
 import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 const { handleAsyncError } = useHandleAsyncError();
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 
 const appName = import.meta.env.VITE_APP_NAME;
 
@@ -32,6 +34,14 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
     if (error) {
         errorMessage.value = error;
+        return;
+    }
+
+    // Charger les claims avant de naviguer (évite un 401 dans le guard)
+    await useAuth.authUser();
+
+    if (!useAuth.isAuthenticated) {
+        errorMessage.value = { message: t('errorLoadingPermissions') };
         return;
     }
 
