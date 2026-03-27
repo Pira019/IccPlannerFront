@@ -89,11 +89,9 @@ async function getDisponibility(){
 
 async function getMyAvailabilities() {
   if (!CurrentMonthYear.value) return;
-  console.log('[Debug] Calling getMyAvailabilities', props.departmentSelected, CurrentMonthYear.value.month, CurrentMonthYear.value.year);
-  const { result, error } = await handleAsyncError(
+  const { result } = await handleAsyncError(
     () => AvailabilityService.getMyAvailabilities(props.departmentSelected, CurrentMonthYear.value.month, CurrentMonthYear.value.year)
   );
-  console.log('[Debug] myAvailabilities result:', result, 'error:', error);
   myAvailabilities.value = result || [];
 }
 
@@ -107,9 +105,6 @@ const mergedEvents = computed(() => {
     const dateStr = day.date;
     availMap[dateStr] = day.items;
   });
-
-  console.log('[Debug] baseEvents dates:', baseEvents.map(e => e.date));
-  console.log('[Debug] availMap keys:', Object.keys(availMap));
 
   const events = [];
 
