@@ -99,7 +99,13 @@
     "liNoElement": "No element found.",
     "liSelectDepart": "Select a department",
     "addDispo": "Add my availability",
+    "notInDepartment": "You are not a member of this department.",
+    "liNoAvailability": "No availability",
     "liAvailability": "My Availability",
+    "liSelectAll": "Select all",
+    "liDeselectAll": "Deselect all",
+    "liAvailable": "Available",
+    "liUnavailable": "Unavailable",
 
     "servicesCulte": "Service/Worship",
 

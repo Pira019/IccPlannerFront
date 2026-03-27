@@ -30,4 +30,13 @@ export default class MemberService extends BaseService
         const endPoint = `${this.authBaseUrl}me/planning/${month}/${year}`
         return await this.axiosInstance.get(endPoint)
     }
+
+    /**
+     * Vérifier si l'utilisateur fait partie d'un département
+     */
+    static async belongsToDepartment(departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}belongs/${departmentId}`
+        return await this.axiosInstance.get(endPoint)
+    }
 }

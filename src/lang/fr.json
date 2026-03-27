@@ -82,7 +82,13 @@
     "liDepart": "Départements",
     "liMydisponibility": "Mes disponibilités",
     "addDispo": "Ajouter mes disponibilités",
+    "notInDepartment": "Vous ne faites pas partie de ce département.",
+    "liNoAvailability": "Aucune disponibilité",
     "liAvailability": "Mes disponibilités",
+    "liSelectAll": "Tout sélectionner",
+    "liDeselectAll": "Tout désélectionner",
+    "liAvailable": "Disponible",
+    "liUnavailable": "Indisponible",
 
     "liDescRecurrent": "Un programme récurrent, c’est une activité qui se répète chaque semaine. Par exemple, le culte de célébration ou l’atmosphère de prière prophétique qui ont lieu régulièrement.",
     "liDescNonRecurrent": "Un programme non récurrent, c’est une activité qui n’a lieu qu’une seule fois ou de façon exceptionnelle. Par exemple, un mariage, un baptême ou un événement spécial organisé pour une occasion particulière.",

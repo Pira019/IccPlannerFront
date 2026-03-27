@@ -117,7 +117,9 @@ import { useI18n } from 'vue-i18n';
             emit('CurrentMonthYear', {formattedMonthYear, month,year});
         },
         eventClick(info) {
-        info.jsEvent.preventDefault();
+            info.jsEvent.preventDefault();
+            const dateStr = info.event.startStr.split('T')[0];
+            emit('clickedDate', dateStr);
         },
 
         dateClick(info) {
@@ -221,6 +223,8 @@ import { useI18n } from 'vue-i18n';
           indRecurrent: e?.indRecurrent || false,
           startTime: e?.startTime || null,
           endTime: e?.endTime || null,
+          hasAvailability: e?.hasAvailability || false,
+          programName: e?.programName || null,
         }
       };
 
@@ -270,14 +274,43 @@ import { useI18n } from 'vue-i18n';
     .fc-day-today,
     .fc-day-today .fc-daygrid-day-bg,
     .fc-day-today .fc-daygrid-day-frame {
-        background: transparent !important; /* supprime tout fond */
-        box-shadow: none !important; /* supprime éventuels ombrages */
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
         .fc-day-today .fc-daygrid-day-number {
             @apply bg-primary text-white p-1 w-6 h-6 flex items-center justify-center rounded-full;
         }
 
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .fc .fc-daygrid-day-frame {
+        min-height: 60px !important;
+    }
 
+    .fc .fc-event {
+        font-size: 0.65rem !important;
+        padding: 1px 2px !important;
+        line-height: 1.2 !important;
+    }
+
+    .fc .fc-col-header-cell-cushion {
+        font-size: 0.7rem !important;
+        padding: 4px 2px !important;
+    }
+
+    .fc .fc-daygrid-day-number {
+        font-size: 0.75rem !important;
+        padding: 2px 4px !important;
+    }
+
+    .fc .fc-daygrid-day-events {
+        margin-top: 0 !important;
+    }
+
+    .fc .fc-daygrid-event {
+        margin: 1px 0 !important;
+    }
+}
 </style>
 

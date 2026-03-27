@@ -7,13 +7,14 @@ export default class AvailabilityService extends BaseService
 {
     static authBaseUrl = "availabilities/"
 
-    static async addAvailability(servicePrgId)
+    static async addAvailability(idDepart, servicePrgIds)
     {
         const payload =
         {
-            servicePrgId
+            servicePrgIds
         }
-         return await this.axiosInstance.post(this.authBaseUrl, payload)
+        const endPoint = `${this.authBaseUrl}${idDepart}`
+        return await this.axiosInstance.post(endPoint, payload)
     }
 
     static async delete(servicePrgId)
@@ -22,4 +23,9 @@ export default class AvailabilityService extends BaseService
             return await this.axiosInstance.delete(endPoint);
         }
 
+    static async getMyAvailabilities(departmentId, month, year)
+    {
+        const endPoint = `${this.authBaseUrl}me/${departmentId}/${month}/${year}`
+        return await this.axiosInstance.get(endPoint)
+    }
 }

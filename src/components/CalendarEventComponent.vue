@@ -5,7 +5,7 @@ import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const emit = defineEmits(['CurrentMonthYear','clickedDate']);
 
@@ -64,6 +64,19 @@ const next = () => {
     selectedDate.value = calView.currentStart;
 };
 
+// Computed : intervalle de la semaine en cours
+const weekRange = computed(() => {
+    const d = new Date(selectedDate.value);
+    const day = d.getDay(); // 0 = dimanche
+    const start = new Date(d);
+    start.setDate(d.getDate() - day);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+
+    const opts = { day: '2-digit', month: 'short' };
+    return `${start.toLocaleDateString(locale.value, opts)} - ${end.toLocaleDateString(locale.value, opts)} ${end.getFullYear()}`;
+});
+
 // Watch sur selectedDate pour mettre à jour FullCalendar
 watch(selectedDate, (newDate) => {
     if (calendar.value && newDate) {
@@ -87,11 +100,34 @@ watch(selectedDate, (newDate) => {
                     <div class="flex items-center gap-1 sm:gap-2 justify-between sm:justify-start flex-wrap">
                         <Button icon="pi pi-chevron-left" text @click="prev" class="flex-shrink-0" />
 
-                        <DatePicker v-model="selectedDate" class="w-32 sm:w-40 md:w-44" dateFormat="dd/mm/yy" showIcon iconDisplay="input" />
+                        <slot name="datePicker">
+                            <!-- Vue mois : DatePicker en mode mois -->
+                            <DatePicker v-if="view === 'dayGridMonth'"
+                                v-model="selectedDate"
+                                view="month"
+                                dateFormat="mm/yy"
+                                class="w-32 sm:w-40 md:w-44"
+                                showIcon
+                                iconDisplay="input" />
 
+                            <!-- Vue semaine / liste : affichage de l'intervalle -->
+                            <span v-else-if="view === 'timeGridWeek' || view === 'listWeek'"
+                                class="text-sm font-semibold whitespace-nowrap px-2">
+                                {{ weekRange }}
+                            </span>
+
+                            <!-- Vue jour : DatePicker classique -->
+                            <DatePicker v-else
+                                v-model="selectedDate"
+                                class="w-32 sm:w-40 md:w-44"
+                                dateFormat="dd/mm/yy"
+                                showIcon
+                                iconDisplay="input" />
+                        </slot>
+                        
                         <Button icon="pi pi-chevron-right" text @click="next" class="flex-shrink-0" />
 
-                        <span class="text-xs sm:text-sm md:text-base font-semibold capitalize ml-2 hidden md:inline">
+                        <span class="text-sm sm:text-base md:text-lg font-bold capitalize ml-2 hidden md:inline">
                             {{ currentMonthYear?.formattedMonthYear }}
                         </span>
                     </div>
