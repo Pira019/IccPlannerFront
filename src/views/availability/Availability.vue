@@ -46,7 +46,7 @@ import { ref } from 'vue';
 const departValue = ref(null);
 
 const items = ref([
-    { name: 'planning', label: 'planning.menuLabel', icon: 'pi pi-home' },
+    { name: 'my-availability-planning', label: 'liMyPlanning', icon: 'pi pi-calendar' },
     { name: 'disponibility', label: 'liMydisponibility', icon: 'pi pi-calendar-plus' },
 ]);
 

@@ -16,7 +16,7 @@ const model = ref([
         items: [
             { label: 'myPlanning.menuLabel', icon: 'pi pi-fw pi-user', to: '/my-planning' },
             { label: 'liMydisponibility', icon: 'pi pi-fw pi-calendar-plus', to: '/availability/disponibility', name: 'availability' },
-            { label: 'planning.menuLabel', icon: 'pi pi-fw pi-calendar', to: '/availability' }
+            { label: 'planning.menuLabel', icon: 'pi pi-fw pi-calendar', to: '/planning' }
         ]
     },
     {

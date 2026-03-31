@@ -71,8 +71,8 @@ const router = createRouter({
                     children: [
                         {
                         path:'',
-                        name: 'planning',
-                        component: () => import('@/views/availability/PlanningBoard.vue'),
+                        name: 'my-availability-planning',
+                        component: () => import('@/views/availability/MyPlanning.vue'),
                         },
                         {
                         path: 'disponibility',
@@ -80,6 +80,11 @@ const router = createRouter({
                         component: () => import('@/views/availability/Disponibility.vue'),
                         }
                     ]
+                },
+                {
+                    path: '/planning',
+                    name: 'planning-board',
+                    component: () => import('@/views/availability/Planning.vue')
                 },
                 {
                     path: '/settings',

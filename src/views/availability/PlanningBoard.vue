@@ -1,7 +1,5 @@
 <script setup>
 import AssignmentSidebar from '@/components/AssignmentSidebar.vue';
-import CalendarEventComponent from '@/components/CalendarEventComponent.vue';
-import MemberChip from '@/components/MemberChip.vue';
 import RecapTable from '@/components/RecapTable.vue';
 import DepartmentService from '@/service/DepartmentService';
 import { createSeededRandom, getSundays, useMonthNavigation } from '@/utils/composables/useCalendar';
@@ -22,12 +20,8 @@ const loading = ref(false);
 const errorReq = ref(null);
 const lstEvents = ref([]);
 
-// 4.1 - View mode toggle state
-const viewMode = ref('calendar');
-const viewOptions = computed(() => [
-    { label: t('planning.viewCalendar'), value: 'calendar', icon: 'pi pi-calendar' },
-    { label: t('planning.viewTable'), value: 'table', icon: 'pi pi-table' }
-]);
+// View mode fixé en tableau
+const viewMode = ref('table');
 
 // 4.1 - Table mode state (using shared composable)
 const { month: tableMonth, year: tableYear, monthLabel: tableMonthLabel, navigateMonth: navigateTableMonth } = useMonthNavigation();
@@ -38,6 +32,10 @@ const searchQuery = ref('');
 // Sidebar state
 const selectedDate = ref(null);
 const sidebarVisible = ref(false);
+
+// Responsive
+const isMobile = ref(window.innerWidth < 640);
+window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640; });
 
 // 4.3 - Compute serviceDates from monthlyData for RecapTable
 const serviceDates = computed(() => {
@@ -220,73 +218,32 @@ function publishPlanning() {
         <EmptyStateComponent v-if="!departmentSelected" icon="pi pi-sitemap" :title="$t('planning.selectDeptTitle')" :description="$t('planning.selectDeptDesc')" />
 
         <div v-else class="flex flex-col h-[calc(100vh-220px)]">
-            <!-- 4.2 - Toggle toolbar -->
-            <div class="flex flex-col gap-2 mb-3">
-                <!-- Row 1: Toggle + month nav -->
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <SelectButton v-model="viewMode" :options="viewOptions" optionLabel="label" optionValue="value" :allowEmpty="false">
-                        <template #option="{ option }">
-                            <span class="flex items-center gap-2">
-                                <i :class="option.icon"></i>
-                                <span class="hidden sm:inline">{{ option.label }}</span>
-                            </span>
-                        </template>
-                    </SelectButton>
-
-                    <!-- Month nav (table mode only) -->
-                    <div v-if="viewMode === 'table'" class="flex items-center gap-2">
-                        <Button icon="pi pi-chevron-left" text rounded size="small" @click="navigateTableMonth(-1)" :aria-label="$t('planning.previousMonth')" />
-                        <span class="font-semibold text-sm min-w-[140px] text-center capitalize">{{ tableMonthLabel }}</span>
-                        <Button icon="pi pi-chevron-right" text rounded size="small" @click="navigateTableMonth(1)" :aria-label="$t('planning.nextMonth')" />
-                    </div>
+            <!-- Toolbar -->
+            <div class="bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700 p-3 sm:p-4 mb-4">
+                <!-- Row 1: Month nav centered -->
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <Button icon="pi pi-chevron-left" text rounded @click="navigateTableMonth(-1)" :aria-label="$t('planning.previousMonth')" />
+                    <span class="font-semibold text-base sm:text-lg min-w-[160px] text-center capitalize">{{ tableMonthLabel }}</span>
+                    <Button icon="pi pi-chevron-right" text rounded @click="navigateTableMonth(1)" :aria-label="$t('planning.nextMonth')" />
                 </div>
 
-                <!-- Row 2: Search + action buttons (table mode only) -->
-                <div v-if="viewMode === 'table'" class="flex items-center justify-between flex-wrap gap-2">
-                    <IconField>
+                <!-- Row 2: Search + actions -->
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <IconField class="flex-1 max-w-xs">
                         <InputIcon class="pi pi-search" />
-                        <InputText v-model="searchQuery" :placeholder="$t('planning.searchMembers')" size="small" class="w-full sm:w-48" />
+                        <InputText v-model="searchQuery" :placeholder="$t('planning.searchMembers')" size="small" class="w-full" />
                     </IconField>
-                    <div class="flex items-center gap-1">
-                        <Button icon="pi pi-file-pdf" :label="$t('planning.exportPdf')" outlined size="small" @click="exportPdf" class="hidden lg:inline-flex" />
-                        <Button icon="pi pi-file-pdf" outlined size="small" @click="exportPdf" class="lg:hidden" v-tooltip.bottom="$t('planning.exportPdf')" />
-                        <Button icon="pi pi-share-alt" :label="$t('planning.share')" outlined size="small" @click="sharePlanning" class="hidden lg:inline-flex" />
-                        <Button icon="pi pi-share-alt" outlined size="small" @click="sharePlanning" class="lg:hidden" v-tooltip.bottom="$t('planning.share')" />
-                        <Button icon="pi pi-megaphone" :label="$t('planning.publish')" size="small" @click="publishPlanning" class="hidden lg:inline-flex" />
-                        <Button icon="pi pi-megaphone" size="small" @click="publishPlanning" class="lg:hidden" v-tooltip.bottom="$t('planning.publish')" />
+                    <div class="flex items-center gap-2">
+                        <Button icon="pi pi-file-pdf" :label="isMobile ? '' : $t('planning.exportPdf')" outlined size="small" @click="exportPdf" v-tooltip.bottom="$t('planning.exportPdf')" />
+                        <Button icon="pi pi-share-alt" :label="isMobile ? '' : $t('planning.share')" outlined size="small" @click="sharePlanning" v-tooltip.bottom="$t('planning.share')" />
+                        <Button icon="pi pi-megaphone" :label="isMobile ? '' : $t('planning.publish')" severity="success" size="small" @click="publishPlanning" v-tooltip.bottom="$t('planning.publish')" />
                     </div>
                 </div>
             </div>
 
-            <!-- 4.3 - Conditional rendering -->
+            <!-- Table -->
             <div class="flex-1 min-h-0 flex flex-col lg:flex-row">
-                <!-- Calendar mode -->
-                <div v-if="viewMode === 'calendar'" class="flex-1 min-w-0">
-                    <CalendarEventComponent :add-calendar-content="true" :loading="loading" :error-req="errorReq" :lst-events="lstEvents" @CurrentMonthYear="onMonthYearChanged" @clickedDate="onDateClicked">
-                        <template #fullCalendarContent="{ arg }">
-                            <div class="flex flex-col gap-1 p-1" v-if="arg.event.id">
-                                <p class="font-semibold text-xs truncate m-0">{{ arg.event.title }}</p>
-                                <span class="flex items-center text-xs">
-                                    <i class="pi pi-clock mr-1"></i>
-                                    {{ arg.event.extendedProps.startTime }} - {{ arg.event.extendedProps.endTime }}
-                                </span>
-                                <div v-if="arg.event.extendedProps.assignedCount != null" class="flex items-center gap-1 text-xs">
-                                    <i class="pi pi-users"></i>
-                                    <span>{{ arg.event.extendedProps.assignedCount }}</span>
-                                </div>
-                                <div v-if="arg.event.extendedProps.assignedMembers?.length" class="flex flex-wrap gap-1 mt-0.5">
-                                    <MemberChip v-for="member in arg.event.extendedProps.assignedMembers.slice(0, 3)" :key="member.id" :first-name="member.firstName" :last-name="member.lastName" size="small" />
-                                    <span v-if="arg.event.extendedProps.assignedMembers.length > 3" class="text-[0.625rem] text-surface-400">
-                                        +{{ arg.event.extendedProps.assignedMembers.length - 3 }}
-                                    </span>
-                                </div>
-                            </div>
-                        </template>
-                    </CalendarEventComponent>
-                </div>
-
-                <!-- Table mode -->
-                <div v-else class="flex-1 min-w-0 overflow-auto">
+                <div class="flex-1 min-w-0 overflow-auto">
                     <RecapTable
                         :members="monthlyData?.members || []"
                         :assignments="monthlyData?.assignments || []"
@@ -301,7 +258,7 @@ function publishPlanning() {
                     />
                 </div>
 
-                <!-- Assignment Sidebar (both modes) -->
+                <!-- Assignment Sidebar -->
                 <AssignmentSidebar
                     v-if="sidebarVisible && departmentSelected"
                     :visible="sidebarVisible"
