@@ -20,7 +20,7 @@ export function useHandleAsyncError() {
         } catch (error: any) {
             const errorModel: ErrorModel = {
                 success: false,
-                statusCode: error?.response?.data?.statusCode,
+                statusCode: error?.response?.data?.statusCode || error?.response?.status,
                 message: error?.response?.data?.message || t('internalError'),
                 validationErrors: error?.response?.data?.validationErrors,
                 IsWarning: error?.response?.data?.isWarning || false

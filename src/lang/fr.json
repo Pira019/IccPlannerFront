@@ -338,6 +338,7 @@
       "selectPoste": "Poste",
       "noInfo": "Aucune information",
       "availableSince": "Disponible depuis le",
+      "forbidden": "Vous n'avez pas les droits pour effectuer cette action sur ce département.",
       "noAvailableMembers": "Aucun membre disponible pour cette date.",
       "viewCalendar": "Calendrier",
       "viewTable": "Tableau",

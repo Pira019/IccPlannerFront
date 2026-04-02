@@ -336,6 +336,7 @@
       "selectPoste": "Position",
       "noInfo": "No information",
       "availableSince": "Available since",
+      "forbidden": "You do not have permission to perform this action on this department.",
       "noAvailableMembers": "No available members for this date.",
       "viewCalendar": "Calendar",
       "viewTable": "Table",

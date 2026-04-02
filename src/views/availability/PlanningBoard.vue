@@ -24,6 +24,7 @@ const selectedDate = ref(null);
 const sidebarVisible = ref(false);
 const availableMembers = ref([]);
 const loadingMembers = ref(false);
+const errorMessage = ref(null);
 
 // Postes
 const postes = ref([]);
@@ -79,10 +80,16 @@ async function fetchDates() {
 
 async function fetchAvailableMembers(date) {
     if (!props.departmentSelected || !date) return;
-    const { result } = await handleAsyncError(
+    errorMessage.value = null;
+    const { result, error } = await handleAsyncError(
         () => AvailabilityService.getAvailableMembersByDate(props.departmentSelected, date),
         (val) => (loadingMembers.value = val)
     );
+    if (error?.statusCode === 403) {
+        errorMessage.value = t('planning.forbidden');
+        availableMembers.value = [];
+        return;
+    }
     availableMembers.value = result || [];
 }
 
@@ -96,6 +103,7 @@ function closeSidebar() {
     sidebarVisible.value = false;
     selectedDate.value = null;
     availableMembers.value = [];
+    errorMessage.value = null;
 }
 
 function exportPdf() { window.print(); }
@@ -104,14 +112,19 @@ function publishPlanning() { /* TODO */ }
 
 async function assignMember(member, service) {
     if (!props.departmentSelected || !selectedDate.value) return;
+    errorMessage.value = null;
     member.assigning = true;
-    const { result } = await handleAsyncError(
+    const { result, error } = await handleAsyncError(
         () => DepartmentService.assignMember(props.departmentSelected, {
             availabilityId: member.availabilityId,
             posteId: member.selectedPosteId || null
         })
     );
     member.assigning = false;
+    if (error?.statusCode === 403) {
+        errorMessage.value = t('planning.forbidden');
+        return;
+    }
     if (result !== undefined) {
         member.isPlanned = true;
     }
@@ -119,11 +132,16 @@ async function assignMember(member, service) {
 
 async function unassignMember(member) {
     if (!props.departmentSelected) return;
+    errorMessage.value = null;
     member.assigning = true;
-    const { result } = await handleAsyncError(
+    const { result, error } = await handleAsyncError(
         () => DepartmentService.unassignMember(props.departmentSelected, member.availabilityId)
     );
     member.assigning = false;
+    if (error?.statusCode === 403) {
+        errorMessage.value = t('planning.forbidden');
+        return;
+    }
     if (result !== undefined) {
         member.isPlanned = false;
         member.selectedPosteId = null;
@@ -239,11 +257,13 @@ watch([currentMonth, currentYear], () => { fetchDates(); });
 
                         <!-- Content -->
                         <div class="flex-1 overflow-y-auto p-4">
+                            <Message v-if="errorMessage" severity="error" :closable="true" @close="errorMessage = null" class="mb-3">{{ errorMessage }}</Message>
+
                             <div v-if="loadingMembers" class="flex justify-center py-8">
                                 <ProgressSpinner style="width: 32px; height: 32px" />
                             </div>
 
-                            <div v-else-if="availableMembers.length === 0" class="flex flex-col items-center py-8 text-surface-400">
+                            <div v-else-if="availableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
                                 <i class="pi pi-users text-3xl mb-2"></i>
                                 <span class="text-xs">{{ $t('planning.noAvailableMembers') }}</span>
                             </div>
@@ -317,11 +337,13 @@ watch([currentMonth, currentYear], () => { fetchDates(); });
                         <span class="text-xs text-surface-400">{{ $t('planning.assignMembers') }} · {{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }}</span>
                     </div>
 
+                    <Message v-if="errorMessage" severity="error" :closable="true" @close="errorMessage = null" class="mb-3">{{ errorMessage }}</Message>
+
                     <div v-if="loadingMembers" class="flex justify-center py-8">
                         <ProgressSpinner style="width: 32px; height: 32px" />
                     </div>
 
-                    <div v-else-if="availableMembers.length === 0" class="flex flex-col items-center py-8 text-surface-400">
+                    <div v-else-if="availableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
                         <i class="pi pi-users text-3xl mb-2"></i>
                         <span class="text-xs">{{ $t('planning.noAvailableMembers') }}</span>
                     </div>
