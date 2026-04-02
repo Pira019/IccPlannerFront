@@ -14,6 +14,16 @@ const claims =  useAuthStore().claims || {} // objet { role: [...], permission: 
   return claims[claimKey] === expectedValue
 }
 
+/**
+ * Vérifie si l'utilisateur a un claim qui commence par un préfixe donné.
+ * Ex: hasClaimStartsWith('permissions', 'depart:manager') → true si "depart:manager:1,2,4" existe
+ */
+export function hasClaimStartsWith(claimKey, prefix) {
+  const claims = useAuthStore().claims || {}
+  if (!claims[claimKey] || !Array.isArray(claims[claimKey])) return false
+  return claims[claimKey].some(c => c.startsWith(prefix))
+}
+
 export function checkRequiredClaims(requiredClaims) {
 
       if (!Array.isArray(requiredClaims)) {
@@ -21,7 +31,12 @@ export function checkRequiredClaims(requiredClaims) {
     }
         // L'utilisateur doit avoir AU MOINS UNE valeur de CHAQUE claim requis
     return requiredClaims?.some(claimRequirement => {
-        const { key, value } = claimRequirement
+        const { key, value, startsWith } = claimRequirement
+
+        // Vérification par préfixe (ex: depart:manager)
+        if (startsWith) {
+            return hasClaimStartsWith(key, startsWith)
+        }
 
         // Vérifier si l'utilisateur a au moins une des valeurs requises pour ce type de claim
         return value.some(requiredValue =>

@@ -28,4 +28,10 @@ export default class AvailabilityService extends BaseService
         const endPoint = `${this.authBaseUrl}me/${departmentId}/${month}/${year}`
         return await this.axiosInstance.get(endPoint)
     }
+
+    static async getAvailableMembersByDate(departmentId, date)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/${date}`
+        return await this.axiosInstance.get(endPoint)
+    }
 }

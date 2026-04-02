@@ -101,4 +101,13 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.get(endPoint)
     }
 
+    /**
+     * Obtenir la liste des postes d'un département
+     */
+    static async getPostes(departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/postes`
+        return await this.axiosInstance.get(endPoint)
+    }
+
 }

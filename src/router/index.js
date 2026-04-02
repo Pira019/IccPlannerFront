@@ -84,7 +84,11 @@ const router = createRouter({
                 {
                     path: '/planning',
                     name: 'planning-board',
-                    component: () => import('@/views/availability/Planning.vue')
+                    component: () => import('@/views/availability/Planning.vue'),
+                    meta: { 
+                        requiresAuth: true,
+                        requiredClaim: [{ key: 'permissions', startsWith: 'depart:manager' }]
+                    }
                 },
                 {
                     path: '/settings',
