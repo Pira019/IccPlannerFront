@@ -68,6 +68,13 @@ function formatShortDate(dateStr) {
 const prevDateLabel = computed(() => hasPrevDate.value ? formatShortDate(props.availableDates[currentDateIndex.value - 1]) : '');
 const nextDateLabel = computed(() => hasNextDate.value ? formatShortDate(props.availableDates[currentDateIndex.value + 1]) : '');
 
+const isPastDate = computed(() => {
+    if (!props.datePrg) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(props.datePrg + 'T00:00:00') < today;
+});
+
 // Date formatée lisible
 const formattedDate = computed(() => {
     if (!props.datePrg) return '';
@@ -199,6 +206,11 @@ async function toggleAll(indexDept) {
 
         <!-- Contenu scrollable -->
         <div class="flex flex-col gap-5 max-h-[60vh] overflow-y-auto pr-1" :class="{ 'opacity-50 pointer-events-none': props.notInDepartment }">
+
+            <!-- Message date passée -->
+            <Message v-if="isPastDate" severity="warn" :closable="false">
+                {{ $t('pastDateWarning') }}
+            </Message>
             <div v-for="(item, indexDept) in data?.servicePrgDates" :key="indexDept" class="flex flex-col gap-3">
                 <!-- Nom du programme + compteur + tout sélectionner -->
                 <div class="flex items-center justify-between">
@@ -211,7 +223,7 @@ async function toggleAll(indexDept) {
                     </div>
                     <div class="flex items-center gap-2 cursor-pointer" @click="toggleAll(indexDept)">
                         <ProgressSpinner v-if="loadingAllIndex === indexDept" style="width: 20px; height: 20px" strokeWidth="4" />
-                        <Checkbox v-else :modelValue="isAllSelected(item.servicePrg)" :binary="true" :disabled="loadingIndex !== null || loadingAllIndex !== null" @click.stop="toggleAll(indexDept)" />
+                        <Checkbox v-else :modelValue="isAllSelected(item.servicePrg)" :binary="true" :disabled="loadingIndex !== null || loadingAllIndex !== null || isPastDate" @click.stop="!isPastDate && toggleAll(indexDept)" />
                         <label class="text-sm cursor-pointer">{{ isAllSelected(item.servicePrg) ? $t('liDeselectAll') : $t('liSelectAll') }}</label>
                     </div>
                 </div>
@@ -232,7 +244,7 @@ async function toggleAll(indexDept) {
                             : 'border-surface-200 bg-surface-0 hover:bg-surface-50 hover:shadow-sm'"
                         role="button"
                         :aria-label="`${servicePrg.displayName} - ${servicePrg.startTime} ${servicePrg.endTime} - ${servicePrg.isAvailable ? $t('liAvailable') : $t('liUnavailable')}`"
-                        @click="toggleAvailable(servicePrg.id, indexDept, indexServicePrg)"
+                        @click="!isPastDate && toggleAvailable(servicePrg.id, indexDept, indexServicePrg)"
                     >
                         <!-- Indicateur gauche -->
                         <div class="flex items-start gap-3 min-w-0 flex-1">
@@ -269,7 +281,7 @@ async function toggleAll(indexDept) {
                                 style="width: 24px; height: 24px" strokeWidth="4" />
                             <ToggleSwitch
                                 :modelValue="servicePrg.isAvailable"
-                                :disabled="loadingIndex !== null"
+                                :disabled="loadingIndex !== null || isPastDate"
                             />
                         </div>
                     </div>
