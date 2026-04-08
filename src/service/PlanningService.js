@@ -19,4 +19,16 @@ export default class PlanningService extends BaseService
         }
         return await this.axiosInstance.get(endPoint)
     }
+
+    static async unassign(planningId)
+    {
+        const endPoint = `${this.authBaseUrl}${planningId}`
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+    static async update(planningId, payload)
+    {
+        const endPoint = `${this.authBaseUrl}${planningId}`
+        return await this.axiosInstance.put(endPoint, payload)
+    }
 }

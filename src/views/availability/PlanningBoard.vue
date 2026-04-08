@@ -5,11 +5,13 @@ import PlanningService from '@/service/PlanningService';
 import ServicePrgService from '@/service/ServicePrgService';
 import { buildCalendarWeeks, useMonthNavigation, WEEK_DAYS } from '@/utils/composables/useCalendar';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { useConfirmDialog } from '@/utils/useConfirmDialog';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { locale, t } = useI18n();
 const { handleAsyncError } = useHandleAsyncError();
+const { showConfirm } = useConfirmDialog();
 
 const props = defineProps({
     departmentSelected: [String, Number]
@@ -19,6 +21,7 @@ const { month: currentMonth, year: currentYear, monthLabel, navigateMonth } = us
 const loading = ref(false);
 const dates = ref([]);
 const weekDays = WEEK_DAYS;
+const viewMode = ref('calendar');
 
 // Sidebar
 const selectedDate = ref(null);
@@ -110,6 +113,51 @@ const daysWithDates = computed(() => {
     return days;
 });
 
+// Table view: members as rows, dates as columns
+const tableDates = computed(() => {
+    const dateSet = new Set();
+    for (const prg of monthlyPlanning.value) {
+        for (const d of prg.dates || []) {
+            dateSet.add(d.date);
+        }
+    }
+    return [...dateSet].sort();
+});
+
+const tableRows = computed(() => {
+    // Collect all unique members with their assignments per date
+    const memberMap = {};
+    for (const prg of monthlyPlanning.value) {
+        const prgLabel = prg.programShortName || prg.programName?.substring(0, 3);
+        for (const d of prg.dates || []) {
+            for (const svc of d.services || []) {
+                for (const m of svc.members || []) {
+                    if (!memberMap[m.memberName]) {
+                        memberMap[m.memberName] = { memberName: m.memberName, posteName: m.posteName, assignments: {} };
+                    }
+                    if (!memberMap[m.memberName].assignments[d.date]) {
+                        memberMap[m.memberName].assignments[d.date] = [];
+                    }
+                    memberMap[m.memberName].assignments[d.date].push({
+                        program: prgLabel,
+                        service: svc.serviceName,
+                        indTraining: m.indTraining
+                    });
+                }
+            }
+        }
+    }
+    return Object.values(memberMap).sort((a, b) => a.memberName.localeCompare(b.memberName));
+});
+
+function formatShortDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDate();
+    const weekDay = weekDays[(d.getDay() + 6) % 7];
+    return `${weekDay.substring(0, 3)} ${day}`;
+}
+
 const totalAvailableMembers = computed(() => {
     return availableMembers.value.reduce((sum, s) => sum + (s.availableMembers?.length || 0), 0);
 });
@@ -149,6 +197,15 @@ async function fetchAvailableMembers(date) {
         return;
     }
     availableMembers.value = result || [];
+    // Pré-remplir les champs pour les membres déjà assignés
+    for (const svc of availableMembers.value) {
+        for (const m of svc.availableMembers || []) {
+            if (m.isPlanned) {
+                m.selectedPosteId = m.posteId;
+                m.indTraining = m.isTraining;
+            }
+        }
+    }
 }
 
 function onDateClicked(dateStr) {
@@ -179,12 +236,17 @@ async function assignMember(member, service) {
         return;
     }
 
+    await doAssign(member, service, false);
+}
+
+async function doAssign(member, service, force) {
     member.assigning = true;
     const { result, error } = await handleAsyncError(
         () => PlanningService.assign(props.departmentSelected, {
             availabilityId: member.availabilityId,
             posteId: member.selectedPosteId,
-            indTraining: member.indTraining || false
+            indTraining: member.indTraining || false,
+            forceAssign: force
         })
     );
     member.assigning = false;
@@ -192,9 +254,17 @@ async function assignMember(member, service) {
         errorMessage.value = t('planning.forbidden');
         return;
     }
-    // Extension 3g — Warning de chevauchement
-    if (result?.isWarning) {
-        errorMessage.value = result.message;
+    // Extension 3g — Warning de chevauchement → popup de confirmation
+    if (error?.IsWarning) {
+        showConfirm({
+            group: 'confirmDialog',
+            message: error.message,
+            header: 'planning.overlapTitle',
+            acceptLabel: 'planning.forceAssign',
+            acceptSeverity: 'warn',
+            rejectLabel: 'Cancel',
+            onAccept: () => doAssign(member, service, true)
+        });
         return;
     }
     if (error) {
@@ -203,26 +273,61 @@ async function assignMember(member, service) {
     }
     if (result?.planningId) {
         member.isPlanned = true;
+        member.planningId = result.planningId;
         fetchMonthlyPlanning();
     }
 }
 
 async function unassignMember(member) {
-    if (!props.departmentSelected) return;
+    if (!member.planningId) return;
     errorMessage.value = null;
     member.assigning = true;
-    const { result, error } = await handleAsyncError(
-        () => DepartmentService.unassignMember(props.departmentSelected, member.availabilityId)
+    const { error } = await handleAsyncError(
+        () => PlanningService.unassign(member.planningId),
+        null,
+        true,
+        'planning.unassignSuccess'
     );
     member.assigning = false;
     if (error?.statusCode === 403) {
         errorMessage.value = t('planning.forbidden');
         return;
     }
-    if (result !== undefined) {
-        member.isPlanned = false;
-        member.selectedPosteId = null;
+    if (error) {
+        errorMessage.value = error.message;
+        return;
     }
+    member.isPlanned = false;
+    member.planningId = null;
+    member.selectedPosteId = null;
+    fetchMonthlyPlanning();
+}
+
+async function updateMember(member) {
+    if (!member.planningId) return;
+    errorMessage.value = null;
+    member.updating = true;
+    const { error } = await handleAsyncError(
+        () => PlanningService.update(member.planningId, {
+            posteId: member.selectedPosteId,
+            indTraining: member.indTraining || false,
+            indObservation: false
+        }),
+        null,
+        true,
+        'planning.updateSuccess'
+    );
+    member.updating = false;
+    if (error?.statusCode === 403) {
+        errorMessage.value = t('planning.forbidden');
+        return;
+    }
+    if (error) {
+        errorMessage.value = error.message;
+        return;
+    }
+    member.isTraining = member.indTraining;
+    fetchMonthlyPlanning();
 }
 
 async function fetchPostes() {
@@ -260,6 +365,14 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                     <Button icon="pi pi-chevron-right" text rounded size="small" @click="navigateMonth(1)" />
                 </div>
                 <div class="flex items-center gap-2">
+                    <SelectButton v-model="viewMode" :options="[
+                        { value: 'calendar', icon: 'pi pi-calendar' },
+                        { value: 'table', icon: 'pi pi-table' }
+                    ]" optionValue="value" dataKey="value" size="small">
+                        <template #option="{ option }">
+                            <i :class="option.icon"></i>
+                        </template>
+                    </SelectButton>
                     <Button icon="pi pi-file-pdf" :label="isMobile ? '' : $t('planning.exportPdf')" outlined size="small" @click="exportPdf" v-tooltip.bottom="$t('planning.exportPdf')" />
                     <Button icon="pi pi-share-alt" :label="isMobile ? '' : $t('planning.share')" outlined size="small" @click="sharePlanning" v-tooltip.bottom="$t('planning.share')" />
                     <Button icon="pi pi-megaphone" :label="isMobile ? '' : $t('planning.publish')" severity="success" size="small" @click="publishPlanning" v-tooltip.bottom="$t('planning.publish')" />
@@ -273,7 +386,8 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
             </div>
 
             <div v-else class="flex gap-4">
-                <!-- Calendar -->
+                <!-- Calendar view -->
+                <template v-if="viewMode === 'calendar'">
                 <div class="flex-1 min-w-0">
                     <!-- DESKTOP grid -->
                     <div class="hidden md:block">
@@ -388,7 +502,7 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                             <div class="flex items-center gap-2 px-3 py-2.5">
                                                 <i v-if="member.isPlanned" class="pi pi-check-circle text-green-500 text-xs"></i>
                                                 <i v-else class="pi pi-user text-surface-400 text-xs"></i>
-                                                <i v-if="member.isTraining" class="pi pi-graduation-cap text-orange-500 text-xs" v-tooltip.top="$t('planning.training')"></i>
+                                                <i v-if="member.indTraining || member.isTraining" class="pi pi-graduation-cap text-orange-500 text-xs" v-tooltip.top="$t('planning.training')"></i>
                                                 <span class="flex-1 font-medium" :class="member.isPlanned ? 'text-green-700 dark:text-green-400' : ''">{{ member.displayName }}</span>
                                                 <i class="pi pi-info-circle text-surface-400 text-xs cursor-pointer hover:text-primary" 
                                                    v-tooltip.top="formatCreatedAt(member.createdAt)"></i>
@@ -418,16 +532,31 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                                         :loading="member.assigning"
                                                     />
                                                 </div>
-                                                <div v-else class="flex justify-end">
-                                                    <Button 
-                                                        icon="pi pi-times" 
-                                                        :label="$t('planning.unassign')" 
-                                                        size="small" 
-                                                        severity="danger" 
-                                                        outlined
-                                                        @click.stop="unassignMember(member)"
-                                                        :loading="member.assigning"
-                                                    />
+                                                <div v-else class="flex flex-col gap-2">
+                                                    <div class="flex items-center gap-2" @click.stop>
+                                                        <ToggleSwitch v-model="member.indTraining" size="small" />
+                                                        <span class="text-xs text-surface-500">{{ $t('planning.training') }}</span>
+                                                    </div>
+                                                    <div class="flex justify-end gap-2">
+                                                        <Button 
+                                                            icon="pi pi-pencil" 
+                                                            :label="$t('btnUpdate')" 
+                                                            size="small" 
+                                                            severity="info" 
+                                                            outlined
+                                                            @click.stop="updateMember(member)"
+                                                            :loading="member.updating"
+                                                        />
+                                                        <Button 
+                                                            icon="pi pi-times" 
+                                                            :label="$t('planning.unassign')" 
+                                                            size="small" 
+                                                            severity="danger" 
+                                                            outlined
+                                                            @click.stop="unassignMember(member)"
+                                                            :loading="member.assigning"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -474,7 +603,7 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                     <div class="flex items-center gap-2 px-3 py-2.5">
                                         <i v-if="member.isPlanned" class="pi pi-check-circle text-green-500 text-xs"></i>
                                         <i v-else class="pi pi-user text-surface-400 text-xs"></i>
-                                        <i v-if="member.isTraining" class="pi pi-graduation-cap text-orange-500 text-xs" v-tooltip.top="$t('planning.training')"></i>
+                                        <i v-if="member.indTraining || member.isTraining" class="pi pi-graduation-cap text-orange-500 text-xs" v-tooltip.top="$t('planning.training')"></i>
                                         <span class="flex-1 font-medium" :class="member.isPlanned ? 'text-green-700 dark:text-green-400' : ''">{{ member.displayName }}</span>
                                         <i class="pi pi-info-circle text-surface-400 text-xs cursor-pointer hover:text-primary" 
                                            v-tooltip.top="formatCreatedAt(member.createdAt)"></i>
@@ -503,16 +632,31 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                                 :loading="member.assigning"
                                             />
                                         </div>
-                                        <div v-else class="flex justify-end">
-                                            <Button 
-                                                icon="pi pi-times" 
-                                                :label="$t('planning.unassign')" 
-                                                size="small" 
-                                                severity="danger" 
-                                                outlined
-                                                @click="unassignMember(member)"
-                                                :loading="member.assigning"
-                                            />
+                                        <div v-else class="flex flex-col gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <ToggleSwitch v-model="member.indTraining" size="small" />
+                                                <span class="text-xs text-surface-500">{{ $t('planning.training') }}</span>
+                                            </div>
+                                            <div class="flex justify-end gap-2">
+                                                <Button 
+                                                    icon="pi pi-pencil" 
+                                                    :label="$t('btnUpdate')" 
+                                                    size="small" 
+                                                    severity="info" 
+                                                    outlined
+                                                    @click="updateMember(member)"
+                                                    :loading="member.updating"
+                                                />
+                                                <Button 
+                                                    icon="pi pi-times" 
+                                                    :label="$t('planning.unassign')" 
+                                                    size="small" 
+                                                    severity="danger" 
+                                                    outlined
+                                                    @click="unassignMember(member)"
+                                                    :loading="member.assigning"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -520,6 +664,55 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                         </div>
                     </div>
                 </Drawer>
+                </template>
+
+                <!-- Table view -->
+                <template v-if="viewMode === 'table'">
+                    <div class="flex-1 min-w-0 overflow-x-auto">
+                        <p class="text-xs text-surface-400 mb-3 italic">{{ $t('planning.tableDesc') }}</p>
+                        <div v-if="tableRows.length === 0" class="flex flex-col items-center py-12 text-surface-400">
+                            <i class="pi pi-table text-3xl mb-2"></i>
+                            <span class="text-sm">{{ $t('planning.noAvailableMembers') }}</span>
+                        </div>
+                        <table v-else class="w-full text-xs border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="sticky left-0 z-10 bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 px-3 py-2 text-left font-semibold min-w-[140px]">
+                                        {{ $t('planning.member') }}
+                                    </th>
+                                    <th v-for="date in tableDates" :key="date"
+                                        class="border border-surface-200 dark:border-surface-700 px-2 py-2 text-center font-semibold min-w-[90px] bg-surface-50 dark:bg-surface-800"
+                                        :class="{ 'bg-primary/10': date === new Date().toISOString().split('T')[0] }">
+                                        {{ formatShortDate(date) }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="row in tableRows" :key="row.memberName">
+                                    <td class="sticky left-0 z-10 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 px-3 py-2 font-medium">
+                                        <div class="flex items-center gap-1.5">
+                                            <span>{{ row.memberName }}</span>
+                                            <span v-if="row.posteName" class="text-[0.6rem] rounded px-1"
+                                                :class="[getPosteColor(row.posteName).bg, getPosteColor(row.posteName).text]">{{ row.posteName }}</span>
+                                        </div>
+                                    </td>
+                                    <td v-for="date in tableDates" :key="date"
+                                        class="border border-surface-200 dark:border-surface-700 px-1.5 py-1.5 text-center align-top"
+                                        :class="{ 'bg-primary/5': date === new Date().toISOString().split('T')[0] }">
+                                        <div v-if="row.assignments[date]" class="flex flex-col gap-0.5">
+                                            <div v-for="(a, ai) in row.assignments[date]" :key="ai"
+                                                class="bg-green-50 dark:bg-green-900/20 rounded px-1 py-0.5 text-green-700 dark:text-green-400 text-[0.65rem] leading-tight">
+                                                <span class="font-bold uppercase">{{ a.program }}</span>
+                                                <span class="block italic text-surface-500 truncate">{{ a.service }}</span>
+                                                <span v-if="a.indTraining" class="text-[0.55rem] bg-orange-100 text-orange-700 rounded px-0.5 font-bold">{{ $t('planning.trainingTag') }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
