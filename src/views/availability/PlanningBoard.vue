@@ -23,6 +23,19 @@ const dates = ref([]);
 const weekDays = WEEK_DAYS;
 const viewMode = ref('calendar');
 
+// DatePicker pour navigation mois/année
+const selectedMonthDate = computed({
+    get() {
+        return new Date(currentYear.value, currentMonth.value - 1, 1);
+    },
+    set(val) {
+        if (val) {
+            currentMonth.value = val.getMonth() + 1;
+            currentYear.value = val.getFullYear();
+        }
+    }
+});
+
 // Sidebar
 const selectedDate = ref(null);
 const sidebarVisible = ref(false);
@@ -35,6 +48,7 @@ const postes = ref([]);
 
 // Planning mensuel
 const monthlyPlanning = ref([]);
+const periodStatus = ref(null);
 
 // Responsive
 const isMobile = ref(window.innerWidth < 640);
@@ -223,7 +237,20 @@ function closeSidebar() {
 
 function exportPdf() { window.print(); }
 function sharePlanning() { navigator.clipboard.writeText(window.location.href); }
-function publishPlanning() { /* TODO */ }
+async function publishPlanning() {
+    if (!props.departmentSelected) return;
+    const { error } = await handleAsyncError(
+        () => PlanningService.publish(props.departmentSelected, currentMonth.value, currentYear.value),
+        null,
+        true,
+        'planning.publishSuccess'
+    );
+    if (error) {
+        errorMessage.value = error.message;
+        return;
+    }
+    fetchPeriodStatus();
+}
 
 async function assignMember(member, service) {
     if (!props.departmentSelected || !selectedDate.value) return;
@@ -275,6 +302,7 @@ async function doAssign(member, service, force) {
         member.isPlanned = true;
         member.planningId = result.planningId;
         fetchMonthlyPlanning();
+        fetchPeriodStatus();
     }
 }
 
@@ -301,6 +329,7 @@ async function unassignMember(member) {
     member.planningId = null;
     member.selectedPosteId = null;
     fetchMonthlyPlanning();
+    fetchPeriodStatus();
 }
 
 async function updateMember(member) {
@@ -328,6 +357,7 @@ async function updateMember(member) {
     }
     member.isTraining = member.indTraining;
     fetchMonthlyPlanning();
+    fetchPeriodStatus();
 }
 
 async function fetchPostes() {
@@ -344,12 +374,20 @@ async function fetchMonthlyPlanning() {
     monthlyPlanning.value = result || [];
 }
 
+async function fetchPeriodStatus() {
+    if (!props.departmentSelected) return;
+    const { result } = await handleAsyncError(
+        () => PlanningService.getStatus(currentMonth.value, currentYear.value, props.departmentSelected)
+    );
+    periodStatus.value = result;
+}
+
 onMounted(() => {
     if (props.departmentSelected) fetchPostes();
 });
 
-watch(() => props.departmentSelected, () => { dates.value = []; closeSidebar(); fetchDates(); fetchPostes(); fetchMonthlyPlanning(); });
-watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning(); });
+watch(() => props.departmentSelected, () => { dates.value = []; closeSidebar(); fetchDates(); fetchPostes(); fetchMonthlyPlanning(); fetchPeriodStatus(); });
+watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning(); fetchPeriodStatus(); });
 </script>
 
 <template>
@@ -359,9 +397,10 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
         <div v-else>
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1">
                     <Button icon="pi pi-chevron-left" text rounded size="small" @click="navigateMonth(-1)" />
-                    <span class="font-semibold text-sm min-w-[140px] text-center capitalize">{{ monthLabel }}</span>
+                    <DatePicker v-model="selectedMonthDate" view="month" dateFormat="MM yy" :showIcon="false" 
+                        inputClass="font-semibold text-sm text-center capitalize cursor-pointer border-none bg-transparent w-[140px] p-1" />
                     <Button icon="pi pi-chevron-right" text rounded size="small" @click="navigateMonth(1)" />
                 </div>
                 <div class="flex items-center gap-2">
@@ -375,9 +414,24 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                     </SelectButton>
                     <Button icon="pi pi-file-pdf" :label="isMobile ? '' : $t('planning.exportPdf')" outlined size="small" @click="exportPdf" v-tooltip.bottom="$t('planning.exportPdf')" />
                     <Button icon="pi pi-share-alt" :label="isMobile ? '' : $t('planning.share')" outlined size="small" @click="sharePlanning" v-tooltip.bottom="$t('planning.share')" />
-                    <Button icon="pi pi-megaphone" :label="isMobile ? '' : $t('planning.publish')" severity="success" size="small" @click="publishPlanning" v-tooltip.bottom="$t('planning.publish')" />
+                    <Button icon="pi pi-megaphone" :label="isMobile ? '' : (periodStatus?.indPublished ? $t('planning.published') : $t('planning.publish'))" 
+                        :severity="periodStatus?.indPublished ? 'secondary' : 'success'" 
+                        :outlined="periodStatus?.indPublished"
+                        size="small" @click="publishPlanning" v-tooltip.bottom="$t('planning.publish')" />
                 </div>
             </div>
+
+            <!-- Banner modifications non publiées -->
+            <Message v-if="periodStatus && !periodStatus.indPublished && periodStatus.publishedAt" severity="warn" :closable="false" class="mb-3">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">{{ $t('planning.unpublishedChanges') }}</span>
+                        <i class="pi pi-info-circle text-surface-400 text-xs cursor-pointer" 
+                           v-tooltip.top="$t('planning.unpublishedInfo')"></i>
+                    </div>
+                    <Button :label="$t('planning.publishNow')" size="small" severity="warn" @click="publishPlanning" class="w-full sm:w-auto" />
+                </div>
+            </Message>
 
             <!-- Loading -->
             <div v-if="loading" class="flex justify-center py-12">

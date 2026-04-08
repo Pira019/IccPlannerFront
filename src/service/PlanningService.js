@@ -31,4 +31,16 @@ export default class PlanningService extends BaseService
         const endPoint = `${this.authBaseUrl}${planningId}`
         return await this.axiosInstance.put(endPoint, payload)
     }
+
+    static async publish(departmentId, month, year)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/publish?month=${month}&year=${year}`
+        return await this.axiosInstance.post(endPoint)
+    }
+
+    static async getStatus(month, year, departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}${month}/${year}/status?departmentId=${departmentId}`
+        return await this.axiosInstance.get(endPoint)
+    }
 }
