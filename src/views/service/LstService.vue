@@ -24,6 +24,7 @@
                     text 
                     severity="secondary"
                     @click="toggleMenu($event, item)"
+                    v-if="canManageService"
                   />
                 </div>
               </div>
@@ -38,9 +39,14 @@
             -->
             <template #content>
               <div class="space-y-4">
-                <p class="text-slate-600 leading-relaxed text-sm">
+                <p class="text-slate-600 leading-relaxed text-sm" :class="{ 'line-clamp-2': !item.showFullDesc }">
                   {{ item.description }}
                 </p>
+                <button v-if="item.description?.length > 100" 
+                  @click.stop="item.showFullDesc = !item.showFullDesc" 
+                  class="text-xs text-primary-600 font-semibold hover:underline mt-1">
+                  {{ item.showFullDesc ? $t('liSeeMore').replace('tous', 'moins') : $t('liSeeMore') }}
+                </button>
 
                 <!-- Liste des Cultes / Services spécifiques -->
                 <div v-if="item.services && item.services.length > 0" class="bg-slate-50 rounded-lg p-3 border border-slate-100">
@@ -52,9 +58,13 @@
                           <i :class="item.services.length === 1 ? 'pi pi-star-fill text-amber-500 text-[10px]' : 'pi pi-circle-fill text-[8px] text-primary-500'" aria-hidden="true"></i>
                           <span class="font-bold text-slate-700">{{ service.serviceTitle }}</span>
                         </div>
-                        <span class="text-xs font-mono bg-primary-600 text-white px-2 py-0.5 rounded shadow-sm">
-                          {{ service.startTime }}
-                        </span>
+                        <div class="flex items-center gap-1">
+                          <span class="text-xs font-mono bg-primary-600 text-white px-2 py-0.5 rounded shadow-sm">
+                            {{ service.startTime }}
+                          </span>
+                          <Button icon="pi pi-ellipsis-v" size="small" text severity="secondary"
+                            @click="toggleServiceMenu($event, service, item)" v-if="canManageService" />
+                        </div>
                       </div>
                       <!-- Heure d'arrivée -->
                       <div v-if="service.arrival" class="flex items-center gap-1.5 pl-5 text-[11px] text-slate-500 italic">
@@ -72,22 +82,41 @@
      </div>
     </div>
     <Message v-else-if="!servicePrgLoading && !errorReq">{{$t('liNonPrg')}}</Message>    
-    <!-- Menu contextuel unique pour tous les items -->
+    <!-- Menu contextuel pour les programmes -->
     <Menu ref="menu" :model="menuItems" :popup="true" />
     
-    <!-- Dialog pour ajouter un service -->
+    <!-- Menu contextuel pour les services -->
+    <Menu ref="serviceMenu" :model="serviceMenuItems" :popup="true" />
+    
+    <!-- Dialog pour ajouter/modifier un service -->
     <AddService 
       v-model="showAddServiceDialog" 
       :program="selectedItem" 
+      :service="selectedService"
       @save="handleSaveService"
     />
+
+    <!-- Dialog pour modifier le programme -->
+    <Dialog v-model:visible="showEditProgramDialog" :header="$t('UpdateProgram')" modal :style="{ width: '500px' }">
+      <div class="pt-4">
+        <EditProgram 
+          :program="selectedItem"
+          @closeDialog="showEditProgramDialog = false" 
+          @saved="handleProgramSaved" 
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
 import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
+import { Permission } from '@/model/Enum/Permission';
+import ProgramService from '@/service/ProgramService';
 import TabServicePrgService from '@/service/TabServicePrgService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { hasPermission } from '@/utils/hasPermission';
+import { useConfirmDialog } from '@/utils/useConfirmDialog';
 import { getDayNameFromGroupKey } from '@/utils/Utils';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
@@ -95,9 +124,15 @@ import Menu from 'primevue/menu';
 import Tag from 'primevue/tag';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import EditProgram from '../program/EditProgram.vue';
 import AddService from './AddService.vue';
 
 const { t } = useI18n();
+const { showConfirm } = useConfirmDialog();
+
+const canManageService = computed(() =>
+    hasPermission(Permission.DEPART_MANAGER) || hasPermission(Permission.PRG_MANAGER)
+);
 
 const getShortNameColor = (shortName) => {
   const colors = [
@@ -130,8 +165,11 @@ const servicePrgLoading = ref(false)
 const servicesPrg  = ref([]);
 const errorReq =  ref(null);
 const menu = ref();
+const serviceMenu = ref();
 const selectedItem = ref(null);
+const selectedService = ref(null);
 const showAddServiceDialog = ref(false);
+const showEditProgramDialog = ref(false);
 
 const menuItems = computed(() => [
   {
@@ -156,26 +194,111 @@ function toggleMenu(event, item) {
   menu.value.toggle(event);
 }
 
+const serviceMenuItems = computed(() => [
+  {
+    label: t('liModifier'),
+    icon: 'pi pi-pencil',
+    command: () => editService(selectedService.value)
+  },
+  {
+    label: t('btnDel'),
+    icon: 'pi pi-trash',
+    command: () => deleteService(selectedService.value)
+  }
+]);
+
+function toggleServiceMenu(event, service, program) {
+  selectedService.value = service;
+  selectedItem.value = program;
+  serviceMenu.value.toggle(event);
+}
+
+function editService(service) {
+  selectedItem.value = selectedItem.value;
+  selectedService.value = service;
+  showAddServiceDialog.value = true;
+}
+
 function addService(item) {
   selectedItem.value = item;
+  selectedService.value = null;
   showAddServiceDialog.value = true;
 }
 
 function handleSaveService(serviceData) {
-  // TODO: Appeler l'API pour sauvegarder le service
-  console.log('Sauvegarder le service:', serviceData);
-  // Recharger les données après sauvegarde
   getTabServices();
 }
 
 function editProgram(item) {
-  // TODO: Implémenter la logique de modification
-  console.log('Modifier le programme:', item);
+  selectedItem.value = item;
+  showEditProgramDialog.value = true;
+}
+
+function handleProgramSaved() {
+  showEditProgramDialog.value = false;
+  getTabServices();
 }
 
 function deleteProgram(item) {
-  // TODO: Implémenter la logique de suppression
-  console.log('Supprimer le programme:', item);
+  showConfirm({
+    group: 'deleteDialog',
+    message: 'liMsgDel',
+    header: 'btnDel',
+    acceptLabel: 'btnDel',
+    acceptSeverity: 'danger',
+    onAccept: () => confirmDeleteProgram(item)
+  });
+}
+
+async function confirmDeleteProgram(item) {
+  const { error } = await handleAsyncError(
+    () => ProgramService.deletePrg(item.programId || item.idPrg),
+    null,
+    true
+  );
+  if (error) {
+    showConfirm({
+      group: 'confirmDialog',
+      message: error.message,
+      header: 'errorOccured',
+      acceptLabel: 'bntClose',
+      acceptSeverity: 'secondary',
+      onAccept: () => {}
+    });
+    return;
+  }
+  getTabServices();
+}
+
+function deleteService(service) {
+  showConfirm({
+    group: 'deleteDialog',
+    message: 'liMsgDel',
+    header: 'btnDel',
+    acceptLabel: 'btnDel',
+    acceptSeverity: 'danger',
+    onAccept: () => confirmDeleteService(service)
+  });
+}
+
+async function confirmDeleteService(service) {
+  const { error } = await handleAsyncError(
+    () => TabServicePrgService.deleteServicePrg(service.idTabService),
+    null,
+    true
+  );
+  if (error) {
+    showConfirm({
+      group: 'confirmDialog',
+      message: error.message,
+      header: 'errorOccured',
+      acceptLabel: 'bntClose',
+      acceptSeverity: 'secondary',
+      onAccept: () => {}
+    });
+    return;
+  }
+  getTabServices();
 }
 
 async function getTabServices(){

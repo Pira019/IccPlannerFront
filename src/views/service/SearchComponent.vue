@@ -119,7 +119,7 @@ function resetFilters() {
     searchQuery: '',
     filterType: true,
     selectedDate: null,
-    selectedDepts: []
+    selectedDepts: lstDepart.value.map(d => d.id)
   };
 }
 //
@@ -137,6 +137,8 @@ onMounted(async () => {
         return;
     }
     lstDepart.value = result.departments;
+    // Sélectionner tous les départements par défaut
+    filterCriteria.value.selectedDepts = lstDepart.value.map(d => d.id);
 });
 
 </script>

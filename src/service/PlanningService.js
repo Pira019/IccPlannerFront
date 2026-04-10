@@ -43,4 +43,20 @@ export default class PlanningService extends BaseService
         const endPoint = `${this.authBaseUrl}${month}/${year}/status?departmentId=${departmentId}`
         return await this.axiosInstance.get(endPoint)
     }
+
+    static async getMyPlanning(month, year, departmentId)
+    {
+        let endPoint = `${this.authBaseUrl}my-planning/${month}/${year}`
+        if (departmentId)
+        {
+            endPoint += `?departmentId=${departmentId}`
+        }
+        return await this.axiosInstance.get(endPoint)
+    }
+
+    static async getTeamPlanning(departmentId, month, year)
+    {
+        const endPoint = `${this.authBaseUrl}team/${departmentId}/${month}/${year}`
+        return await this.axiosInstance.get(endPoint)
+    }
 }

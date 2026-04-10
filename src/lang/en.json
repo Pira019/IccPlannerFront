@@ -347,6 +347,11 @@
       "training": "Training",
       "trainingTag": "T",
       "noAvailableMembers": "No available members for this date.",
+      "allServices": "All services",
+      "selectServiceHint": "Select an existing service or create a new one in the Services page.",
+      "differentArrival": "Different arrival time",
+      "arrivalTime": "Arrival time",
+      "arrivalBeforeStart": "Arrival time must be before or equal to start time.",
       "forceAssign": "Force assignment",
       "overlapTitle": "Overlap detected",
       "tableDesc": "Member summary view — see each person's workload for the month at a glance.",
@@ -365,7 +370,9 @@
       "subtitle": "Your assignments for the month",
       "menuLabel": "My planning",
       "assignments": "assignments",
-      "noAssignments": "No assignments this month"
+      "noAssignments": "No assignments this month",
+      "myTab": "My planning",
+      "teamTab": "Team"
   },
   "profil": {
       "edit": "Edit",

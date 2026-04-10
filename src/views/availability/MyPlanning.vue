@@ -1,95 +1,226 @@
 <script setup>
-import MemberService from '@/service/MemberService';
-import { buildCalendarWeeks, createSeededRandom, getSundays, useMonthNavigation, WEEK_DAYS } from '@/utils/composables/useCalendar';
+import DepartmentService from '@/service/DepartmentService';
+import PlanningService from '@/service/PlanningService';
+import { useMonthNavigation, WEEK_DAYS } from '@/utils/composables/useCalendar';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const { locale, t } = useI18n();
 const { handleAsyncError } = useHandleAsyncError();
+const { month: currentMonth, year: currentYear, navigateMonth } = useMonthNavigation();
 
-const { month: currentMonth, year: currentYear, monthLabel, navigateMonth } = useMonthNavigation();
+const props = defineProps({
+    departmentSelected: { type: [String, Number], default: null }
+});
+
 const loading = ref(false);
-const planningData = ref(null);
+const assignments = ref([]);
+const teamData = ref([]);
+const departments = ref([]);
+const selectedDept = ref(null);
+const loadingDepts = ref(false);
+const activeTab = ref('mine');
 
 const weekDays = WEEK_DAYS;
+const viewMode = ref('month'); // 'month' ou 'week'
+const currentWeekStart = ref(getWeekStart(new Date()));
 
-// Build calendar grid
-const calendarWeeks = computed(() => {
-    if (!planningData.value) return [];
-    return buildCalendarWeeks(currentMonth.value, currentYear.value, (dateStr) => {
-        const dayAssignments = (planningData.value?.assignments || []).filter((a) => a.date === dateStr);
-
-        const services = [];
-        for (const a of dayAssignments) {
-            if (!services.some((s) => s.serviceId === a.serviceId)) {
-                services.push({ serviceId: a.serviceId, serviceName: a.serviceName, startTime: a.startTime, endTime: a.endTime, departmentName: a.departmentName || '' });
-            }
-        }
-        return { services };
-    });
-});
-
-// Flat list for mobile
-const daysWithAssignments = computed(() => {
-    const days = [];
-    for (const week of calendarWeeks.value) {
-        for (const cell of week) {
-            if (cell && cell.services.length > 0) days.push(cell);
+// DatePicker mois/année
+const selectedMonthDate = computed({
+    get() { return new Date(currentYear.value, currentMonth.value - 1, 1); },
+    set(val) {
+        if (val) {
+            currentMonth.value = val.getMonth() + 1;
+            currentYear.value = val.getFullYear();
         }
     }
-    return days;
 });
 
-const totalAssignments = computed(() => planningData.value?.assignments?.length || 0);
+// Département effectif (prop ou sélection locale)
+const effectiveDept = computed(() => props.departmentSelected || selectedDept.value);
 
-// Mock data
-function generateMockMyPlanning(month, year) {
-    const sundays = getSundays(month, year);
-    const assignments = [];
-    let id = 1;
-    const rand = createSeededRandom(month * 100 + year);
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+}
 
-    for (const sunday of sundays) {
-        if (rand() > 0.2) {
-            assignments.push({ id: id++, date: sunday, serviceId: 1, serviceName: 'Culte de célébration', startTime: '09:00', endTime: '12:00', departmentName: 'Louange' });
-        }
-        if (rand() > 0.6) {
-            assignments.push({ id: id++, date: sunday, serviceId: 3, serviceName: 'Culte du soir', startTime: '17:00', endTime: '19:00', departmentName: 'Technique' });
-        }
+function getWeekEnd(start) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + 6);
+    return d;
+}
+
+function formatDateISO(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+const weekLabel = computed(() => {
+    const start = currentWeekStart.value;
+    const end = getWeekEnd(start);
+    const opts = { day: 'numeric', month: 'short' };
+    return `${start.toLocaleDateString(locale.value, opts)} - ${end.toLocaleDateString(locale.value, opts)} ${end.getFullYear()}`;
+});
+
+function navigateWeek(dir) {
+    const d = new Date(currentWeekStart.value);
+    d.setDate(d.getDate() + dir * 7);
+    currentWeekStart.value = d;
+}
+
+function goToday() {
+    const now = new Date();
+    currentMonth.value = now.getMonth() + 1;
+    currentYear.value = now.getFullYear();
+    currentWeekStart.value = getWeekStart(now);
+}
+
+// Filtrer par semaine si mode semaine
+const filteredByView = computed(() => {
+    if (viewMode.value === 'week') {
+        const startStr = formatDateISO(currentWeekStart.value);
+        const endStr = formatDateISO(getWeekEnd(currentWeekStart.value));
+        return assignments.value.filter(a => a.date >= startStr && a.date <= endStr);
     }
-    return { assignments };
+    return assignments.value;
+});
+
+// Grouper par date
+const groupedByDate = computed(() => {
+    const map = {};
+    for (const a of filteredByView.value) {
+        if (!map[a.date]) { map[a.date] = []; }
+        map[a.date].push(a);
+    }
+    return Object.entries(map)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, items]) => ({ date, items }));
+});
+
+const totalAssignments = computed(() => filteredByView.value.length);
+
+// Team: grouper par date → service → membres
+const teamGroupedByDate = computed(() => {
+    const filtered = viewMode.value === 'week'
+        ? teamData.value.filter(a => {
+            const startStr = formatDateISO(currentWeekStart.value);
+            const endStr = formatDateISO(getWeekEnd(currentWeekStart.value));
+            return a.date >= startStr && a.date <= endStr;
+        })
+        : teamData.value;
+
+    const map = {};
+    for (const a of filtered) {
+        if (!map[a.date]) { map[a.date] = {}; }
+        const svcKey = `${a.programShortName || a.programName?.substring(0, 3)} - ${a.serviceName}`;
+        if (!map[a.date][svcKey]) { map[a.date][svcKey] = { program: a.programShortName || a.programName?.substring(0, 3), service: a.serviceName, members: [] }; }
+        map[a.date][svcKey].members.push(a);
+    }
+    return Object.entries(map)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, services]) => ({ date, services: Object.values(services) }));
+});
+
+const todayStr = computed(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+});
+
+function isToday(dateStr) { return dateStr === todayStr.value; }
+function isPast(dateStr) { return dateStr < todayStr.value; }
+
+function formatDateLong(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString(locale.value, { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function formatDayShort(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return { day: d.getDate(), weekDay: weekDays[(d.getDay() + 6) % 7] };
 }
 
 async function fetchMyPlanning() {
-    const { result, error } = await handleAsyncError(
-        () => MemberService.getMyPlanning(currentMonth.value, currentYear.value),
+    const { result } = await handleAsyncError(
+        () => PlanningService.getMyPlanning(currentMonth.value, currentYear.value, effectiveDept.value),
         (val) => (loading.value = val)
     );
-    if (!error && result) {
-        planningData.value = result;
-    } else {
-        planningData.value = generateMockMyPlanning(currentMonth.value, currentYear.value);
-    }
+    assignments.value = result || [];
 }
 
-onMounted(() => fetchMyPlanning());
-watch([currentMonth, currentYear], () => fetchMyPlanning());
+async function fetchTeamPlanning() {
+    if (!effectiveDept.value) { teamData.value = []; return; }
+    const { result } = await handleAsyncError(
+        () => PlanningService.getTeamPlanning(effectiveDept.value, currentMonth.value, currentYear.value)
+    );
+    teamData.value = result || [];
+}
+
+async function fetchDepartments() {
+    if (props.departmentSelected) { return; }
+    const { result } = await handleAsyncError(
+        () => DepartmentService.get(),
+        (val) => (loadingDepts.value = val)
+    );
+    departments.value = result?.departments || [];
+}
+
+onMounted(async () => {
+    await fetchDepartments();
+    await fetchMyPlanning();
+    await fetchTeamPlanning();
+});
+
+watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fetchTeamPlanning(); });
 </script>
 
 <template>
-    <div class="card">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <div>
-                <h2 class="text-xl font-bold m-0">{{ t('myPlanning.title') }}</h2>
-                <p class="text-sm text-muted-color mt-1 m-0">{{ t('myPlanning.subtitle') }}</p>
+    <PageComponent :title-page="t('myPlanning.title')" :subtitle="t('myPlanning.subtitle')" :showAddBtn="false">
+        <!-- Navigation -->
+        <div class="flex flex-col gap-3 mb-5">
+            <!-- Ligne 1 : toggle + aujourd'hui -->
+            <div class="flex items-center justify-between">
+                <SelectButton v-model="viewMode" :options="[
+                    { value: 'month', label: t('liMonth') },
+                    { value: 'week', label: t('liWeek') }
+                ]" optionValue="value" optionLabel="label" size="small" />
+                <Button :label="t('liToDay')" size="small" outlined @click="goToday" />
             </div>
-            <div class="flex items-center gap-2">
-                <Button icon="pi pi-chevron-left" text rounded size="small" @click="navigateMonth(-1)" />
-                <span class="font-semibold text-sm min-w-[140px] text-center capitalize">{{ monthLabel }}</span>
-                <Button icon="pi pi-chevron-right" text rounded size="small" @click="navigateMonth(1)" />
+
+            <!-- Ligne 2 : flèches + date -->
+            <div class="flex items-center justify-center gap-2">
+                <Button icon="pi pi-chevron-left" text rounded size="small" @click="viewMode === 'month' ? navigateMonth(-1) : navigateWeek(-1)" />
+                <DatePicker v-if="viewMode === 'month'" v-model="selectedMonthDate" view="month" dateFormat="MM yy" :showIcon="false"
+                    inputClass="font-semibold text-sm text-center capitalize cursor-pointer border-none bg-transparent w-[160px] p-1" />
+                <span v-else class="font-semibold text-sm min-w-[200px] text-center capitalize">{{ weekLabel }}</span>
+                <Button icon="pi pi-chevron-right" text rounded size="small" @click="viewMode === 'month' ? navigateMonth(1) : navigateWeek(1)" />
             </div>
+        </div>
+
+        <!-- Filtres + stats -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
+            <div class="flex items-center gap-3">
+                <Select v-if="!departmentSelected && departments.length > 0"
+                    v-model="selectedDept" 
+                    :options="departments" 
+                    optionLabel="name" 
+                    optionValue="id" 
+                    :placeholder="t('liSelectDepart')"
+                    :showClear="true"
+                    :loading="loadingDepts"
+                    class="w-60"
+                />
+                <Tag severity="primary" :value="`${totalAssignments} ${t('myPlanning.assignments')}`" rounded />
+            </div>
+        </div>
+
+        <!-- Tabs Mon planning / Équipe -->
+        <div class="mb-4">
+            <SelectButton v-model="activeTab" :options="[
+                { value: 'mine', label: t('myPlanning.myTab') },
+                { value: 'team', label: t('myPlanning.teamTab') }
+            ]" optionValue="value" optionLabel="label" size="small" />
         </div>
 
         <!-- Loading -->
@@ -97,59 +228,113 @@ watch([currentMonth, currentYear], () => fetchMyPlanning());
             <ProgressSpinner />
         </div>
 
-        <template v-else-if="planningData">
-            <!-- Stats -->
-            <div class="flex items-center gap-3 mb-4 text-sm">
-                <Tag severity="primary" :value="`${totalAssignments} ${t('myPlanning.assignments')}`" rounded />
-            </div>
+        <!-- === MON PLANNING === -->
+        <template v-else-if="activeTab === 'mine'">
+        <!-- Empty -->
+        <div v-if="groupedByDate.length === 0" class="flex flex-col items-center py-16 text-surface-400">
+            <i class="pi pi-calendar text-5xl mb-3"></i>
+            <span class="text-lg font-medium">{{ t('myPlanning.noAssignments') }}</span>
+        </div>
 
-            <!-- DESKTOP: Calendar grid -->
-            <div class="hidden md:block">
-                <div class="grid grid-cols-7 gap-px bg-surface-200 dark:bg-surface-700 rounded-t-lg overflow-hidden">
-                    <div v-for="day in weekDays" :key="day" class="bg-surface-50 dark:bg-surface-800 text-center py-2 text-xs font-semibold text-muted-color">{{ day }}</div>
-                </div>
-                <div class="grid grid-cols-7 gap-px bg-surface-200 dark:bg-surface-700 rounded-b-lg overflow-hidden">
-                    <template v-for="(week, wi) in calendarWeeks" :key="wi">
-                        <div
-                            v-for="(cell, ci) in week"
-                            :key="`${wi}-${ci}`"
-                            class="bg-surface-0 dark:bg-surface-900 min-h-[90px] p-1.5"
-                            :class="{ 'bg-surface-50/50 dark:bg-surface-800/50': !cell, 'ring-2 ring-inset ring-primary/30': cell?.isToday }"
-                        >
-                            <template v-if="cell">
-                                <span class="text-xs font-semibold mb-1 inline-block" :class="{ 'text-primary font-bold': cell.isToday, 'text-muted-color': cell.services.length === 0 && !cell.isToday }">{{ cell.day }}</span>
-                                <div v-for="svc in cell.services" :key="svc.serviceId" class="mb-1 last:mb-0 bg-primary/10 rounded px-1.5 py-1">
-                                    <div class="text-[0.6rem] font-semibold text-primary truncate">{{ svc.serviceName }}</div>
-                                    <div class="text-[0.55rem] text-muted-color">{{ svc.startTime }} - {{ svc.endTime }}</div>
-                                    <div v-if="svc.departmentName" class="text-[0.5rem] text-muted-color italic">{{ svc.departmentName }}</div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- MOBILE: Card list -->
-            <div class="md:hidden flex flex-col gap-2">
-                <div v-if="daysWithAssignments.length === 0" class="text-center py-8 text-muted-color text-sm">
-                    {{ t('myPlanning.noAssignments') }}
-                </div>
-                <div v-for="cell in daysWithAssignments" :key="cell.dateStr" class="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden" :class="{ 'ring-2 ring-primary/30': cell.isToday }">
-                    <div class="bg-surface-50 dark:bg-surface-800 px-3 py-2 border-b border-surface-200 dark:border-surface-700">
-                        <span class="font-semibold text-sm" :class="{ 'text-primary': cell.isToday }">{{ weekDays[(new Date(cell.dateStr + 'T00:00:00').getDay() + 6) % 7] }} {{ cell.day }}</span>
+        <!-- Timeline view -->
+        <div v-else class="flex flex-col gap-4">
+            <div v-for="group in groupedByDate" :key="group.date"
+                class="rounded-xl border overflow-hidden transition-all"
+                :class="{
+                    'border-primary bg-primary/5 shadow-md': isToday(group.date),
+                    'border-surface-200 dark:border-surface-700': !isToday(group.date),
+                    'opacity-60': isPast(group.date) && !isToday(group.date)
+                }">
+                <!-- Date header -->
+                <div class="flex items-center gap-3 px-5 py-3 border-b"
+                    :class="{
+                        'bg-primary/10 border-primary/20': isToday(group.date),
+                        'bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700': !isToday(group.date)
+                    }">
+                    <div class="flex flex-col items-center min-w-[50px]">
+                        <span class="text-2xl font-bold" :class="isToday(group.date) ? 'text-primary' : ''">{{ formatDayShort(group.date).day }}</span>
+                        <span class="text-xs uppercase font-semibold" :class="isToday(group.date) ? 'text-primary' : 'text-muted-color'">{{ formatDayShort(group.date).weekDay }}</span>
                     </div>
-                    <div class="p-3 flex flex-col gap-2">
-                        <div v-for="svc in cell.services" :key="svc.serviceId" class="bg-primary/10 rounded-lg px-3 py-2">
-                            <div class="text-sm font-semibold text-primary">{{ svc.serviceName }}</div>
-                            <div class="text-xs text-muted-color flex items-center gap-1 mt-0.5">
-                                <i class="pi pi-clock" style="font-size: 0.6rem"></i>
-                                {{ svc.startTime }} - {{ svc.endTime }}
+                    <div class="flex-1">
+                        <span class="text-sm font-semibold capitalize" :class="isToday(group.date) ? 'text-primary' : ''">{{ formatDateLong(group.date) }}</span>
+                        <Tag v-if="isToday(group.date)" :value="t('liToDay')" severity="primary" class="ml-2 text-xs" />
+                    </div>
+                    <Tag :value="`${group.items.length}`" severity="secondary" rounded class="text-xs" />
+                </div>
+
+                <!-- Services -->
+                <div class="divide-y divide-surface-100 dark:divide-surface-800">
+                    <div v-for="(item, idx) in group.items" :key="idx" class="flex items-start gap-4 px-5 py-3">
+                        <div class="flex flex-col items-center min-w-[60px] pt-0.5">
+                            <i class="pi pi-clock text-xs text-muted-color mb-0.5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-base">{{ item.serviceName }}</span>
+                                <Tag :value="item.programShortName || item.programName?.substring(0, 3)" severity="info" class="text-xs" />
+                                <Tag v-if="item.indTraining" :value="t('planning.trainingTag')" severity="warn" class="text-xs" />
                             </div>
-                            <div v-if="svc.departmentName" class="text-xs text-muted-color italic mt-0.5">{{ svc.departmentName }}</div>
+                            <div class="text-sm text-muted-color mt-1">
+                                {{ item.departmentName }}
+                            </div>
+                            <div v-if="item.posteName" class="mt-1">
+                                <Tag :value="item.posteName" severity="secondary" class="text-xs" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </template>
+
+        <!-- === ÉQUIPE === -->
+        <template v-if="!loading && activeTab === 'team'">
+            <div v-if="!effectiveDept" class="flex flex-col items-center py-16 text-surface-400">
+                <i class="pi pi-users text-5xl mb-3"></i>
+                <span class="text-lg font-medium">{{ t('planning.selectDeptTitle') }}</span>
+            </div>
+            <div v-else-if="teamGroupedByDate.length === 0" class="flex flex-col items-center py-16 text-surface-400">
+                <i class="pi pi-users text-5xl mb-3"></i>
+                <span class="text-lg font-medium">{{ t('myPlanning.noAssignments') }}</span>
+            </div>
+            <div v-else class="flex flex-col gap-4">
+                <div v-for="group in teamGroupedByDate" :key="group.date"
+                    class="rounded-xl border overflow-hidden"
+                    :class="{
+                        'border-primary bg-primary/5 shadow-md': isToday(group.date),
+                        'border-surface-200 dark:border-surface-700': !isToday(group.date),
+                        'opacity-60': isPast(group.date) && !isToday(group.date)
+                    }">
+                    <div class="flex items-center gap-3 px-5 py-3 border-b"
+                        :class="{
+                            'bg-primary/10 border-primary/20': isToday(group.date),
+                            'bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700': !isToday(group.date)
+                        }">
+                        <div class="flex flex-col items-center min-w-[50px]">
+                            <span class="text-2xl font-bold" :class="isToday(group.date) ? 'text-primary' : ''">{{ formatDayShort(group.date).day }}</span>
+                            <span class="text-xs uppercase font-semibold" :class="isToday(group.date) ? 'text-primary' : 'text-muted-color'">{{ formatDayShort(group.date).weekDay }}</span>
+                        </div>
+                        <span class="text-sm font-semibold capitalize flex-1" :class="isToday(group.date) ? 'text-primary' : ''">{{ formatDateLong(group.date) }}</span>
+                        <Tag v-if="isToday(group.date)" :value="t('liToDay')" severity="primary" class="text-xs" />
+                    </div>
+                    <div class="divide-y divide-surface-100 dark:divide-surface-800">
+                        <div v-for="(svc, si) in group.services" :key="si" class="px-5 py-3">
+                            <div class="flex items-center gap-2 mb-2">
+                                <Tag :value="svc.program" severity="info" class="text-xs" />
+                                <span class="font-semibold text-sm">{{ svc.service }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <div v-for="(m, mi) in svc.members" :key="mi" class="flex items-center gap-1.5 bg-surface-50 dark:bg-surface-800 rounded-lg px-3 py-1.5">
+                                    <i class="pi pi-user text-xs text-primary"></i>
+                                    <span class="text-sm font-medium">{{ m.memberName }}</span>
+                                    <Tag v-if="m.posteName" :value="m.posteName" severity="secondary" class="text-[0.6rem]" />
+                                    <Tag v-if="m.indTraining" :value="t('planning.trainingTag')" severity="warn" class="text-[0.6rem]" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </template>
-    </div>
+    </PageComponent>
 </template>

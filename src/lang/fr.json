@@ -349,6 +349,11 @@
       "training": "Formation",
       "trainingTag": "F",
       "noAvailableMembers": "Aucun membre disponible pour cette date.",
+      "allServices": "Tous les services",
+      "selectServiceHint": "Sélectionnez un service existant ou créez-en un nouveau dans la page Services.",
+      "differentArrival": "Heure d'arrivée différente",
+      "arrivalTime": "Heure d'arrivée",
+      "arrivalBeforeStart": "L'heure d'arrivée doit être avant ou égale à l'heure de début.",
       "forceAssign": "Forcer l'assignation",
       "overlapTitle": "Chevauchement détecté",
       "tableDesc": "Vue récapitulative par membre — visualisez la charge de chaque personne sur le mois.",
@@ -367,7 +372,9 @@
       "subtitle": "Vos assignations pour le mois",
       "menuLabel": "Mon planning",
       "assignments": "assignations",
-      "noAssignments": "Aucune assignation ce mois-ci"
+      "noAssignments": "Aucune assignation ce mois-ci",
+      "myTab": "Mon planning",
+      "teamTab": "Équipe"
     },
     "profil": {
       "edit": "Modifier",

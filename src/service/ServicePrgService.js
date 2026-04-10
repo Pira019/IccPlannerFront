@@ -8,6 +8,11 @@ export default class ServicePrgService extends BaseService
     static authBaseUrl = "services/"
     static urlServiceprg = "serviceprg/"
 
+    static async getAll()
+    {
+        return await this.axiosInstance.get(this.authBaseUrl);
+    }
+
     static async getDatesAsync(month,year,idDepart)
     {
         const endPoint = `${this.authBaseUrl}dates/${month}/${year}/${idDepart}`

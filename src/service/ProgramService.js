@@ -44,4 +44,10 @@ export default class ProgramService extends BaseService
         const endPoint = `${this.authBaseUrl}${idPrg}`;
         return await this.axiosInstance.put(endPoint,payload)
     }
+
+    static async deletePrg(idPrg)
+    {
+        const endPoint = `${this.authBaseUrl}${idPrg}`;
+        return await this.axiosInstance.delete(endPoint)
+    }
 }

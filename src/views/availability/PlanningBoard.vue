@@ -176,6 +176,47 @@ const totalAvailableMembers = computed(() => {
     return availableMembers.value.reduce((sum, s) => sum + (s.availableMembers?.length || 0), 0);
 });
 
+// Sidebar tab
+const sidebarTab = ref('available');
+const selectedServiceFilter = ref(null);
+
+// Services disponibles pour le filtre
+const serviceFilterOptions = computed(() => {
+    return availableMembers.value.map(s => ({
+        label: s.serviceName,
+        value: s.servicePrgId
+    }));
+});
+
+// Membres filtrés par service
+const filteredAvailableMembers = computed(() => {
+    if (!selectedServiceFilter.value) {
+        return availableMembers.value;
+    }
+    return availableMembers.value.filter(s => s.servicePrgId === selectedServiceFilter.value);
+});
+
+// Membres assignés pour la date sélectionnée (depuis plannedByDate)
+const assignedByService = computed(() => {
+    if (!selectedDate.value) return [];
+    const entries = plannedByDate.value[selectedDate.value] || [];
+    const result = [];
+    for (const prg of entries) {
+        for (const svc of prg.services) {
+            result.push({
+                program: prg.program,
+                service: svc.service,
+                members: svc.members || []
+            });
+        }
+    }
+    return result;
+});
+
+const totalAssigned = computed(() => {
+    return assignedByService.value.reduce((sum, s) => sum + s.members.length, 0);
+});
+
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr + 'T00:00:00');
@@ -233,6 +274,8 @@ function closeSidebar() {
     selectedDate.value = null;
     availableMembers.value = [];
     errorMessage.value = null;
+    sidebarTab.value = 'available';
+    selectedServiceFilter.value = null;
 }
 
 function exportPdf() { window.print(); }
@@ -519,26 +562,45 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                         <div class="flex items-center justify-between p-4 border-b border-surface-200 dark:border-surface-700">
                             <div>
                                 <h3 class="font-semibold text-sm m-0 capitalize">{{ formatDate(selectedDate) }}</h3>
-                                <span class="text-xs text-surface-400">{{ $t('planning.assignMembers') }} · {{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }}</span>
+                                <span class="text-xs text-surface-400">{{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }} · {{ totalAssigned }} {{ $t('planning.assigned').toLowerCase() }}</span>
                             </div>
                             <Button icon="pi pi-times" text rounded size="small" @click="closeSidebar" />
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="px-4 pt-3">
+                            <SelectButton v-model="sidebarTab" :options="[
+                                { value: 'available', label: $t('planning.available') + ' (' + totalAvailableMembers + ')' },
+                                { value: 'assigned', label: $t('planning.assigned') + ' (' + totalAssigned + ')' }
+                            ]" optionValue="value" optionLabel="label" size="small" class="w-full" />
                         </div>
 
                         <!-- Content -->
                         <div class="flex-1 overflow-y-auto p-4">
                             <Message v-if="errorMessage" severity="error" :closable="true" @close="errorMessage = null" class="mb-3">{{ errorMessage }}</Message>
 
+                            <!-- Tab Disponibles -->
+                            <template v-if="sidebarTab === 'available'">
+                            <Select v-if="serviceFilterOptions.length > 0"
+                                v-model="selectedServiceFilter" 
+                                :options="serviceFilterOptions" 
+                                optionLabel="label" 
+                                optionValue="value" 
+                                :placeholder="$t('planning.allServices')" 
+                                :showClear="true"
+                                size="small" 
+                                class="w-full mb-3" />
                             <div v-if="loadingMembers" class="flex justify-center py-8">
                                 <ProgressSpinner style="width: 32px; height: 32px" />
                             </div>
 
-                            <div v-else-if="availableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
+                            <div v-else-if="filteredAvailableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
                                 <i class="pi pi-users text-3xl mb-2"></i>
                                 <span class="text-xs">{{ $t('planning.noAvailableMembers') }}</span>
                             </div>
 
                             <div v-else class="flex flex-col gap-4">
-                                <div v-for="service in availableMembers" :key="service.servicePrgId">
+                                <div v-for="service in filteredAvailableMembers" :key="service.servicePrgId">
                                     <div class="flex items-center gap-2 mb-2">
                                         <i class="pi pi-bookmark-fill text-primary text-xs"></i>
                                         <span class="font-semibold text-xs uppercase tracking-wide text-surface-600">{{ service.serviceName }}</span>
@@ -617,29 +679,72 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                     </div>
                                 </div>
                             </div>
+                            </template>
+
+                            <!-- Tab Assignés -->
+                            <template v-if="sidebarTab === 'assigned'">
+                                <div v-if="assignedByService.length === 0" class="flex flex-col items-center py-8 text-surface-400">
+                                    <i class="pi pi-users text-3xl mb-2"></i>
+                                    <span class="text-xs">{{ $t('planning.noAssignments') }}</span>
+                                </div>
+                                <div v-else class="flex flex-col gap-4">
+                                    <div v-for="(svc, si) in assignedByService" :key="si">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i class="pi pi-bookmark-fill text-primary text-xs"></i>
+                                            <span class="font-semibold text-xs uppercase tracking-wide text-surface-600">{{ svc.service }}</span>
+                                            <Tag :value="svc.program" severity="info" class="text-[0.6rem]" />
+                                        </div>
+                                        <div class="flex flex-col gap-1.5">
+                                            <div v-for="(group, poste) in groupByPoste(svc.members)" :key="poste">
+                                                <span class="text-[0.65rem] rounded px-1 inline-block mb-0.5"
+                                                    :class="[getPosteColor(poste).bg, getPosteColor(poste).text]">{{ poste }}</span>
+                                                <div v-for="(m, mi) in group" :key="mi" class="flex items-center gap-1.5 text-sm pl-2 py-0.5">
+                                                    <i class="pi pi-check-circle text-green-500 text-xs"></i>
+                                                    <span class="text-green-700">{{ m.memberName }}</span>
+                                                    <span v-if="m.indTraining" class="text-[0.6rem] bg-orange-100 text-orange-700 rounded px-0.5 font-bold">{{ $t('planning.trainingTag') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </transition>
 
                 <!-- Sidebar mobile (Drawer) -->
                 <Drawer v-model:visible="sidebarVisible" v-if="isMobile" position="bottom" class="!h-[85vh]" :header="formatDate(selectedDate)">
-                    <div class="flex flex-col gap-1 mb-2">
-                        <span class="text-xs text-surface-400">{{ $t('planning.assignMembers') }} · {{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }}</span>
+                    <div class="flex flex-col gap-2 mb-3">
+                        <span class="text-xs text-surface-400">{{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }} · {{ totalAssigned }} {{ $t('planning.assigned').toLowerCase() }}</span>
+                        <SelectButton v-model="sidebarTab" :options="[
+                            { value: 'available', label: $t('planning.available') + ' (' + totalAvailableMembers + ')' },
+                            { value: 'assigned', label: $t('planning.assigned') + ' (' + totalAssigned + ')' }
+                        ]" optionValue="value" optionLabel="label" size="small" class="w-full" />
                     </div>
 
                     <Message v-if="errorMessage" severity="error" :closable="true" @close="errorMessage = null" class="mb-3">{{ errorMessage }}</Message>
 
+                    <template v-if="sidebarTab === 'available'">
+                    <Select v-if="serviceFilterOptions.length > 0"
+                        v-model="selectedServiceFilter" 
+                        :options="serviceFilterOptions" 
+                        optionLabel="label" 
+                        optionValue="value" 
+                        :placeholder="$t('planning.allServices')" 
+                        :showClear="true"
+                        size="small" 
+                        class="w-full mb-3" />
                     <div v-if="loadingMembers" class="flex justify-center py-8">
                         <ProgressSpinner style="width: 32px; height: 32px" />
                     </div>
 
-                    <div v-else-if="availableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
+                    <div v-else-if="filteredAvailableMembers.length === 0 && !errorMessage" class="flex flex-col items-center py-8 text-surface-400">
                         <i class="pi pi-users text-3xl mb-2"></i>
                         <span class="text-xs">{{ $t('planning.noAvailableMembers') }}</span>
                     </div>
 
                     <div v-else class="flex flex-col gap-4 overflow-y-auto">
-                        <div v-for="service in availableMembers" :key="service.servicePrgId">
+                        <div v-for="service in filteredAvailableMembers" :key="service.servicePrgId">
                             <div class="flex items-center gap-2 mb-2">
                                 <i class="pi pi-bookmark-fill text-primary text-xs"></i>
                                 <span class="font-semibold text-xs uppercase tracking-wide text-surface-600">{{ service.serviceName }}</span>
@@ -717,6 +822,35 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                             </div>
                         </div>
                     </div>
+                    </template>
+
+                    <!-- Tab Assignés mobile -->
+                    <template v-if="sidebarTab === 'assigned'">
+                        <div v-if="assignedByService.length === 0" class="flex flex-col items-center py-8 text-surface-400">
+                            <i class="pi pi-users text-3xl mb-2"></i>
+                            <span class="text-xs">{{ $t('planning.noAssignments') }}</span>
+                        </div>
+                        <div v-else class="flex flex-col gap-4">
+                            <div v-for="(svc, si) in assignedByService" :key="si">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="pi pi-bookmark-fill text-primary text-xs"></i>
+                                    <span class="font-semibold text-xs uppercase tracking-wide text-surface-600">{{ svc.service }}</span>
+                                    <Tag :value="svc.program" severity="info" class="text-[0.6rem]" />
+                                </div>
+                                <div class="flex flex-col gap-1.5">
+                                    <div v-for="(group, poste) in groupByPoste(svc.members)" :key="poste">
+                                        <span class="text-[0.65rem] rounded px-1 inline-block mb-0.5"
+                                            :class="[getPosteColor(poste).bg, getPosteColor(poste).text]">{{ poste }}</span>
+                                        <div v-for="(m, mi) in group" :key="mi" class="flex items-center gap-1.5 text-sm pl-2 py-0.5">
+                                            <i class="pi pi-check-circle text-green-500 text-xs"></i>
+                                            <span class="text-green-700">{{ m.memberName }}</span>
+                                            <span v-if="m.indTraining" class="text-[0.6rem] bg-orange-100 text-orange-700 rounded px-0.5 font-bold">{{ $t('planning.trainingTag') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </Drawer>
                 </template>
 

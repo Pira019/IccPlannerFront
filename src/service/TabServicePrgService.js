@@ -12,4 +12,16 @@ export default class TabServicePrgService extends BaseService
         const endPoint = `${this.authBaseUrl}search-programs`;
         return await this.axiosInstance.post(endPoint,payload)
     }
+
+    static async deleteServicePrg(servicePrgId)
+    {
+        const endPoint = `serviceprg/${servicePrgId}`;
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+    static async updateServicePrg(servicePrgId, payload)
+    {
+        const endPoint = `serviceprg/${servicePrgId}`;
+        return await this.axiosInstance.put(endPoint, payload)
+    }
 }

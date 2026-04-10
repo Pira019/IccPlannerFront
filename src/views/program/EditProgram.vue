@@ -1,17 +1,30 @@
 <script setup>
+import ResponseComponent from '@/components/ResponseComponent.vue';
 import ProgramService from '@/service/ProgramService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref } from 'vue';
 import { z } from 'zod';
 
-const emit = defineEmits(['saved', 'closeModal']);
+const emit = defineEmits(['saved', 'closeDialog']);
+
+const props = defineProps({
+    program: {
+        type: Object,
+        default: null
+    }
+});
 
 const { handleAsyncError } = useHandleAsyncError();
-
 const errorReq = ref(null);
 const loading = ref(false);
-const prgId = ref(null);
+const prgId = ref(props.program?.programId || props.program?.idPrg || null);
+
+const initialValues = ref({
+    name: props.program?.title || '',
+    shortName: props.program?.shortName || '',
+    description: props.program?.description || ''
+});
 
 const resolver = zodResolver(
     z.object({
@@ -21,82 +34,63 @@ const resolver = zodResolver(
     })
 );
 
-const onFormSubmit = async ({ valid, values }) => {
+async function onFormSubmit({ valid, values }) {
     if (valid) {
-        await editPrg(values);
+        await savePrg(values);
     }
-};
-
-function closeDialog() {
-    emit('closeDialog');
 }
 
-///
-async function editPrg(newPrg) {
-
-
-    const liMsg = prgId.value ? 'msgEdtPrg' : 'msgAddPrg'
-    var method =   prgId.value
-                    ?  ProgramService.EdtPrg(prgId.value,newPrg)
-                    : ProgramService.addPrg(newPrg)
+async function savePrg(payload) {
+    const isEdit = !!prgId.value;
+    const apiCall = isEdit
+        ? ProgramService.EdtPrg(prgId.value, payload)
+        : ProgramService.addPrg(payload);
 
     const { error, result } = await handleAsyncError(
-        () => method,
+        () => apiCall,
         (val) => (loading.value = val),
         true,
-        liMsg
+        isEdit ? 'msgEdtPrg' : 'msgAddPrg'
     );
+
     errorReq.value = error;
-
-    if (errorReq.value != null )  {
-       return;
+    if (error) {
+        return;
     }
 
-    if(!prgId.value) {
-         prgId.value = result.programId
-         emit('saved', prgId.value)
+    if (!isEdit) {
+        prgId.value = result.programId;
     }
-
+    emit('saved', prgId.value);
 }
 </script>
 
 <template>
     <Fluid>
-        <Form :resolver @submit="onFormSubmit">
+        <Form :resolver="resolver" :initialValues="initialValues" @submit="onFormSubmit">
             <div class="flex flex-col sm:flex-row gap-6 mb-5">
-                <FloatLabel variant="on" class="flex-1 w-full">
-                    <FormField v-slot="$field" name="name" class="flex-auto">
-                        <label class="block font-semibold mb-2">{{ $t('prgName') }} *</label>
-                        <InputText  v-model="$field.value" maxlength="55" placeholder="Ex.: Culte dominical" />
-                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                    </FormField>
-                </FloatLabel>
-                <FloatLabel variant="on" class="flex-1 w-full">
-                    <FormField v-slot="$field" name="shortName" class="flex-auto">
-                        <label for="shortName" class="block font-semibold mb-2">{{ $t('ShortName') }}</label>
-                        <InputText v-model="$field.value" maxlength="15" placeholder="Ex.: CD" />
-                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                    </FormField>
-                </FloatLabel>
+                <FormField v-slot="$field" name="name" class="flex-1 w-full">
+                    <label class="block font-semibold mb-2">{{ $t('prgName') }} *</label>
+                    <InputText v-model="$field.value" maxlength="55" placeholder="Ex.: Culte dominical" />
+                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                </FormField>
+                <FormField v-slot="$field" name="shortName" class="flex-1 w-full">
+                    <label class="block font-semibold mb-2">{{ $t('ShortName') }}</label>
+                    <InputText v-model="$field.value" maxlength="15" placeholder="Ex.: CD" />
+                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                </FormField>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-6 mb-2">
-                <FloatLabel variant="on">
-                    <FormField v-slot="$field" name="description" class="flex-auto">
-                        <label for="description" class="block font-semibold mb-2">{{ $t('Description') }} *</label>
-                        <Textarea rows="8" v-model="$field.value" placeholder="Ex : Le culte de célébration est un moment joyeux où nous louons Dieu ..." />
-                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                    </FormField>
-                </FloatLabel>
+            <div class="mb-4">
+                <FormField v-slot="$field" name="description">
+                    <label class="block font-semibold mb-2">{{ $t('Description') }} *</label>
+                    <Textarea rows="6" v-model="$field.value" placeholder="Ex : Le culte de célébration est un moment joyeux..." />
+                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                </FormField>
             </div>
-            <div class="flex flex-col gap-2">
-                <ResponseComponent :error="errorReq"/>
-            </div>
-            <div class="flex items-center mt-5">
-                <slot name="btnStep"></slot>
-                <div class="flex gap-2 ml-auto">
-                    <Button type="button" class="truncate" severity="danger" size="small" @click="closeDialog" outlined :label="$t('Cancel')" icon="pi pi-times" />
-                    <Button type="submit" class=" truncate" size="small" :label="prgId  ? $t('Modifier') : $t('Save')" :loading="loading" icon="pi pi-save"  />
-                </div>
+            <ResponseComponent :error="errorReq" />
+            <div class="flex justify-end gap-2 mt-4">
+                <Button type="button" severity="secondary" size="small" @click="emit('closeDialog')" outlined :label="$t('Cancel')" icon="pi pi-times" />
+                <Button type="submit" size="small" :label="prgId ? $t('btnUpdate') : $t('Save')" :loading="loading" icon="pi pi-save" />
             </div>
         </Form>
     </Fluid>
