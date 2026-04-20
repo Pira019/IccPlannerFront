@@ -215,8 +215,8 @@ import { useI18n } from 'vue-i18n';
       return {
         id: e?.id || '',
         title:e?.title || '',
-        start: startDate.toISOString(),
-        end: endDate?.toISOString(),
+        start: isNaN(startDate.getTime()) ? null : startDate.toISOString(),
+        end: isNaN(endDate?.getTime()) ? null : endDate?.toISOString(),
         allDay: allDay,
         extendedProps: {
           idPrg: e?.idPrg || null,

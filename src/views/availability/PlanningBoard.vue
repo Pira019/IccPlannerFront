@@ -172,6 +172,89 @@ function formatShortDate(dateStr) {
     return `${weekDay.substring(0, 3)} ${day}`;
 }
 
+// Programme view: grouped by week, columns = date+service, rows = postes
+function getWeekNumber(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const weekStart = new Date(d.setDate(diff));
+    const monthStart = new Date(weekStart.getFullYear(), currentMonth.value - 1, 1);
+    return Math.ceil(((weekStart - monthStart) / 86400000 + 1) / 7) + 1;
+}
+
+const programViewWeeks = computed(() => {
+    // Flatten all data into: { date, program, service, posteName, memberName, indTraining }
+    const rows = [];
+    for (const prg of monthlyPlanning.value) {
+        const prgLabel = prg.programShortName || prg.programName?.substring(0, 3);
+        for (const d of prg.dates || []) {
+            for (const svc of d.services || []) {
+                for (const m of svc.members || []) {
+                    rows.push({
+                        date: d.date,
+                        program: prgLabel,
+                        service: svc.serviceName,
+                        posteName: m.posteName || '-',
+                        memberName: m.memberName,
+                        indTraining: m.indTraining
+                    });
+                }
+            }
+        }
+    }
+
+    // Group by week
+    const weekMap = {};
+    for (const r of rows) {
+        const d = new Date(r.date + 'T00:00:00');
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const ws = new Date(d.getFullYear(), d.getMonth(), diff);
+        const weekKey = `${ws.getFullYear()}-${String(ws.getMonth() + 1).padStart(2, '0')}-${String(ws.getDate()).padStart(2, '0')}`;
+        if (!weekMap[weekKey]) { weekMap[weekKey] = { weekStart: weekKey, entries: [] }; }
+        weekMap[weekKey].entries.push(r);
+    }
+
+    // For each week, build columns (date+service) and rows (postes)
+    return Object.values(weekMap).sort((a, b) => a.weekStart.localeCompare(b.weekStart)).map((week, idx) => {
+        // Columns: unique date+service combos
+        const colMap = {};
+        for (const e of week.entries) {
+            const key = `${e.date}|${e.program}|${e.service}`;
+            if (!colMap[key]) {
+                const d = new Date(e.date + 'T00:00:00');
+                colMap[key] = {
+                    key,
+                    date: e.date,
+                    program: e.program,
+                    service: e.service,
+                    dayLabel: weekDays[(d.getDay() + 6) % 7],
+                    dayNum: d.getDate(),
+                    monthLabel: d.toLocaleDateString('fr-FR', { month: 'long' })
+                };
+            }
+        }
+        const columns = Object.values(colMap).sort((a, b) => a.key.localeCompare(b.key));
+
+        // Rows: unique postes
+        const posteSet = new Set(week.entries.map(e => e.posteName));
+        const postes = [...posteSet].sort();
+
+        // Build cell data: postes[row] x columns[col] = [members]
+        const cellData = {};
+        for (const p of postes) {
+            cellData[p] = {};
+            for (const col of columns) {
+                cellData[p][col.key] = week.entries
+                    .filter(e => e.posteName === p && `${e.date}|${e.program}|${e.service}` === col.key)
+                    .map(e => ({ name: e.memberName, training: e.indTraining }));
+            }
+        }
+
+        return { weekNum: idx + 1, columns, postes, cellData };
+    });
+});
+
 const totalAvailableMembers = computed(() => {
     return availableMembers.value.reduce((sum, s) => sum + (s.availableMembers?.length || 0), 0);
 });
@@ -278,8 +361,41 @@ function closeSidebar() {
     selectedServiceFilter.value = null;
 }
 
-function exportPdf() { window.print(); }
+async function exportPdf() {
+    if (!props.departmentSelected) { return; }
+    try {
+        const response = await PlanningService.downloadPdf(
+            currentMonth.value, currentYear.value, props.departmentSelected
+        );
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Planification-${currentMonth.value}-${currentYear.value}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (e) {
+        errorMessage.value = t('internalError');
+    }
+}
 function sharePlanning() { navigator.clipboard.writeText(window.location.href); }
+
+function printDaily() {
+    if (!props.departmentSelected || !selectedDate.value) { return; }
+    PlanningService.downloadDailyPdf(selectedDate.value, props.departmentSelected)
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Planification-${selectedDate.value}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(() => { errorMessage.value = t('internalError'); });
+}
 async function publishPlanning() {
     if (!props.departmentSelected) return;
     const { error } = await handleAsyncError(
@@ -449,7 +565,8 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                 <div class="flex items-center gap-2">
                     <SelectButton v-model="viewMode" :options="[
                         { value: 'calendar', icon: 'pi pi-calendar' },
-                        { value: 'table', icon: 'pi pi-table' }
+                        { value: 'table', icon: 'pi pi-table' },
+                        { value: 'program', icon: 'pi pi-list' }
                     ]" optionValue="value" dataKey="value" size="small">
                         <template #option="{ option }">
                             <i :class="option.icon"></i>
@@ -564,7 +681,10 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                 <h3 class="font-semibold text-sm m-0 capitalize">{{ formatDate(selectedDate) }}</h3>
                                 <span class="text-xs text-surface-400">{{ totalAvailableMembers }} {{ $t('planning.available').toLowerCase() }} · {{ totalAssigned }} {{ $t('planning.assigned').toLowerCase() }}</span>
                             </div>
-                            <Button icon="pi pi-times" text rounded size="small" @click="closeSidebar" />
+                            <div class="flex items-center gap-1">
+                                <Button icon="pi pi-print" text rounded size="small" @click="printDaily" v-tooltip.bottom="$t('planning.exportPdf')" />
+                                <Button icon="pi pi-times" text rounded size="small" @click="closeSidebar" />
+                            </div>
                         </div>
 
                         <!-- Tabs -->
@@ -899,6 +1019,50 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </template>
+
+                <!-- Program view (tableau par semaine comme le PDF) -->
+                <template v-if="viewMode === 'program'">
+                    <div class="flex-1 min-w-0 overflow-x-auto w-full">
+                        <div v-if="programViewWeeks.length === 0" class="flex flex-col items-center py-12 text-surface-400">
+                            <i class="pi pi-list text-3xl mb-2"></i>
+                            <span class="text-sm">{{ $t('planning.noAssignments') }}</span>
+                        </div>
+                        <div v-else class="flex flex-col">
+                            <div v-for="week in programViewWeeks" :key="week.weekNum" class="border border-surface-200 dark:border-surface-700 overflow-hidden -mt-px first:mt-0">
+                                <!-- Week header row -->
+                                <table class="w-full text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-surface-100 dark:bg-surface-800">
+                                            <th class="border border-surface-200 dark:border-surface-700 px-3 py-2 text-left font-bold min-w-[100px]">
+                                                {{ $t('liWeek') }} {{ week.weekNum }}
+                                            </th>
+                                            <th v-for="col in week.columns" :key="col.key"
+                                                class="border border-surface-200 dark:border-surface-700 px-2 py-2 text-center font-semibold min-w-[100px]">
+                                                <div class="capitalize">{{ col.dayLabel }} {{ col.dayNum }}</div>
+                                                <div class="capitalize text-muted-color font-normal">{{ col.monthLabel }}</div>
+                                                <div class="text-primary text-[0.65rem] mt-0.5">{{ col.program }} / {{ col.service }}</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="poste in week.postes" :key="poste">
+                                            <td class="border border-surface-200 dark:border-surface-700 px-3 py-2 font-semibold bg-surface-50 dark:bg-surface-800/50">
+                                                {{ poste }}
+                                            </td>
+                                            <td v-for="col in week.columns" :key="col.key"
+                                                class="border border-surface-200 dark:border-surface-700 px-2 py-1.5 text-center align-top">
+                                                <div v-for="(m, mi) in week.cellData[poste][col.key]" :key="mi" class="leading-relaxed">
+                                                    <span>{{ m.name }}</span>
+                                                    <span v-if="m.training" class="text-orange-600 font-bold"> (f)</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </template>
             </div>

@@ -54,6 +54,18 @@ export default class PlanningService extends BaseService
         return await this.axiosInstance.get(endPoint)
     }
 
+    static async downloadPdf(month, year, departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}${month}/${year}/pdf?departmentId=${departmentId}`
+        return await this.axiosInstance.get(endPoint, { responseType: 'blob' })
+    }
+
+    static async downloadDailyPdf(date, departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}daily-pdf/${date}?departmentId=${departmentId}`
+        return await this.axiosInstance.get(endPoint, { responseType: 'blob' })
+    }
+
     static async getTeamPlanning(departmentId, month, year)
     {
         const endPoint = `${this.authBaseUrl}team/${departmentId}/${month}/${year}`
