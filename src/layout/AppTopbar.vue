@@ -56,15 +56,9 @@ const toggleUserMenu = (event) => {
                 <Badge v-if="notificationCount > 0" :value="notificationCount" severity="danger" class="absolute -top-1 -right-1 !min-w-5 !h-5 !text-xs" />
             </button>
 
-            <!-- Language -->
-            <LangConfiguration />
-
             <!-- User profile -->
-            <button type="button" class="layout-topbar-action flex items-center gap-2" @click="toggleUserMenu">
-                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
-                    {{ userInitials }}
-                </div>
-                <i class="pi pi-chevron-down text-xs hidden lg:block"></i>
+            <button type="button" class="layout-topbar-action" @click="toggleUserMenu">
+                <i class="pi pi-user"></i>
             </button>
             <Menu ref="userMenuRef" :model="userMenuItems" popup>
                 <template #item="{ item, props: itemProps }">
@@ -74,6 +68,9 @@ const toggleUserMenu = (event) => {
                     </a>
                 </template>
             </Menu>
+
+            <!-- Language (dernier) -->
+            <LangConfiguration />
         </div>
     </div>
 </template>

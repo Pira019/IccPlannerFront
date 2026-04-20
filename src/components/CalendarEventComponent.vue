@@ -94,10 +94,10 @@ watch(selectedDate, (newDate) => {
         <div class="border-b border-surface-200 p-3 sm:p-4 flex-shrink-0">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                 <!-- LEFT SECTION -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
-                    <Button :label="t('liToDay')" @click="selectToday" severity="primary" outlined rounded class="w-full sm:w-auto text-sm font-medium px-3 py-2" />
+                <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 w-full lg:w-auto">
+                    <Button :label="t('liToDay')" @click="selectToday" severity="primary" outlined rounded class="w-full sm:w-auto text-sm font-medium px-3 py-1.5" />
 
-                    <div class="flex items-center gap-1 sm:gap-2 justify-between sm:justify-start flex-wrap">
+                    <div class="flex items-center gap-0.5 sm:gap-1 justify-between sm:justify-start flex-wrap">
                         <Button icon="pi pi-chevron-left" text @click="prev" class="flex-shrink-0" />
 
                         <slot name="datePicker">

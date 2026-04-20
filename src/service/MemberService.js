@@ -18,7 +18,19 @@ export default class MemberService extends BaseService
      */
     static async getMyProfile()
     {
-        const endPoint = `${this.authBaseUrl}me/profile`
+        const endPoint = `${this.authBaseUrl}profile`
+        return await this.axiosInstance.get(endPoint)
+    }
+
+    static async updateProfile(payload)
+    {
+        const endPoint = `${this.authBaseUrl}profile`
+        return await this.axiosInstance.put(endPoint, payload)
+    }
+
+    static async getBirthdays(month)
+    {
+        const endPoint = `${this.authBaseUrl}birthdays/${month}`
         return await this.axiosInstance.get(endPoint)
     }
 

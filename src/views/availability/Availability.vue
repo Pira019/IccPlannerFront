@@ -33,7 +33,7 @@
               </Fieldset>
         </div>
         <router-view v-slot="{ Component }">
-            <component :is="Component" :department-selected="departValue"
+            <component :is="Component" :department-selected="departValue" :show-header="false"
              />
         </router-view>
    </page-component>

@@ -1,4 +1,5 @@
 <script setup>
+import PageComponent from '@/components/PageComponent.vue';
 import DepartmentService from '@/service/DepartmentService';
 import PlanningService from '@/service/PlanningService';
 import { useMonthNavigation, WEEK_DAYS } from '@/utils/composables/useCalendar';
@@ -11,7 +12,8 @@ const { handleAsyncError } = useHandleAsyncError();
 const { month: currentMonth, year: currentYear, navigateMonth } = useMonthNavigation();
 
 const props = defineProps({
-    departmentSelected: { type: [String, Number], default: null }
+    departmentSelected: { type: [String, Number], default: null },
+    showHeader: { type: Boolean, default: true }
 });
 
 const loading = ref(false);
@@ -176,11 +178,10 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
 </script>
 
 <template>
-    <PageComponent :title-page="t('myPlanning.title')" :subtitle="t('myPlanning.subtitle')" :showAddBtn="false">
+    <component :is="showHeader ? PageComponent : 'div'" v-bind="showHeader ? { titlePage: t('myPlanning.title'), subtitle: t('myPlanning.subtitle'), showAddBtn: false } : {}">
         <!-- Navigation -->
-        <div class="flex flex-col gap-3 mb-5">
-            <!-- Ligne 1 : toggle + aujourd'hui -->
-            <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div class="flex items-center gap-1">
                 <SelectButton v-model="viewMode" :options="[
                     { value: 'month', label: t('liMonth') },
                     { value: 'week', label: t('liWeek') }
@@ -188,19 +189,15 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
                 <Button :label="t('liToDay')" size="small" outlined @click="goToday" />
             </div>
 
-            <!-- Ligne 2 : flèches + date -->
-            <div class="flex items-center justify-center gap-2">
+            <div class="flex items-center gap-1">
                 <Button icon="pi pi-chevron-left" text rounded size="small" @click="viewMode === 'month' ? navigateMonth(-1) : navigateWeek(-1)" />
                 <DatePicker v-if="viewMode === 'month'" v-model="selectedMonthDate" view="month" dateFormat="MM yy" :showIcon="false"
-                    inputClass="font-semibold text-sm text-center capitalize cursor-pointer border-none bg-transparent w-[160px] p-1" />
-                <span v-else class="font-semibold text-sm min-w-[200px] text-center capitalize">{{ weekLabel }}</span>
+                    inputClass="font-semibold text-sm text-center capitalize cursor-pointer border-none bg-transparent w-[140px] p-1" />
+                <span v-else class="font-semibold text-sm min-w-[180px] text-center capitalize">{{ weekLabel }}</span>
                 <Button icon="pi pi-chevron-right" text rounded size="small" @click="viewMode === 'month' ? navigateMonth(1) : navigateWeek(1)" />
             </div>
-        </div>
 
-        <!-- Filtres + stats -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
                 <Select v-if="!departmentSelected && departments.length > 0"
                     v-model="selectedDept" 
                     :options="departments" 
@@ -209,18 +206,11 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
                     :placeholder="t('liSelectDepart')"
                     :showClear="true"
                     :loading="loadingDepts"
-                    class="w-60"
+                    class="w-48"
+                    size="small"
                 />
                 <Tag severity="primary" :value="`${totalAssignments} ${t('myPlanning.assignments')}`" rounded />
             </div>
-        </div>
-
-        <!-- Tabs Mon planning / Équipe -->
-        <div class="mb-4">
-            <SelectButton v-model="activeTab" :options="[
-                { value: 'mine', label: t('myPlanning.myTab') },
-                { value: 'team', label: t('myPlanning.teamTab') }
-            ]" optionValue="value" optionLabel="label" size="small" />
         </div>
 
         <!-- Loading -->
@@ -336,5 +326,5 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
                 </div>
             </div>
         </template>
-    </PageComponent>
+    </component>
 </template>
