@@ -45,7 +45,14 @@ function itemClick(event, item) {
 }
 
 function checkActiveRoute(item) {
-    return route.path === item.to || route.name === item.name;
+    if (route.path === item.to || route.name === item.name) {
+        return true;
+    }
+    // Activer le menu parent pour les sous-routes (ex: /departments/2 → /departments)
+    if (item.to && item.to !== '/') {
+        return route.path.startsWith(item.to + '/');
+    }
+    return false;
 }
 </script>
 

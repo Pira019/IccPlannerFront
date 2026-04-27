@@ -110,4 +110,13 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.get(endPoint)
     }
 
+    /**
+     * Obtenir les détails complets d'un département (infos, membres, postes, programmes).
+     */
+    static async getDetail(departmentId)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/details`
+        return await this.axiosInstance.get(endPoint)
+    }
+
 }
