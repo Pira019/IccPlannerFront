@@ -63,6 +63,22 @@
     "liBtnNext": "Next",
     "liBtnBack": "Back",
 
+    "invitation": {
+      "single": "Single invitation",
+      "bulk": "Excel import",
+      "bulkDesc": "Upload an Excel file (.xlsx) with columns Prenom and Email to invite multiple members.",
+      "chooseFile": "Choose a file",
+      "import": "Import and send",
+      "sent": "Sent",
+      "skipped": "Skipped",
+      "title": "Invitations",
+      "none": "No invitations sent.",
+      "used": "Used",
+      "expired": "Expired",
+      "pending": "Pending",
+      "inactive": "Inactive"
+    },
+
     "liDescRecurrent": "A recurring program is an activity that happens every week. For example, the celebration service or the prophetic prayer gathering that take place regularly.",
     "liDescNonRecurrent": "A non-recurring program is an activity that happens only once or on a special occasion. For example, a wedding, a baptism, or a special event organized for a particular occasion.",
     "liRecurrent": "Recurring",
@@ -92,6 +108,19 @@
     "liAjtRole": "Add a role",
     "liModifRole": "Update a role",
     "liPermission": "Permissions",
+
+    "roles": {
+      "tabRoles": "Roles",
+      "tabUsers": "Users",
+      "usersTitle": "Users and roles",
+      "noRole": "No role",
+      "assign": "Assign a role",
+      "assignTitle": "Assign a role",
+      "selectRole": "Select a role",
+      "assigned": "Role assigned successfully.",
+      "unassigned": "Role removed successfully."
+    },
+
     "liProfil": "Profil",
     "liDepart": "Department",
     "liAjDepart": "Add a department",

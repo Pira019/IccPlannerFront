@@ -2,10 +2,8 @@
 import PermissionService from '@/service/PermissionService';
 import RoleService from '@/service/RoleService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
-import { addRoleValidation } from '@/validations/Admin/addRoleValidation';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { useForm } from 'vee-validate';
 import { onMounted, ref } from 'vue';
 
 const { handleAsyncError } = useHandleAsyncError();
@@ -116,7 +114,6 @@ function deleteSelectedProducts() {
 }
 
 function submitForm() {
-    // Déclenche la soumission du form
     roleForm.value?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 }
 

@@ -17,14 +17,24 @@ const department = ref(null);
 
 async function fetchData() {
     const { result } = await handleAsyncError(() => DepartmentService.getDetail(props.id), (val) => (loading.value = val));
-    if (result) {
-        department.value = result;
-    }
+    if (result) { department.value = result; }
 }
 
 function formatDate(dateStr) {
     if (!dateStr) { return '—'; }
     return new Date(dateStr + 'T00:00:00').toLocaleDateString(locale.value, { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateTime(dateStr) {
+    if (!dateStr) { return '—'; }
+    return new Date(dateStr).toLocaleDateString(locale.value, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function invitationStatus(inv) {
+    if (inv.indUsed) { return { label: t('invitation.used'), severity: 'success' }; }
+    if (inv.isExpired) { return { label: t('invitation.expired'), severity: 'danger' }; }
+    if (inv.indAct) { return { label: t('invitation.pending'), severity: 'warn' }; }
+    return { label: t('invitation.inactive'), severity: 'secondary' };
 }
 
 onMounted(() => fetchData());
@@ -80,12 +90,9 @@ watch(() => props.id, () => fetchData());
                 <p class="text-sm m-0">{{ department.description }}</p>
             </div>
 
-            <!-- Programs -->
+            <!-- Programs tags -->
             <div v-if="department.programs.length > 0" class="mb-6">
-                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <i class="pi pi-calendar text-primary"></i>
-                    {{ $t('Programs') }} ({{ department.programCount }})
-                </h3>
+                <h3 class="text-sm font-semibold text-muted-color mb-2">{{ $t('Programs') }} ({{ department.programCount }})</h3>
                 <div class="flex flex-wrap gap-2">
                     <Tag v-for="prg in department.programs" :key="prg.programId"
                         :value="prg.shortName || prg.programName"
@@ -93,41 +100,68 @@ watch(() => props.id, () => fetchData());
                 </div>
             </div>
 
-            <!-- Members list -->
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <i class="pi pi-users text-primary"></i>
-                    {{ $t('Members') }} ({{ department.memberCount }})
-                </h3>
-                <div v-if="department.members.length === 0" class="text-sm text-muted-color py-4">{{ $t('liNoMembers') }}</div>
-                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div v-for="(m, idx) in department.members" :key="idx"
-                        class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700">
-                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                            {{ (m.displayName?.[0] || '?').toUpperCase() }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium text-sm truncate">{{ m.displayName }}</div>
-                            <div class="flex flex-wrap gap-1 mt-0.5">
-                                <Tag v-for="p in m.postes" :key="p" :value="p" severity="secondary" class="text-[0.6rem]" />
-                                <Tag v-if="m.status" :value="m.status" :severity="m.status === 'Active' ? 'success' : 'warn'" class="text-[0.6rem]" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Postes -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <i class="pi pi-id-card text-primary"></i>
-                    Postes ({{ department.postes.length }})
-                </h3>
-                <div v-if="department.postes.length === 0" class="text-sm text-muted-color py-4">Aucun poste.</div>
-                <div v-else class="flex flex-wrap gap-2">
+            <!-- Postes tags -->
+            <div v-if="department.postes.length > 0" class="mb-6">
+                <h3 class="text-sm font-semibold text-muted-color mb-2">Postes ({{ department.postes.length }})</h3>
+                <div class="flex flex-wrap gap-2">
                     <Tag v-for="p in department.postes" :key="p.id" :value="p.name" severity="info" rounded />
                 </div>
             </div>
+
+            <!-- Tabs: Membres | Invitations -->
+            <Tabs value="members">
+                <TabList>
+                    <Tab value="members">
+                        <i class="pi pi-users mr-2"></i>{{ $t('Members') }} ({{ department.memberCount }})
+                    </Tab>
+                    <Tab value="invitations">
+                        <i class="pi pi-envelope mr-2"></i>{{ $t('invitation.title') }} ({{ department.invitations?.length || 0 }})
+                    </Tab>
+                </TabList>
+
+                <TabPanels>
+                    <!-- Members -->
+                    <TabPanel value="members">
+                        <div v-if="department.members.length === 0" class="text-sm text-muted-color py-4">{{ $t('liNoMembers') }}</div>
+                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+                            <div v-for="(m, idx) in department.members" :key="idx"
+                                class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                    {{ (m.displayName?.[0] || '?').toUpperCase() }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm truncate">{{ m.displayName }}</div>
+                                    <div class="flex flex-wrap gap-1 mt-0.5">
+                                        <Tag v-for="p in m.postes" :key="p" :value="p" severity="secondary" class="text-[0.6rem]" />
+                                        <Tag v-if="m.status" :value="m.status" :severity="m.status === 'Active' ? 'success' : 'warn'" class="text-[0.6rem]" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </TabPanel>
+
+                    <!-- Invitations -->
+                    <TabPanel value="invitations">
+                        <div v-if="!department.invitations?.length" class="text-sm text-muted-color py-4">{{ $t('invitation.none') }}</div>
+                        <div v-else class="flex flex-col gap-2 mt-4">
+                            <div v-for="inv in department.invitations" :key="inv.id"
+                                class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="pi pi-envelope text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm">{{ inv.firstName }}</div>
+                                    <div class="text-xs text-muted-color truncate">{{ inv.email }}</div>
+                                </div>
+                                <div class="text-xs text-muted-color text-right hidden sm:block">
+                                    {{ formatDateTime(inv.dateSend) }}
+                                </div>
+                                <Tag :value="invitationStatus(inv).label" :severity="invitationStatus(inv).severity" class="text-[0.6rem]" />
+                            </div>
+                        </div>
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
         </template>
     </PageComponent>
 </template>

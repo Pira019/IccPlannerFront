@@ -58,6 +58,22 @@
     "liBtnNext": "Suivant",
     "liBtnBack": "Précédent",
     "liCity": "Ville",
+
+    "invitation": {
+      "single": "Invitation individuelle",
+      "bulk": "Import Excel",
+      "bulkDesc": "Importez un fichier Excel (.xlsx) avec les colonnes Prenom et Email pour inviter plusieurs membres.",
+      "chooseFile": "Choisir un fichier",
+      "import": "Importer et envoyer",
+      "sent": "Envoyées",
+      "skipped": "Ignorées",
+      "title": "Invitations",
+      "none": "Aucune invitation envoyée.",
+      "used": "Utilisée",
+      "expired": "Expirée",
+      "pending": "En attente",
+      "inactive": "Inactive"
+    },
     "liQuarter": "Secteur",
 
     "liSendInv": "Inviter un nouveau membre",
@@ -78,6 +94,19 @@
     "liModifRole": "Modifier un rôle",
     "liOverview": "Vue d’ensemble",
     "liPermission": "Permissions",
+
+    "roles": {
+      "tabRoles": "Rôles",
+      "tabUsers": "Utilisateurs",
+      "usersTitle": "Utilisateurs et rôles",
+      "noRole": "Aucun rôle",
+      "assign": "Assigner un rôle",
+      "assignTitle": "Assigner un rôle",
+      "selectRole": "Sélectionner un rôle",
+      "assigned": "Le rôle a été assigné avec succès.",
+      "unassigned": "Le rôle a été retiré avec succès."
+    },
+
     "liProfil": "Mon profil",
     "liDepart": "Départements",
     "liMydisponibility": "Mes disponibilités",
