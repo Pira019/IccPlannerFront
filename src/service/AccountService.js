@@ -38,4 +38,18 @@ export default class AccountService extends BaseService
         const endPoint = `${this.authBaseUrl}register`;
         return await this.axiosInstance.post(endPoint, loginRequest)
     }
+
+    /** Demander la réinitialisation du mot de passe */
+    static async forgotPassword(email)
+    {
+        const endPoint = `${this.authBaseUrl}forgot-password`;
+        return await this.axiosInstance.post(endPoint, { email })
+    }
+
+    /** Réinitialiser le mot de passe avec le token */
+    static async resetPassword(userId, token, newPassword)
+    {
+        const endPoint = `${this.authBaseUrl}reset-password`;
+        return await this.axiosInstance.post(endPoint, { userId, token, newPassword })
+    }
 }

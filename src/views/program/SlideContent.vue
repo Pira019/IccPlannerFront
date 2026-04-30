@@ -5,13 +5,14 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const props = defineProps({
-  prgs: {
-    type: Array,
-    default: () => []
-  }
+  prgs: { type: Array, default: () => [] },
+  departments: { type: Array, default: () => [] }
 });
 
+const emit = defineEmits(['filterChanged']);
+
 const selectedPrgs = ref([]);
+const selectedDepts = ref([]);
 
 watch(
   () => props.prgs,
@@ -21,61 +22,48 @@ watch(
   { immediate: true, deep: true }
 );
 
+watch(
+  () => props.departments,
+  (newDepts) => {
+    selectedDepts.value = newDepts.map(d => d.id);
+  },
+  { immediate: true, deep: true }
+);
+
+// Émettre les filtres quand les sélections changent
+watch([selectedPrgs, selectedDepts], () => {
+  emit('filterChanged', {
+    programIds: selectedPrgs.value,
+    departmentIds: selectedDepts.value
+  });
+}, { deep: true });
 </script>
 
 <template>
-    <Accordion :value="['0']" multiple>
+    <Accordion :value="['0', '1']" multiple>
         <AccordionPanel value="0">
-            <AccordionHeader>{{ $t("liLstPrgs") }} </AccordionHeader>
+            <AccordionHeader>{{ $t("liLstPrgs") }}</AccordionHeader>
             <AccordionContent>
-                <div class="flex items-center w-full gap-2">
-                    <Listbox  :options="prgs" filter  optionLabel="name" class="w-full border-none" >
-                        <template #option="slotProps">
-                            <div class="flex items-center justify-between w-full">
-                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                    <Checkbox
-                                        v-model="selectedPrgs"
-                                        :inputId="'prg-' + slotProps.option.id"
-                                        name="prgs"
-                                        :value="slotProps.option.id"
-                                    />
-                                    <label :for="'prg-' + slotProps.option.id" class="truncate">
-                                        {{ slotProps.option.name }}
-                                    </label>
-                                </div>
-
-                                <Button
-                                    type="button"
-                                    icon="pi pi-ellipsis-v"
-                                    class="p-button-text p-button-rounded"
-                                />
-                            </div>
-                        </template>
-                    </Listbox>
-                </div>
-                <div class="mt-5">
-                    <Button :label="t('liSeeMore')" variant="link" />
+                <div class="flex flex-col gap-2">
+                    <div v-for="prg in prgs" :key="prg.id" class="flex items-center gap-2 py-1">
+                        <Checkbox v-model="selectedPrgs" :inputId="'prg-' + prg.id" :value="prg.id" />
+                        <label :for="'prg-' + prg.id" class="text-sm truncate cursor-pointer">{{ prg.name }}</label>
+                    </div>
+                    <div v-if="prgs.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNonPrg') }}</div>
                 </div>
             </AccordionContent>
         </AccordionPanel>
         <AccordionPanel value="1">
-            <AccordionHeader>Listes de departements</AccordionHeader>
+            <AccordionHeader>{{ $t('liDepart') }}</AccordionHeader>
             <AccordionContent>
-                <div>
-                    <Listbox v-model="selectedCity" multiple :options="cities" filter optionLabel="name" class="w-full md:w-56 p-0 m-0 border-none" />
+                <div class="flex flex-col gap-2">
+                    <div v-for="dept in departments" :key="dept.id" class="flex items-center gap-2 py-1">
+                        <Checkbox v-model="selectedDepts" :inputId="'dept-' + dept.id" :value="dept.id" />
+                        <label :for="'dept-' + dept.id" class="text-sm truncate cursor-pointer">{{ dept.name }}</label>
+                    </div>
+                    <div v-if="departments.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNoElement') }}</div>
                 </div>
             </AccordionContent>
         </AccordionPanel>
     </Accordion>
 </template>
-
-<style scoped>
-.p-listbox {
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-.p-listbox .p-listbox-item {
-    padding: 0 !important;
-}
-</style>

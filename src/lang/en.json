@@ -301,6 +301,22 @@
   "liFriday": "Friday",
   "liSaturday": "Saturday",
   "liSunday": "Sunday",
+  "liList": "List",
+
+  "auth": {
+    "forgotTitle": "Forgot password",
+    "forgotDesc": "Enter your email address and we'll send you a link to reset your password.",
+    "sendResetLink": "Send reset link",
+    "forgotSent": "If an account exists with this email, a reset email has been sent. Check your inbox.",
+    "backToLogin": "Back to login",
+    "resetTitle": "New password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetBtn": "Reset",
+    "resetSuccess": "Your password has been reset successfully.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 8 characters."
+  },
 
   "logout": "Logout",
 

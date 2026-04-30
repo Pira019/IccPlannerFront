@@ -45,7 +45,7 @@ const toggleUserMenu = (event) => {
             </button>
             <router-link to="/" class="layout-topbar-logo">
                 <Image src="/images/LOGO-GRIS.png" width="54" height="11" />
-                <span>Star Planning</span>
+                <span class="text-xl font-bold tracking-tight">Agenda <span class="text-primary">STAR</span></span>
             </router-link>
         </div>
 

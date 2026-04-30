@@ -23,11 +23,27 @@ const errorReq = ref(false);
 
 const lstEvents = ref();
 const lstPrg = ref();
+const departments = ref([]);
+const activeFilters = ref({ programIds: [], departmentIds: [] });
 
 const panelOpen = ref(false);
 
 const isMobile = ref(false);
-    const displayAddPrg = ref(false);
+const displayAddPrg = ref(false);
+
+// Événements filtrés par programmes et départements sélectionnés
+const filteredEvents = computed(() => {
+    if (!lstEvents.value) { return []; }
+    return lstEvents.value.filter(e => {
+        const prgMatch = activeFilters.value.programIds.length === 0 || activeFilters.value.programIds.includes(e.idPrg);
+        const deptMatch = activeFilters.value.departmentIds.length === 0 || activeFilters.value.departmentIds.includes(e.departmentId);
+        return prgMatch && deptMatch;
+    });
+});
+
+function onFilterChanged(filters) {
+    activeFilters.value = filters;
+}
 
 const canAddAccess = computed(() =>
     hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)
@@ -37,8 +53,7 @@ const view = ref('dayGridMonth');
 
 const views = [
     { key: 'dayGridMonth', label: 'liMonth' },
-    { key: 'timeGridWeek', label: 'liWeek' },
-    { key: 'timeGridDay', label: 'liDay' }
+    { key: 'listMonth', label: 'liList' }
 ];
 
 const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);
@@ -64,7 +79,15 @@ const checkScreen = () => {
 
 // Méthode pour sélectionner aujourd'hui
 const selectToday = () => {
-    selectedDate.value = new Date(); // met à jour la date sélectionnée
+    const today = new Date();
+    selectedDate.value = today;
+    if (calendar.value) {
+        calendar.value.gotoDate(today);
+        const calView = calendar.value.$refs.calendarRef?.getApi()?.view;
+        if (calView) {
+            selectedDate.value = calView.currentStart;
+        }
+    }
 };
 
 const prev = () => {
@@ -78,6 +101,13 @@ const next = () => {
     const calView = calendar.value.$refs.calendarRef.getApi().view;
     selectedDate.value = calView.currentStart;
 };
+
+function onMonthPicked(date) {
+    selectedDate.value = date;
+    if (calendar.value) {
+        calendar.value.gotoDate(date);
+    }
+}
 
 // Dialog control
 const dialogVisible = computed({
@@ -106,12 +136,44 @@ async function getEvent(month,year)
 
     lstEvents.value = result?.events;
     lstPrg.value = result?.prgs;
+
+    // Extraire les départements depuis les événements
+    if (result?.events) {
+        const deptMap = {};
+        for (const e of result.events) {
+            if (e.departmentId && !deptMap[e.departmentId]) {
+                deptMap[e.departmentId] = { id: e.departmentId, name: e.departmentName || `Dept ${e.departmentId}` };
+            }
+        }
+        departments.value = Object.values(deptMap).sort((a, b) => a.name.localeCompare(b.name));
+    }
 }
 
 // Watch sur selectedDate pour mettre à jour FullCalendar
 watch(selectedDate, (newDate) => {
     if (calendar.value && newDate) {
         calendar.value.gotoDate(newDate);
+
+        // En vue liste, scroller vers la date sélectionnée
+        if (view.value === 'listMonth') {
+            setTimeout(() => {
+                const y = newDate.getFullYear();
+                const m = String(newDate.getMonth() + 1).padStart(2, '0');
+                const d = String(newDate.getDate()).padStart(2, '0');
+                const dateStr = `${y}-${m}-${d}`;
+                // FullCalendar list view uses th[data-date] inside .fc-list-day
+                const el = document.querySelector(`.fc-list-day th[data-date="${dateStr}"]`)
+                    || document.querySelector(`[data-date="${dateStr}"]`);
+                if (el) {
+                    const row = el.closest('tr') || el;
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Flash highlight
+                    row.style.transition = 'background 0.3s';
+                    row.style.background = 'rgba(var(--p-primary-500), 0.15)';
+                    setTimeout(() => { row.style.background = ''; }, 1500);
+                }
+            }, 200);
+        }
     }
 });
 
@@ -128,7 +190,9 @@ onMounted( async () => {
     await getEvent(currentMonthYear.value.month,currentMonthYear.value.year);
     checkScreen();
     window.addEventListener('resize', checkScreen);
-    //Appelle L'API
+
+    // Charger les départements depuis les événements (pas d'appel supplémentaire)
+    // Les départements sont extraits des événements déjà chargés
 });
 
 onUnmounted(() => {
@@ -154,7 +218,11 @@ onUnmounted(() => {
                         <Button icon="pi pi-chevron-left" variant="text" @click="prev" />
                         <Button icon="pi pi-chevron-right" variant="text" @click="next" />
 
-                        <span class="ml-1 sm:ml-2 text-sm sm:text-base md:text-lg font-semibold capitalize"> {{ currentMonthYear?.formattedMonthYear }} </span>
+                        <DatePicker v-model="selectedDate" view="month" dateFormat="MM yy"
+                            class="ml-1 sm:ml-2"
+                            inputClass="text-sm sm:text-base md:text-lg font-semibold capitalize cursor-pointer border-none bg-transparent p-0 w-auto shadow-none"
+                            @date-select="onMonthPicked"
+                        />
                     </div>
                 </div>
 
@@ -163,33 +231,28 @@ onUnmounted(() => {
                 </div>
             </div>
             <!-- Contenu principal -->
-            <div class="flex flex-col sm:flex-row w-full h-full overflow-aauto">
-                <!-- Sidebar -->
-                <div
-                    :class="[
-                        'bg-white border-r border-gray-200 flex flex-col',
-                        'w-full sm:w-1/4' // mobile toggle
-                    ]"
-                >
-                    <div>
+            <div class="flex flex-col sm:flex-row w-full h-full overflow-auto">
+                <!-- Sidebar / Liste -->
+                <div class="bg-white border-r border-gray-200 flex flex-col w-full sm:w-1/4">
+                    <div v-if="view !== 'dayGridMonth'">
                         <DatePicker inline class="w-full" v-model="selectedDate" />
                     </div>
                     <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
                         <!-- Mobile : Drawer -->
                         <Drawer v-if="isMobile" v-model:visible="panelOpen">
-                            <SlideContent :prgs="lstPrg"/>
+                            <SlideContent :prgs="lstPrg" :departments="departments" @filterChanged="onFilterChanged" />
                         </Drawer>
 
                         <!-- Desktop : contenu normal -->
                         <div v-else class="flex-1 overflow-y-auto">
-                            <SlideContent :prgs="lstPrg" />
+                            <SlideContent :prgs="lstPrg" :departments="departments" @filterChanged="onFilterChanged" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Calendrier principal -->
-                <div class="flex-1 flex flex-col overflow-auto min-h-0" >
-                    <CalendarComponent ref="calendar" :showHeader="false" :lstEvents="lstEvents"
+                <!-- Calendrier principal (toujours visible) -->
+                <div class="flex-1 flex flex-col overflow-auto min-h-0">
+                    <CalendarComponent ref="calendar" :showHeader="false" :lstEvents="filteredEvents"
                         @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
                     class="flex-1 min-h-0" />
                 </div>

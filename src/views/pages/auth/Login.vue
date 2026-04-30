@@ -116,7 +116,7 @@ onMounted(() => {
                                         <Checkbox inputId="remember1" binary class="mr-2" v-model="remember"></Checkbox>
                                         <label for="remember1">{{ $t('rememberMe') }}</label>
                                     </div>
-                                    <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </span>
+                                    <router-link to="/auth/forgot-password" class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"> {{ $t('forgotPassword') }} </router-link>
                                 </div>
                                 <Button :label="$t('signIn')" :loading="isSubmitting" type="submit" class="w-full mr-2"></Button>
                             </div>

@@ -44,8 +44,6 @@ export default class DepartmentService extends BaseService
         ? `${this.authBaseUrl}?${params.toString()}`
         : this.authBaseUrl;
 
-    const response = await this.axiosInstance.get(endPoint);
-
         return await this.axiosInstance.get(endPoint)
     }
 

@@ -161,14 +161,21 @@ import { useI18n } from 'vue-i18n';
         events: eventsToCalendarEvents(props.lstEvents)
     });
 
-    // Mettre à jour optionCal.events quand lstEvents change
+    // Mettre à jour les events quand lstEvents change
     watch(
         () => props.lstEvents,
         (newDates) => {
+            const newEvents = eventsToCalendarEvents(newDates);
             optionCal.value = {
                 ...optionCal.value,
-                events: eventsToCalendarEvents(newDates)
+                events: newEvents
             };
+            // Forcer la mise à jour via l'API FullCalendar (nécessaire pour la vue liste)
+            if (calendarRef.value) {
+                const api = calendarRef.value.getApi();
+                api.removeAllEvents();
+                newEvents.forEach(e => api.addEvent(e));
+            }
         },
         { immediate: true }
     );
@@ -311,6 +318,35 @@ import { useI18n } from 'vue-i18n';
     .fc .fc-daygrid-event {
         margin: 1px 0 !important;
     }
+}
+
+/* List view styles */
+.fc .fc-list {
+    border: none !important;
+}
+
+.fc .fc-list-day-cushion {
+    background: var(--p-surface-50) !important;
+    padding: 10px 16px !important;
+    font-weight: 600 !important;
+}
+
+.fc .fc-list-event td {
+    padding: 10px 16px !important;
+    border-bottom: 1px solid var(--p-surface-200) !important;
+}
+
+.fc .fc-list-event:hover td {
+    background: rgba(var(--p-primary-500), 0.05) !important;
+    cursor: pointer;
+}
+
+.fc .fc-list-event-dot {
+    border-color: var(--p-primary-color) !important;
+}
+
+.fc .fc-list-empty {
+    background: transparent !important;
 }
 </style>
 
