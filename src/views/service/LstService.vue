@@ -23,7 +23,7 @@
                     size="small" 
                     text 
                     severity="secondary"
-                    @click="toggleMenu($event, item)"
+                    @click="toggleMenu($event, item, group.idPrgDate)"
                     v-if="canManageService"
                   />
                 </div>
@@ -93,6 +93,7 @@
       v-model="showAddServiceDialog" 
       :program="selectedItem" 
       :service="selectedService"
+      :prgDateId="selectedPrgDateId"
       @save="handleSaveService"
     />
 
@@ -168,6 +169,7 @@ const menu = ref();
 const serviceMenu = ref();
 const selectedItem = ref(null);
 const selectedService = ref(null);
+const selectedPrgDateId = ref(null);
 const showAddServiceDialog = ref(false);
 const showEditProgramDialog = ref(false);
 
@@ -189,8 +191,9 @@ const menuItems = computed(() => [
   }
 ]);
 
-function toggleMenu(event, item) {
+function toggleMenu(event, item, prgDateId) {
   selectedItem.value = item;
+  selectedPrgDateId.value = prgDateId;
   menu.value.toggle(event);
 }
 

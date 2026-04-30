@@ -93,12 +93,20 @@ const router = createRouter({
                 {
                     path: '/settings',
                     name: 'settings',
-                    component: () => import('@/views/pages/Settings.vue')
+                    component: () => import('@/views/pages/Settings.vue'),
+                    meta: {
+                        requiresAuth: true,
+                        requiredClaim: [{ key: 'roles', value: ['ADMIN'] }]
+                    }
                 },
                 {
                     path: '/role-management',
                     name: 'role-management',
-                    component: () => import('@/views/pages/RoleManag.vue')
+                    component: () => import('@/views/pages/RoleManag.vue'),
+                    meta: {
+                        requiresAuth: true,
+                        requiredClaim: [{ key: 'roles', value: ['ADMIN'] }]
+                    }
                 }
             ]
         },

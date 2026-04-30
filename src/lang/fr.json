@@ -400,7 +400,8 @@
       "assignments": "assignations",
       "noAssignments": "Aucune assignation ce mois-ci",
       "myTab": "Mon planning",
-      "teamTab": "Équipe"
+      "teamTab": "Équipe",
+      "teammates": "Programmés avec vous"
     },
     "profil": {
       "edit": "Modifier",
@@ -429,6 +430,9 @@
       "editProgramRule": "Modifier la règle programme",
       "addDeptRule": "Ajouter une règle département",
       "editDeptRule": "Modifier la règle département",
-      "selectProgram": "Sélectionner un programme"
+      "selectProgram": "Sélectionner un programme",
+      "saved": "Les paramètres ont été sauvegardés avec succès.",
+      "unitDays": "Jours",
+      "unitHours": "Heures"
     }
 }

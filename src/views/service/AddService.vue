@@ -80,7 +80,8 @@ import { useI18n } from 'vue-i18n';
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   program: { type: Object, default: null },
-  service: { type: Object, default: null }
+  service: { type: Object, default: null },
+  prgDateId: { type: Number, default: null }
 });
 
 const emit = defineEmits(['update:modelValue', 'save']);
@@ -212,15 +213,22 @@ async function handleSave() {
     if (error) { errorReq.value = error; return; }
     emit('save');
   } else {
-    emit('save', {
+    // Mode ajout — appel API
+    const payload = {
       serviceId: formData.value.serviceId,
+      prgDateId: props.prgDateId,
       displayName: formData.value.displayName,
-      startTime: formatTime(formData.value.startTime),
-      endTime: formatTime(formData.value.endTime),
-      arrivalTime: formData.value.hasArrival ? formatTime(formData.value.arrivalTime) : null,
-      notes: formData.value.notes,
-      programId: props.program?.idPrg || props.program?.programId
-    });
+      memberArrivalTime: formData.value.hasArrival ? formatTime(formData.value.arrivalTime) : null,
+      notes: formData.value.notes
+    };
+
+    const { error } = await handleAsyncError(
+      () => TabServicePrgService.addServicePrg(payload),
+      (val) => (saving.value = val),
+      true
+    );
+    if (error) { errorReq.value = error; return; }
+    emit('save');
   }
 
   visible.value = false;

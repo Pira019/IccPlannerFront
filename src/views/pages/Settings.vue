@@ -1,118 +1,139 @@
 <script setup>
+import DepartmentService from '@/service/DepartmentService';
+import ProgramService from '@/service/ProgramService';
+import SettingsService from '@/service/SettingsService';
+import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const { handleAsyncError } = useHandleAsyncError();
 
 const loading = ref(false);
 const saving = ref(false);
 
-// Paramètre global par défaut
 const globalDeadline = ref(3);
 const globalUnit = ref('days');
 
 const unitOptions = [
-    { label: 'Jours', value: 'days' },
-    { label: 'Heures', value: 'hours' }
+    { label: t('settings.unitDays'), value: 'days' },
+    { label: t('settings.unitHours'), value: 'hours' }
 ];
 
-// Règles par programme
+// Règles
 const programRules = ref([]);
 const showProgramDialog = ref(false);
 const editingProgramRule = ref(null);
 const programForm = ref({ programName: '', deadline: 3, unit: 'days' });
 
-// Règles par département
 const departmentRules = ref([]);
 const showDepartmentDialog = ref(false);
 const editingDeptRule = ref(null);
 const deptForm = ref({ departmentName: '', deadline: 3, unit: 'days' });
 
-// Mock programmes et départements disponibles
-const availablePrograms = ref([
-    'Culte de célébration', 'École du dimanche', 'Culte du soir', 'Prière du mercredi', 'Répétition chorale'
-]);
-const availableDepartments = ref([
-    'Louange', 'Technique', 'Accueil', 'Protocole', 'Média', 'Intercession'
-]);
+// Listes pour les selects
+const availablePrograms = ref([]);
+const availableDepartments = ref([]);
 
-// Mock data
-function loadMockData() {
-    programRules.value = [
-        { id: 1, programName: 'Culte de célébration', deadline: 2, unit: 'days' },
-        { id: 2, programName: 'Culte du soir', deadline: 1, unit: 'days' }
-    ];
-    departmentRules.value = [
-        { id: 1, departmentName: 'Louange', deadline: 3, unit: 'days' },
-        { id: 2, departmentName: 'Technique', deadline: 12, unit: 'hours' }
-    ];
+async function loadData() {
+    const { result } = await handleAsyncError(
+        () => SettingsService.getDeadlines(),
+        (val) => (loading.value = val)
+    );
+    if (result) {
+        globalDeadline.value = result.globalDeadline;
+        globalUnit.value = result.globalUnit;
+        programRules.value = result.programRules || [];
+        departmentRules.value = result.departmentRules || [];
+    }
+
+    // Charger programmes et départements pour les selects
+    const { result: prgs } = await handleAsyncError(() => ProgramService.getAll());
+    if (prgs) { availablePrograms.value = prgs.map(p => p.name); }
+
+    const { result: depts } = await handleAsyncError(() => DepartmentService.get());
+    if (depts?.departments) { availableDepartments.value = depts.departments.map(d => d.name); }
 }
 
 function openProgramDialog(rule = null) {
     editingProgramRule.value = rule;
-    programForm.value = rule ? { ...rule } : { programName: '', deadline: 3, unit: 'days' };
+    programForm.value = rule ? { programName: rule.name, deadline: rule.deadline, unit: rule.unit } : { programName: '', deadline: 3, unit: 'days' };
     showProgramDialog.value = true;
 }
 
 function saveProgramRule() {
     if (editingProgramRule.value) {
-        Object.assign(editingProgramRule.value, programForm.value);
+        editingProgramRule.value.name = programForm.value.programName;
+        editingProgramRule.value.deadline = programForm.value.deadline;
+        editingProgramRule.value.unit = programForm.value.unit;
     } else {
-        programRules.value.push({ id: Date.now(), ...programForm.value });
+        programRules.value.push({ id: 0, name: programForm.value.programName, deadline: programForm.value.deadline, unit: programForm.value.unit });
     }
     showProgramDialog.value = false;
 }
 
-function removeProgramRule(rule) {
-    programRules.value = programRules.value.filter((r) => r.id !== rule.id);
+async function removeProgramRule(rule) {
+    if (rule.id > 0) {
+        await handleAsyncError(() => SettingsService.deleteRule(rule.id));
+    }
+    programRules.value = programRules.value.filter(r => r !== rule);
 }
 
 function openDeptDialog(rule = null) {
     editingDeptRule.value = rule;
-    deptForm.value = rule ? { ...rule } : { departmentName: '', deadline: 3, unit: 'days' };
+    deptForm.value = rule ? { departmentName: rule.name, deadline: rule.deadline, unit: rule.unit } : { departmentName: '', deadline: 3, unit: 'days' };
     showDepartmentDialog.value = true;
 }
 
 function saveDeptRule() {
     if (editingDeptRule.value) {
-        Object.assign(editingDeptRule.value, deptForm.value);
+        editingDeptRule.value.name = deptForm.value.departmentName;
+        editingDeptRule.value.deadline = deptForm.value.deadline;
+        editingDeptRule.value.unit = deptForm.value.unit;
     } else {
-        departmentRules.value.push({ id: Date.now(), ...deptForm.value });
+        departmentRules.value.push({ id: 0, name: deptForm.value.departmentName, deadline: deptForm.value.deadline, unit: deptForm.value.unit });
     }
     showDepartmentDialog.value = false;
 }
 
-function removeDeptRule(rule) {
-    departmentRules.value = departmentRules.value.filter((r) => r.id !== rule.id);
+async function removeDeptRule(rule) {
+    if (rule.id > 0) {
+        await handleAsyncError(() => SettingsService.deleteRule(rule.id));
+    }
+    departmentRules.value = departmentRules.value.filter(r => r !== rule);
 }
 
 function formatDeadline(rule) {
-    return `${rule.deadline} ${rule.unit === 'days' ? 'jour(s)' : 'heure(s)'}`;
+    return `${rule.deadline} ${rule.unit === 'days' ? t('settings.unitDays') : t('settings.unitHours')}`;
 }
 
 async function saveSettings() {
-    saving.value = true;
-    try {
-        // TODO: appeler l'API PUT /settings
-        await new Promise((r) => setTimeout(r, 500));
-    } finally {
-        saving.value = false;
-    }
+    const payload = {
+        globalDeadline: globalDeadline.value,
+        globalUnit: globalUnit.value,
+        programRules: programRules.value.map(r => ({ name: r.name, deadline: r.deadline, unit: r.unit })),
+        departmentRules: departmentRules.value.map(r => ({ name: r.name, deadline: r.deadline, unit: r.unit }))
+    };
+    await handleAsyncError(
+        () => SettingsService.saveDeadlines(payload),
+        (val) => (saving.value = val),
+        true,
+        'settings.saved'
+    );
 }
 
-onMounted(() => {
-    loadMockData();
-});
+onMounted(() => loadData());
 </script>
 
 <template>
-    <PageComponent :title-page="t('settings.title')" :subtitle="t('settings.subtitle')" :show-add-btn="false">
+    <PageComponent :title-page="t('settings.title')" :show-add-btn="false">
+        <div v-if="loading" class="flex justify-center py-12"><ProgressSpinner /></div>
+        <template v-else>
 
-        <!-- Section 1: Paramètre global -->
+        <!-- Global -->
         <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-5 mb-4">
             <h2 class="text-lg font-semibold mb-1 flex items-center gap-2">
-                <i class="pi pi-cog text-primary"></i>
-                {{ t('settings.globalSection') }}
+                <i class="pi pi-cog text-primary"></i>{{ t('settings.globalSection') }}
             </h2>
             <p class="text-sm text-muted-color mt-0 mb-4">{{ t('settings.globalSectionDesc') }}</p>
             <div class="flex items-center gap-2 max-w-md">
@@ -123,28 +144,19 @@ onMounted(() => {
             <small class="text-muted-color mt-2 block">{{ t('settings.deadlineHelp') }}</small>
         </div>
 
-        <!-- Section 2: Par programme -->
+        <!-- Par programme -->
         <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-5 mb-4">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-lg font-semibold mb-0 flex items-center gap-2">
-                        <i class="pi pi-calendar-times text-primary"></i>
-                        {{ t('settings.programSection') }}
-                    </h2>
+                    <h2 class="text-lg font-semibold mb-0 flex items-center gap-2"><i class="pi pi-calendar-times text-primary"></i>{{ t('settings.programSection') }}</h2>
                     <p class="text-sm text-muted-color mt-1 mb-0">{{ t('settings.programSectionDesc') }}</p>
                 </div>
                 <Button icon="pi pi-plus" :label="t('Add')" size="small" @click="openProgramDialog()" />
             </div>
-
-            <div v-if="programRules.length === 0" class="text-center py-6 text-muted-color text-sm">
-                {{ t('settings.noProgramRules') }}
-            </div>
+            <div v-if="programRules.length === 0" class="text-center py-6 text-muted-color text-sm">{{ t('settings.noProgramRules') }}</div>
             <div v-else class="flex flex-col gap-2">
-                <div v-for="rule in programRules" :key="rule.id" class="flex items-center justify-between bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-3">
-                    <div>
-                        <span class="font-medium text-sm">{{ rule.programName }}</span>
-                        <Tag :value="formatDeadline(rule)" severity="info" class="ml-2" rounded />
-                    </div>
+                <div v-for="rule in programRules" :key="rule.id || rule.name" class="flex items-center justify-between bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-3">
+                    <div><span class="font-medium text-sm">{{ rule.name }}</span><Tag :value="formatDeadline(rule)" severity="info" class="ml-2" rounded /></div>
                     <div class="flex gap-1">
                         <Button icon="pi pi-pencil" text rounded size="small" @click="openProgramDialog(rule)" />
                         <Button icon="pi pi-trash" text rounded size="small" severity="danger" @click="removeProgramRule(rule)" />
@@ -153,28 +165,19 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Section 3: Par département -->
+        <!-- Par département -->
         <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-5 mb-4">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-lg font-semibold mb-0 flex items-center gap-2">
-                        <i class="pi pi-sitemap text-primary"></i>
-                        {{ t('settings.deptSection') }}
-                    </h2>
+                    <h2 class="text-lg font-semibold mb-0 flex items-center gap-2"><i class="pi pi-sitemap text-primary"></i>{{ t('settings.deptSection') }}</h2>
                     <p class="text-sm text-muted-color mt-1 mb-0">{{ t('settings.deptSectionDesc') }}</p>
                 </div>
                 <Button icon="pi pi-plus" :label="t('Add')" size="small" @click="openDeptDialog()" />
             </div>
-
-            <div v-if="departmentRules.length === 0" class="text-center py-6 text-muted-color text-sm">
-                {{ t('settings.noDeptRules') }}
-            </div>
+            <div v-if="departmentRules.length === 0" class="text-center py-6 text-muted-color text-sm">{{ t('settings.noDeptRules') }}</div>
             <div v-else class="flex flex-col gap-2">
-                <div v-for="rule in departmentRules" :key="rule.id" class="flex items-center justify-between bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-3">
-                    <div>
-                        <span class="font-medium text-sm">{{ rule.departmentName }}</span>
-                        <Tag :value="formatDeadline(rule)" severity="warn" class="ml-2" rounded />
-                    </div>
+                <div v-for="rule in departmentRules" :key="rule.id || rule.name" class="flex items-center justify-between bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-3">
+                    <div><span class="font-medium text-sm">{{ rule.name }}</span><Tag :value="formatDeadline(rule)" severity="warn" class="ml-2" rounded /></div>
                     <div class="flex gap-1">
                         <Button icon="pi pi-pencil" text rounded size="small" @click="openDeptDialog(rule)" />
                         <Button icon="pi pi-trash" text rounded size="small" severity="danger" @click="removeDeptRule(rule)" />
@@ -183,12 +186,13 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Save all -->
         <div class="flex justify-end mt-4">
             <Button :label="t('Save')" icon="pi pi-check" :loading="saving" @click="saveSettings" />
         </div>
 
-        <!-- Dialog: Programme -->
+        </template>
+
+        <!-- Dialog Programme -->
         <Dialog v-model:visible="showProgramDialog" :header="editingProgramRule ? t('settings.editProgramRule') : t('settings.addProgramRule')" modal class="w-full max-w-md">
             <div class="flex flex-col gap-4">
                 <div class="flex flex-col gap-2">
@@ -209,7 +213,7 @@ onMounted(() => {
             </template>
         </Dialog>
 
-        <!-- Dialog: Département -->
+        <!-- Dialog Département -->
         <Dialog v-model:visible="showDepartmentDialog" :header="editingDeptRule ? t('settings.editDeptRule') : t('settings.addDeptRule')" modal class="w-full max-w-md">
             <div class="flex flex-col gap-4">
                 <div class="flex flex-col gap-2">

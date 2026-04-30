@@ -112,7 +112,8 @@ const calendarWeeks = computed(() => {
     return buildCalendarWeeks(currentMonth.value, currentYear.value, (dateStr) => {
         const hasDate = dates.value.some(d => d.date === dateStr);
         const planned = plannedByDate.value[dateStr] || [];
-        return { hasDate, planned };
+        const assignedCount = planned.reduce((sum, prg) => sum + prg.services.reduce((s, svc) => s + (svc.members?.length || 0), 0), 0);
+        return { hasDate, planned, assignedCount };
     });
 });
 
@@ -625,6 +626,7 @@ watch([currentMonth, currentYear], () => { fetchDates(); fetchMonthlyPlanning();
                                 >
                                     <template v-if="cell">
                                         <span class="text-xs font-semibold mb-1 inline-block" :class="{ 'text-primary font-bold': cell.isToday, 'text-muted-color': !cell.hasDate && !cell.isToday }">{{ cell.day }}</span>
+                                        <span v-if="cell.assignedCount > 0" class="text-[0.55rem] font-bold bg-primary text-white rounded-full px-1.5 py-0.5 ml-1">{{ cell.assignedCount }}</span>
                                         <div v-if="cell.planned?.length > 0" class="flex flex-col gap-1.5 mt-1">
                                             <div v-for="(prg, pi) in cell.planned" :key="pi" class="border-l-2 border-primary pl-1">
                                                 <div class="text-xs font-bold text-primary uppercase truncate bg-primary/5 rounded px-1">{{ prg.program }}</div>

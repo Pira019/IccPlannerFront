@@ -13,6 +13,15 @@ export default class TabServicePrgService extends BaseService
         return await this.axiosInstance.post(endPoint,payload)
     }
 
+    /**
+     * Ajouter un service à un programme d'un département.
+     */
+    static async addServicePrg(payload)
+    {
+        const endPoint = `${this.authBaseUrl}program-department`;
+        return await this.axiosInstance.post(endPoint, payload)
+    }
+
     static async deleteServicePrg(servicePrgId)
     {
         const endPoint = `serviceprg/${servicePrgId}`;

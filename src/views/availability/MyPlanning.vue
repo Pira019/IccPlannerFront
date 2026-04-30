@@ -270,6 +270,25 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
                             <div v-if="item.posteName" class="mt-1">
                                 <Tag :value="item.posteName" severity="secondary" class="text-xs" />
                             </div>
+                            <!-- Coéquipiers -->
+                            <div v-if="item.teammates?.length > 0" class="mt-2">
+                                <Button 
+                                    :label="`${$t('myPlanning.teammates')} (${item.teammates.length})`" 
+                                    icon="pi pi-users" 
+                                    size="small" 
+                                    text 
+                                    severity="secondary"
+                                    @click="item._showTeam = !item._showTeam" 
+                                />
+                                <div v-if="item._showTeam" class="mt-2 pl-2 border-l-2 border-surface-200 dark:border-surface-700">
+                                    <div v-for="(tm, ti) in item.teammates" :key="ti" class="flex items-center gap-1.5 py-0.5">
+                                        <i class="pi pi-user text-[0.6rem] text-muted-color"></i>
+                                        <span class="text-xs">{{ tm.memberName }}</span>
+                                        <Tag v-if="tm.posteName" :value="tm.posteName" severity="secondary" class="text-[0.5rem]" />
+                                        <span v-if="tm.indTraining" class="text-[0.5rem] text-orange-600 font-bold">(f)</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

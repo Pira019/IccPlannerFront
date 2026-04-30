@@ -398,7 +398,8 @@
       "assignments": "assignments",
       "noAssignments": "No assignments this month",
       "myTab": "My planning",
-      "teamTab": "Team"
+      "teamTab": "Team",
+      "teammates": "Scheduled with you"
   },
   "profil": {
       "edit": "Edit",
@@ -427,6 +428,9 @@
       "editProgramRule": "Edit program rule",
       "addDeptRule": "Add department rule",
       "editDeptRule": "Edit department rule",
-      "selectProgram": "Select a program"
+      "selectProgram": "Select a program",
+      "saved": "Settings saved successfully.",
+      "unitDays": "Days",
+      "unitHours": "Hours"
   }
 }
