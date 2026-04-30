@@ -123,7 +123,8 @@ onMounted(async () => {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('Ministries')" @btn-add="openAdd">
+    <PageComponent :title-page="$t('Ministries')" @btn-add="openAdd"
+        :breadcrumbs="[{ label: $t('Ministries') }]">
         <div>
             <DataTable ref="dt" dataKey="id" selectionMode="single" :metaKeySelection="false" :value="ministryList" tableStyle="min-width: 50rem" stripedRows :filters="filters" :loading="loading">
                 <template #header>

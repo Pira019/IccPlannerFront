@@ -216,7 +216,8 @@ const toggle = (event, id) => {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('liDepart')" @btn-add="onAddDepartment()">
+    <PageComponent :title-page="$t('liDepart')" @btn-add="onAddDepartment()"
+        :breadcrumbs="[{ label: $t('liDepart') }]">
         <div>
             <DataTable
                 :onPage="onPage"
@@ -262,11 +263,15 @@ const toggle = (event, id) => {
 
                 <Column field="name" :header="$t('colDepartNam')" style="min-width: 12rem">
                     <template #body="slotProps">
-                        <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
+                        <span class="font-bold uppercase cursor-pointer text-primary hover:underline" @click="router.push({ name: 'department-details', params: { id: slotProps.data.id } })">{{ slotProps.data.name }}</span>
                         <Tag severity="Primary" class="uppercase mx-2"> {{ slotProps.data.shortName }} </Tag>
                     </template>
                 </Column>
-                <Column field="nbrMember" class="text-center" style="min-width: 12rem" :header="$t('colDepartNbrMemb')"></Column>
+                <Column field="nbrMember" class="text-center" style="min-width: 12rem" :header="$t('colDepartNbrMemb')">
+                    <template #body="slotProps">
+                        <span class="cursor-pointer text-primary hover:underline" @click="router.push({ path: '/members', query: { departmentId: slotProps.data.id } })">{{ slotProps.data.nbrMember }}</span>
+                    </template>
+                </Column>
                 <Column field="nbrProgram" :header="$t('colNbrPrg')"></Column>
                 <Column style="min-width: 1rem">
                     <template #body="slotProps">

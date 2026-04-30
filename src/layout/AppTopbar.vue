@@ -7,6 +7,7 @@ import { redirigeVers } from '../router';
 
 const { toggleMenu } = useLayout();
 const auth = useAuthStore();
+const appName = import.meta.env.VITE_APP_NAME_SHORT || 'Agenda STAR';
 
 const notificationCount = ref(3); // Demo — will come from API
 const userMenuRef = ref(null);
@@ -45,7 +46,7 @@ const toggleUserMenu = (event) => {
             </button>
             <router-link to="/" class="layout-topbar-logo">
                 <Image src="/images/LOGO-GRIS.png" width="54" height="11" />
-                <span class="text-xl font-bold tracking-tight">Agenda <span class="text-primary">STAR</span></span>
+                <span class="text-xl font-bold tracking-tight">{{ appName }}</span>
             </router-link>
         </div>
 

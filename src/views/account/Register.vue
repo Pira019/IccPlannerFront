@@ -28,6 +28,7 @@ const errorReq = ref(null)
 const invitationData = ref({
   email: '',
   name: '',
+  departmentName: '',
 })
 
 const loadingReq = ref(false)
@@ -81,6 +82,7 @@ const { error, result } = await handleAsyncError(
     }
     invitationData.value.email = result.email ?? ''
     invitationData.value.name = result.firstName ?? ''
+    invitationData.value.departmentName = result.departmentName ?? ''
 
     useSetFieldValue
 
@@ -165,6 +167,10 @@ const resolver = zodResolver(schema);
                                 <InputText disabled v-model="invitationData.email"  />
                             </FormField>
                         </FloatLabel>
+                    </div>
+                    <div v-if="invitationData.departmentName" class="mb-5 p-3 bg-primary/5 rounded-lg flex items-center gap-2">
+                        <i class="pi pi-sitemap text-primary"></i>
+                        <span class="text-sm">{{ $t('Department') }} : <span class="font-semibold">{{ invitationData.departmentName }}</span></span>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-6 mb-5">
                         <FormField v-slot="$field" name="sexe" class="w-full">

@@ -109,12 +109,30 @@ export default class DepartmentService extends BaseService
     }
 
     /**
+     * Affecter des postes a un departement.
+     */
+    static async assignPostes(departmentId, posteIds)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/postes`
+        return await this.axiosInstance.post(endPoint, { posteIds })
+    }
+
+    /**
      * Obtenir les détails complets d'un département (infos, membres, postes, programmes).
      */
     static async getDetail(departmentId)
     {
         const endPoint = `${this.authBaseUrl}${departmentId}/details`
         return await this.axiosInstance.get(endPoint)
+    }
+
+    /**
+     * Affecter des postes a un membre du departement.
+     */
+    static async assignPostesToMember(departmentId, departmentMemberId, posteIds)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/members/${departmentMemberId}/postes`
+        return await this.axiosInstance.post(endPoint, { posteIds })
     }
 
 }

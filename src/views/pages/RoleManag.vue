@@ -113,7 +113,8 @@ async function unassignRole(user, roleName) {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('liMagRole')" :show-add-btn="false">
+    <PageComponent :title-page="$t('liMagRole')" :show-add-btn="false"
+        :breadcrumbs="[{ label: $t('liMagRole') }]">
         <Tabs value="roles">
             <TabList>
                 <Tab value="roles"><i class="pi pi-shield mr-2"></i>{{ $t('roles.tabRoles') }}</Tab>

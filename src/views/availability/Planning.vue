@@ -1,5 +1,6 @@
 <template>
-   <page-component :title-page="$t('planning.menuLabel')" :showAddBtn="false">
+   <page-component :title-page="$t('planning.menuLabel')" :showAddBtn="false"
+        :breadcrumbs="[{ label: $t('planning.menuLabel') }]">
         <div class="mb-5">
              <Fieldset class="w-full block">
                 <div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">

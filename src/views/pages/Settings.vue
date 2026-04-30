@@ -126,7 +126,8 @@ onMounted(() => loadData());
 </script>
 
 <template>
-    <PageComponent :title-page="t('settings.title')" :show-add-btn="false">
+    <PageComponent :title-page="t('settings.title')" :show-add-btn="false"
+        :breadcrumbs="[{ label: t('settings.title') }]">
         <div v-if="loading" class="flex justify-center py-12"><ProgressSpinner /></div>
         <template v-else>
 

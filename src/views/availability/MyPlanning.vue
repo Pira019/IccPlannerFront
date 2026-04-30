@@ -178,7 +178,7 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
 </script>
 
 <template>
-    <component :is="showHeader ? PageComponent : 'div'" v-bind="showHeader ? { titlePage: t('myPlanning.title'), subtitle: t('myPlanning.subtitle'), showAddBtn: false } : {}">
+    <component :is="showHeader ? PageComponent : 'div'" v-bind="showHeader ? { titlePage: t('myPlanning.title'), subtitle: t('myPlanning.subtitle'), showAddBtn: false, breadcrumbs: [{ label: t('myPlanning.title') }] } : {}">
         <!-- Navigation -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div class="flex items-center gap-1">

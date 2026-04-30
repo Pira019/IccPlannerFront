@@ -202,7 +202,8 @@ onUnmounted(() => {
 
 
 <template>
-    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess">
+    <PageComponent :title-page="$t('Programs')" @btn-add="openAdd" :showAddBtn="canAddAccess"
+        :breadcrumbs="[{ label: $t('Programs') }]">
         <div class="flex flex-col h-screen">
             <LoadingDialogComponent :onLoading="loading" :errorReq="errorReq"/>
             <!-- Barre d'outils -->

@@ -1,5 +1,6 @@
 <template>
-     <page-component :title-page="$t('servicesCulte')" >
+     <page-component :title-page="$t('servicesCulte')"
+        :breadcrumbs="[{ label: $t('servicesCulte') }]">
         <div>
            <SearchComponent/>
         </div>

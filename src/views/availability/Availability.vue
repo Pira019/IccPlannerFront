@@ -1,5 +1,6 @@
 <template>
-   <page-component :title-page="$t('liOverview')" :showAddBtn="false">
+   <page-component :title-page="$t('liOverview')" :showAddBtn="false"
+        :breadcrumbs="[{ label: $t('liOverview') }]">
         <Tabs :value="$route.name" class="mb-5">
             <TabList>
                 <Tab

@@ -1,12 +1,15 @@
 <script setup>
 import PageComponent from '@/components/PageComponent.vue';
 import DepartmentService from '@/service/DepartmentService';
+import PosteService from '@/service/PosteService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 const { t, locale } = useI18n();
 const { handleAsyncError } = useHandleAsyncError();
+const router = useRouter();
 
 const props = defineProps({
     id: { type: [String, Number], required: true }
@@ -37,12 +40,97 @@ function invitationStatus(inv) {
     return { label: t('invitation.inactive'), severity: 'secondary' };
 }
 
+// Postes
+const showPostesDialog = ref(false);
+const allPostes = ref([]);
+const selectedPosteIds = ref([]);
+const savingPostes = ref(false);
+
+// Create poste
+const showCreatePosteDialog = ref(false);
+const newPosteForm = ref({ name: '', description: '', shortName: '', indGest: false });
+const savingNewPoste = ref(false);
+const createPosteError = ref(null);
+
+// Member postes assignment
+const showMemberPostesDialog = ref(false);
+const selectedMember = ref(null);
+const selectedMemberPosteIds = ref([]);
+const savingMemberPostes = ref(false);
+
+async function openPostesDialog() {
+    const { result } = await handleAsyncError(() => PosteService.getAll());
+    if (result) { allPostes.value = result; }
+    selectedPosteIds.value = department.value?.postes?.map(p => p.id) || [];
+    showPostesDialog.value = true;
+}
+
+async function savePostes() {
+    const { error } = await handleAsyncError(
+        () => DepartmentService.assignPostes(props.id, selectedPosteIds.value),
+        (val) => (savingPostes.value = val),
+        true
+    );
+    if (!error) {
+        showPostesDialog.value = false;
+        fetchData();
+    }
+}
+
+function openCreatePosteDialog() {
+    newPosteForm.value = { name: '', description: '', shortName: '', indGest: false };
+    createPosteError.value = null;
+    showCreatePosteDialog.value = true;
+}
+
+async function saveNewPoste() {
+    createPosteError.value = null;
+    const { error } = await handleAsyncError(
+        () => PosteService.create(newPosteForm.value),
+        (val) => (savingNewPoste.value = val),
+        true
+    );
+    if (error) { createPosteError.value = error.message; return; }
+    showCreatePosteDialog.value = false;
+    // Rafraichir la liste des postes
+    const { result } = await handleAsyncError(() => PosteService.getAll());
+    if (result) { allPostes.value = result; }
+    fetchData();
+}
+
+async function openMemberPostesDialog(member) {
+    selectedMember.value = member;
+    if (allPostes.value.length === 0) {
+        const { result } = await handleAsyncError(() => PosteService.getAll());
+        if (result) { allPostes.value = result; }
+    }
+    // Trouver les postes actuels du membre par nom
+    selectedMemberPosteIds.value = allPostes.value
+        .filter(p => member.postes?.includes(p.name))
+        .map(p => p.id);
+    showMemberPostesDialog.value = true;
+}
+
+async function saveMemberPostes() {
+    if (!selectedMember.value?.departmentMemberId) return;
+    const { error } = await handleAsyncError(
+        () => DepartmentService.assignPostesToMember(props.id, selectedMember.value.departmentMemberId, selectedMemberPosteIds.value),
+        (val) => (savingMemberPostes.value = val),
+        true
+    );
+    if (!error) {
+        showMemberPostesDialog.value = false;
+        fetchData();
+    }
+}
+
 onMounted(() => fetchData());
 watch(() => props.id, () => fetchData());
 </script>
 
 <template>
-    <PageComponent :title-page="department?.name || $t('liDepart')" :show-add-btn="false">
+    <PageComponent :title-page="department?.name || $t('liDepart')" :show-add-btn="false"
+        :breadcrumbs="[{ label: $t('liDepart'), route: '/departments' }, { label: department?.name || '' }]">
         <div v-if="loading" class="flex justify-center py-12">
             <ProgressSpinner />
         </div>
@@ -50,7 +138,8 @@ watch(() => props.id, () => fetchData());
         <template v-else-if="department">
             <!-- Info cards -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-primary/10 rounded-xl p-5 flex items-center gap-4">
+                <div class="bg-primary/10 rounded-xl p-5 flex items-center gap-4 cursor-pointer hover:bg-primary/20 transition"
+                    @click="router.push('/members')">
                     <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                         <i class="pi pi-users text-primary text-xl"></i>
                     </div>
@@ -101,11 +190,18 @@ watch(() => props.id, () => fetchData());
             </div>
 
             <!-- Postes tags -->
-            <div v-if="department.postes.length > 0" class="mb-6">
-                <h3 class="text-sm font-semibold text-muted-color mb-2">Postes ({{ department.postes.length }})</h3>
-                <div class="flex flex-wrap gap-2">
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-semibold text-muted-color">Postes ({{ department.postes?.length || 0 }})</h3>
+                    <div class="flex gap-1">
+                        <Button icon="pi pi-plus" size="small" rounded text @click="openCreatePosteDialog" v-tooltip="'Creer un poste'" />
+                        <Button icon="pi pi-link" size="small" rounded text @click="openPostesDialog" v-tooltip="'Affecter des postes'" />
+                    </div>
+                </div>
+                <div v-if="department.postes?.length > 0" class="flex flex-wrap gap-2">
                     <Tag v-for="p in department.postes" :key="p.id" :value="p.name" severity="info" rounded />
                 </div>
+                <div v-else class="text-sm text-muted-color">Aucun poste affecte.</div>
             </div>
 
             <!-- Tabs: Membres | Invitations -->
@@ -136,6 +232,7 @@ watch(() => props.id, () => fetchData());
                                         <Tag v-if="m.status" :value="m.status" :severity="m.status === 'Active' ? 'success' : 'warn'" class="text-[0.6rem]" />
                                     </div>
                                 </div>
+                                <Button icon="pi pi-plus" text rounded size="small" @click="openMemberPostesDialog(m)" v-tooltip="'Attribuer poste'" />
                             </div>
                         </div>
                     </TabPanel>
@@ -163,5 +260,52 @@ watch(() => props.id, () => fetchData());
                 </TabPanels>
             </Tabs>
         </template>
+
+        <!-- Dialog affecter postes au departement -->
+        <Dialog v-model:visible="showPostesDialog" header="Affecter des postes" modal :style="{ width: '400px' }">
+            <div class="flex flex-col gap-4">
+                <MultiSelect v-model="selectedPosteIds" :options="allPostes" optionLabel="name" optionValue="id"
+                    placeholder="Selectionner les postes" filter display="chip" class="w-full" />
+            </div>
+            <template #footer>
+                <Button :label="$t('Cancel')" text @click="showPostesDialog = false" />
+                <Button :label="$t('Save')" icon="pi pi-check" :loading="savingPostes" @click="savePostes" />
+            </template>
+        </Dialog>
+
+        <!-- Dialog affecter postes a un membre -->
+        <Dialog v-model:visible="showMemberPostesDialog" :header="'Attribuer poste - ' + (selectedMember?.displayName || '')" modal :style="{ width: '400px' }">
+            <div class="flex flex-col gap-4">
+                <MultiSelect v-model="selectedMemberPosteIds" :options="allPostes" optionLabel="name" optionValue="id"
+                    placeholder="Selectionner les postes" filter display="chip" class="w-full" />
+            </div>
+            <template #footer>
+                <Button :label="$t('Cancel')" text @click="showMemberPostesDialog = false" />
+                <Button :label="$t('Save')" icon="pi pi-check" :loading="savingMemberPostes" @click="saveMemberPostes" />
+            </template>
+        </Dialog>
+
+        <!-- Dialog creer un poste -->
+        <Dialog v-model:visible="showCreatePosteDialog" header="Creer un poste" modal :style="{ width: '400px' }">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-semibold text-sm">{{ $t('Name') }} *</label>
+                    <InputText v-model="newPosteForm.name" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-semibold text-sm">{{ $t('Description') }}</label>
+                    <Textarea v-model="newPosteForm.description" rows="2" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-semibold text-sm">Abreviation</label>
+                    <InputText v-model="newPosteForm.shortName" maxlength="15" />
+                </div>
+                <Message v-if="createPosteError" severity="error" size="small">{{ createPosteError }}</Message>
+            </div>
+            <template #footer>
+                <Button :label="$t('Cancel')" text @click="showCreatePosteDialog = false" />
+                <Button :label="$t('Save')" icon="pi pi-check" :loading="savingNewPoste" @click="saveNewPoste" :disabled="!newPosteForm.name" />
+            </template>
+        </Dialog>
     </PageComponent>
 </template>

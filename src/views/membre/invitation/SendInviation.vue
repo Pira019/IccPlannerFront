@@ -12,22 +12,18 @@
                     <Form :resolver="resolver" @submit="onFormSubmit" class="mt-4">
                         <div class="flex flex-col">
                             <div class="flex flex-col gap-2 mb-4">
-                                <FloatLabel variant="on">
-                                    <FormField v-slot="$field" name="firstName" class="flex flex-col gap-1">
-                                        <label>{{ $t('lifirstName') }} *</label>
-                                        <InputText v-model="$field.value" maxlength="55" />
-                                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                                    </FormField>
-                                </FloatLabel>
+                                <FormField v-slot="$field" name="firstName" class="flex flex-col gap-1">
+                                    <label class="font-semibold text-sm">{{ $t('lifirstName') }} *</label>
+                                    <InputText v-model="$field.value" maxlength="55" />
+                                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                                </FormField>
                             </div>
                             <div class="flex flex-col gap-2 mb-2">
-                                <FloatLabel variant="on">
-                                    <FormField v-slot="$field" name="email" class="flex flex-col gap-2">
-                                        <label>{{ $t('email') }} *</label>
-                                        <InputText v-model="$field.value" maxlength="55" />
-                                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                                    </FormField>
-                                </FloatLabel>
+                                <FormField v-slot="$field" name="email" class="flex flex-col gap-1">
+                                    <label class="font-semibold text-sm">{{ $t('email') }} *</label>
+                                    <InputText v-model="$field.value" maxlength="55" />
+                                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                                </FormField>
                             </div>
                             <div class="flex flex-col mb-4">
                                 <ResponseComponent :error="errorReq" />

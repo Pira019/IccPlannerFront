@@ -11,13 +11,24 @@ const props = defineProps({
 
 const emit = defineEmits(['btn-add']);
 
-const home = { icon: 'pi pi-home', to: '/' };
+const home = { icon: 'pi pi-home', route: '/' };
 </script>
 
 <template>
     <div class="card">
         <!-- Breadcrumbs -->
-        <Breadcrumb v-if="breadcrumbs.length > 0" :home="home" :model="breadcrumbs" class="mb-4 !bg-transparent !p-0" />
+        <Breadcrumb v-if="breadcrumbs.length > 0" :home="home" :model="breadcrumbs" class="mb-4 !bg-transparent !p-0">
+            <template #item="{ item }">
+                <router-link v-if="item.route" :to="item.route" class="text-primary font-medium no-underline hover:underline">
+                    <i v-if="item.icon" :class="item.icon" class="mr-1"></i>
+                    {{ item.label }}
+                </router-link>
+                <span v-else class="text-muted-color">
+                    <i v-if="item.icon" :class="item.icon" class="mr-1"></i>
+                    {{ item.label }}
+                </span>
+            </template>
+        </Breadcrumb>
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

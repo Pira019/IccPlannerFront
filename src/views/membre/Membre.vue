@@ -1,5 +1,6 @@
 <template>
-    <PageComponent :title-page="$t('Members')" :show-add-btn="false">
+    <PageComponent :title-page="$t('Members')" :show-add-btn="false"
+        :breadcrumbs="[{ label: $t('Members') }]">
         <DataTable ref="dt" dataKey="idDepartMember" selectionMode="single"
         :metaKeySelection="false" :value="membersLst"
         scrollable scrollHeight="flex" class="w-full"
@@ -59,11 +60,10 @@
                 </Column>
                 <Column :header="$t('colFonction')"  class="px-5">
                       <template #body="slotProps">
-                        <ul class="px-5">
-                            <li v-for="(post, index) in slotProps.data.postes" :key="index">
-                                <span class="semi-bold">{{ post }}</span>
-                            </li>
-                        </ul>
+                        <div class="flex flex-wrap gap-1 px-5">
+                            <Tag v-for="(post, index) in slotProps.data.postes" :key="index" :value="post" severity="info" class="text-xs" />
+                            <span v-if="!slotProps.data.postes?.length" class="text-muted-color text-xs">-</span>
+                        </div>
                     </template>
                 </Column>
                 <Column field="status" :header="$t('colStat')">
@@ -82,8 +82,10 @@ import MemberService from '@/service/MemberService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { FilterMatchMode } from '@primevue/core/api';
 import { onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const { handleAsyncError } = useHandleAsyncError();
+const route = useRoute();
 
 const departmentLst  = ref([]);
 const membersLst  = ref([]);
@@ -110,8 +112,11 @@ onMounted(async () => {
     {
         departmentLst.value = result.departments;
 
-         // Sélection automatique du premier
-        if (departmentLst.value.length > 0) {
+        // Pre-selectionner le departement si passe en query param
+        const queryDeptId = route.query.departmentId ? Number(route.query.departmentId) : null;
+        if (queryDeptId && departmentLst.value.some(d => d.id === queryDeptId)) {
+            departmentSelected.value = queryDeptId;
+        } else if (departmentLst.value.length > 0) {
             departmentSelected.value = departmentLst.value[0].id;
         }
     }
