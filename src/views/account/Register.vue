@@ -17,7 +17,7 @@ const { handleAsyncError } = useHandleAsyncError();
 const formReady = ref(false)
 const isSubmitting = ref(false);
 
-const invitationId = route.query.invitation;    // "1"
+const invitationId = route.query.invitationId || route.query.invitation;
 const code = route.query.code ;
 
 const password = ref("")
