@@ -21,7 +21,7 @@ const { t } = useI18n();
                         <span class="text-muted-color mb-8">{{t?.('internalError')}}</span>
                         <img src="/images/asset-error.svg" alt="Error" class="mb-8" width="80%" />
                         <div class="col-span-12 mt-8 text-center">
-                            <Button as="router-link" label="Go to Dashboard" to="/" severity="danger" />
+                            <Button as="router-link" :label="t('notFound.goHome')" to="/" severity="danger" />
                         </div>
                     </div>
                 </div>

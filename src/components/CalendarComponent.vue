@@ -11,7 +11,7 @@ import frLocal from '@fullcalendar/core/locales/fr-ca';
 import { useI18n } from 'vue-i18n';
 
 
-    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear','clickedDate']);
+    const emit = defineEmits(['month-changed', 'showModal', 'CurrentMonthYear','clickedDate', 'eventClicked']);
     const props = defineProps({
         lstEvents: Array,
         showHeader: { type: Boolean, default: true },
@@ -120,6 +120,11 @@ import { useI18n } from 'vue-i18n';
             info.jsEvent.preventDefault();
             const dateStr = info.event.startStr.split('T')[0];
             emit('clickedDate', dateStr);
+            emit('eventClicked', {
+                date: dateStr,
+                id: info.event.id,
+                idPrg: info.event.extendedProps?.idPrg
+            });
         },
 
         dateClick(info) {
@@ -127,6 +132,19 @@ import { useI18n } from 'vue-i18n';
         },
         eventDidMount: function(info) {
             info.el.style.cursor = 'pointer';
+            // Tooltip avec le nom complet du programme
+            const fullName = info.event.extendedProps?.fullName || info.event.title;
+            info.el.setAttribute('title', fullName);
+            // Ajouter une fleche a cote du titre
+            const titleEl = info.el.querySelector('.fc-event-title') || info.el.querySelector('.fc-list-event-title');
+            if (titleEl && !titleEl.querySelector('.fc-arrow')) {
+                const arrow = document.createElement('span');
+                arrow.className = 'fc-arrow';
+                arrow.textContent = ' ›';
+                arrow.style.opacity = '0.6';
+                arrow.style.marginLeft = '4px';
+                titleEl.appendChild(arrow);
+            }
         },
          dayCellClassNames(arg) {
             const events = props.lstEvents || [];
@@ -232,6 +250,7 @@ import { useI18n } from 'vue-i18n';
           endTime: e?.endTime || null,
           hasAvailability: e?.hasAvailability || false,
           programName: e?.programName || null,
+          fullName: e?.fullName || e?.title || null,
         }
       };
 

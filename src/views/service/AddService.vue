@@ -176,6 +176,24 @@ async function handleSave() {
   errorReq.value = null;
   validationError.value = null;
 
+  // Validation champs obligatoires
+  if (!formData.value.serviceId) {
+    validationError.value = t('validation.serviceRequired');
+    return;
+  }
+  if (!formData.value.displayName || !formData.value.displayName.trim()) {
+    validationError.value = t('validation.displayNameRequired');
+    return;
+  }
+  if (!formData.value.startTime) {
+    validationError.value = t('validation.startTimeRequired');
+    return;
+  }
+  if (!formData.value.endTime) {
+    validationError.value = t('validation.endTimeRequired');
+    return;
+  }
+
   // Validation front : StartTime < EndTime
   if (formData.value.startTime && formData.value.endTime) {
     const start = formData.value.startTime instanceof Date ? formData.value.startTime : new Date(`2000-01-01T${formData.value.startTime}`);

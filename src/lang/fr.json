@@ -136,6 +136,14 @@
 
     "endDateMustBeAfterStartDate": "La date de fin doit être supérieure ou égale à la date de début.",
 
+    "validation": {
+        "serviceRequired": "Veuillez selectionner un service.",
+        "displayNameRequired": "Le nom d'affichage est requis.",
+        "startTimeRequired": "L'heure de debut est requise.",
+        "endTimeRequired": "L'heure de fin est requise.",
+        "programRequired": "Le programme est requis."
+    },
+
     "lblDeleteMinistry": "Supprimer le ministère",
     "liToDay": "Aujourd'hui",
     "liMsgDel": "Êtes-vous sûr de vouloir effectuer cette action ?",
@@ -169,6 +177,11 @@
     "liOrganisation": "Organisation",
 
     "errorOccured": "Erreur",
+    "notFound": {
+        "title": "Page introuvable",
+        "description": "La ressource demandee n'est pas disponible.",
+        "goHome": "Retour a l'accueil"
+    },
     "liSelectDepart": "Sélectionner un département",
 
     "liSex": "Sexe",

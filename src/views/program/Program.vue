@@ -3,6 +3,7 @@
     import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
 import { Permission } from '@/model/Enum/Permission';
 import ProgramService from '@/service/ProgramService';
+import TabServicePrgService from '@/service/TabServicePrgService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { hasPermission } from '@/utils/hasPermission';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -31,6 +32,64 @@ const panelOpen = ref(false);
 const isMobile = ref(false);
 const displayAddPrg = ref(false);
 
+// Detail programme
+const showDetailDialog = ref(false);
+const selectedEvents = ref([]);
+const selectedDateStr = ref('');
+const detailPayload = ref(null);
+const selectedProgramEvent = ref(null);
+const detailServices = ref([]);
+const detailLoading = ref(false);
+
+function onProgramClicked(eventData) {
+    const ev = filteredEvents.value.find(e => e.date === eventData.date && e.idPrg === eventData.idPrg)
+        || filteredEvents.value.find(e => e.date === eventData.date);
+    if (ev) {
+        viewProgramServices(ev);
+    }
+}
+
+function onEventClicked(dateStr) {
+    selectedDateStr.value = dateStr;
+    selectedEvents.value = filteredEvents.value.filter(e => e.date === dateStr);
+    if (selectedEvents.value.length === 1) {
+        viewProgramServices(selectedEvents.value[0]);
+    } else if (selectedEvents.value.length > 1) {
+        showDetailDialog.value = true;
+        selectedProgramEvent.value = null;
+        detailServices.value = [];
+    }
+}
+
+async function viewProgramServices(ev) {
+    selectedProgramEvent.value = ev;
+    selectedDateStr.value = ev.date;
+    showDetailDialog.value = true;
+    detailServices.value = [];
+
+    const payload = {
+        programId: ev.idPrg,
+        date: ev.date
+    };
+
+    const { result } = await handleAsyncError(
+        () => TabServicePrgService.GetTabServicesPrgAsync(payload),
+        (val) => (detailLoading.value = val)
+    );
+    if (result) {
+        detailServices.value = result;
+    }
+}
+
+function backToList() {
+    selectedProgramEvent.value = null;
+    detailServices.value = [];
+}
+
+function getProgramDisplayName(ev) {
+    return ev.fullName || ev.title;
+}
+
 // Événements filtrés par programmes et départements sélectionnés
 const filteredEvents = computed(() => {
     if (!lstEvents.value) { return []; }
@@ -38,7 +97,11 @@ const filteredEvents = computed(() => {
         const prgMatch = activeFilters.value.programIds.length === 0 || activeFilters.value.programIds.includes(e.idPrg);
         const deptMatch = activeFilters.value.departmentIds.length === 0 || activeFilters.value.departmentIds.includes(e.departmentId);
         return prgMatch && deptMatch;
-    });
+    }).map(e => ({
+        ...e,
+        fullName: e.title,
+        title: e.shortName || e.title
+    }));
 });
 
 function onFilterChanged(filters) {
@@ -255,6 +318,7 @@ onUnmounted(() => {
                 <div class="flex-1 flex flex-col overflow-auto min-h-0">
                     <CalendarComponent ref="calendar" :showHeader="false" :lstEvents="filteredEvents"
                         @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
+                        @eventClicked="onProgramClicked"
                     class="flex-1 min-h-0" />
                 </div>
             </div>
@@ -262,5 +326,70 @@ onUnmounted(() => {
     </PageComponent>
     <Dialog  v-model:visible="dialogVisible" :header="modalTitle" :modal="true" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" >
         <StepperPrg @closeModal="() => (displayAddPrg = false)" @step-title="modalTitle=$event" />
+    </Dialog>
+
+    <!-- Detail programme -->
+    <Dialog v-model:visible="showDetailDialog" :header="selectedProgramEvent ? (getProgramDisplayName(selectedProgramEvent) + ' - ' + selectedDateStr) : selectedDateStr" modal :style="{ width: '700px' }">
+        <!-- Liste des programmes (si plusieurs pour cette date) -->
+        <template v-if="!selectedProgramEvent">
+            <div v-if="selectedEvents.length === 0" class="text-muted-color text-sm py-4">Aucun programme pour cette date.</div>
+            <div v-else class="flex flex-col gap-3">
+                <div v-for="ev in selectedEvents" :key="ev.id"
+                    class="p-4 rounded-lg border border-surface-200 dark:border-surface-700 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800 transition"
+                    @click="viewProgramServices(ev)">
+                    <div class="flex items-center justify-between">
+                        <div class="font-semibold text-base">{{ getProgramDisplayName(ev) }}</div>
+                        <i class="pi pi-chevron-right text-muted-color text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <Tag :value="ev.departmentName || '-'" severity="info" class="text-xs" />
+                        <Tag v-if="ev.indRecurrent" value="Recurrent" severity="warn" class="text-xs" />
+                        <Tag v-else value="Ponctuel" severity="secondary" class="text-xs" />
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Services du programme selectionne -->
+        <template v-else>
+            <div v-if="selectedEvents.length > 1" class="mb-3">
+                <Button icon="pi pi-arrow-left" text size="small" :label="$t('Back')" @click="backToList" />
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <Tag :value="selectedProgramEvent.departmentName || '-'" severity="info" class="text-xs" />
+                <Tag v-if="selectedProgramEvent.indRecurrent" value="Recurrent" severity="warn" class="text-xs" />
+                <Tag v-else value="Ponctuel" severity="secondary" class="text-xs" />
+                <Tag :value="selectedDateStr" severity="secondary" icon="pi pi-calendar" class="text-xs" />
+            </div>
+
+            <div v-if="detailLoading" class="flex justify-center py-6"><ProgressSpinner /></div>
+            <div v-else-if="detailServices.length === 0" class="text-muted-color text-sm py-4">{{ $t('noServices') }}</div>
+            <div v-else class="flex flex-col gap-4">
+                <div v-for="group in detailServices" :key="group.groupKey">
+                    <div v-for="prg in group.servicePrograms" :key="prg.programId" class="mb-4">
+                        <div v-if="prg.services && prg.services.length > 0" class="flex flex-col gap-2">
+                            <div v-for="svc in prg.services" :key="svc.idTabService"
+                                class="p-3 rounded-lg border border-surface-200 dark:border-surface-700">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-sm">{{ svc.serviceTitle }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-mono bg-primary text-white px-2 py-0.5 rounded">{{ svc.startTime }}</span>
+                                        <span v-if="svc.endTime" class="text-xs text-muted-color">- {{ svc.endTime }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="svc.arrivalTime" class="text-xs text-muted-color mt-1">
+                                    <i class="pi pi-clock mr-1"></i>Arrivee : {{ svc.arrivalTime }}
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-color text-sm">Aucun service configure.</div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #footer>
+            <Button :label="$t('Close')" text @click="showDetailDialog = false; selectedProgramEvent = null; detailServices = []" />
+        </template>
     </Dialog>
 </template>

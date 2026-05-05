@@ -93,6 +93,14 @@
 
     "endDateMustBeAfterStartDate": "End date must be greater than or equal to start date.",
 
+    "validation": {
+        "serviceRequired": "Please select a service.",
+        "displayNameRequired": "Display name is required.",
+        "startTimeRequired": "Start time is required.",
+        "endTimeRequired": "End time is required.",
+        "programRequired": "Program is required."
+    },
+
     "liAdmin": "Administration",
     "liNonPrg": "No programs at the moment. Please check back later!",
     "liGestRole": "Role Management",
@@ -178,6 +186,11 @@
     "liOnlyMembersCanView": "Only members of this department can view.",
 
     "errorOccured": "Error",
+    "notFound": {
+        "title": "Page Not Found",
+        "description": "The requested resource is not available.",
+        "goHome": "Back to Home"
+    },
 
     "msgUnAvailability": "Update completed – you are no longer available for this service.",
 
