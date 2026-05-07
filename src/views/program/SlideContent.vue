@@ -47,7 +47,10 @@ watch([selectedPrgs, selectedDepts], () => {
                 <div class="flex flex-col gap-2">
                     <div v-for="prg in prgs" :key="prg.id" class="flex items-center gap-2 py-1">
                         <Checkbox v-model="selectedPrgs" :inputId="'prg-' + prg.id" :value="prg.id" />
-                        <label :for="'prg-' + prg.id" class="text-sm truncate cursor-pointer">{{ prg.name }}</label>
+                        <label :for="'prg-' + prg.id" class="text-sm break-words cursor-pointer">
+                            <span v-if="prg.shortName" class="font-bold uppercase mr-1">{{ prg.shortName }}</span>
+                            {{ prg.name }}
+                        </label>
                     </div>
                     <div v-if="prgs.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNonPrg') }}</div>
                 </div>
@@ -59,7 +62,10 @@ watch([selectedPrgs, selectedDepts], () => {
                 <div class="flex flex-col gap-2">
                     <div v-for="dept in departments" :key="dept.id" class="flex items-center gap-2 py-1">
                         <Checkbox v-model="selectedDepts" :inputId="'dept-' + dept.id" :value="dept.id" />
-                        <label :for="'dept-' + dept.id" class="text-sm truncate cursor-pointer">{{ dept.name }}</label>
+                        <label :for="'dept-' + dept.id" class="text-sm break-words cursor-pointer">
+                            <span v-if="dept.shortName" class="font-bold uppercase mr-1">{{ dept.shortName }}</span>
+                            <span>{{ dept.name }}</span>
+                        </label>
                     </div>
                     <div v-if="departments.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNoElement') }}</div>
                 </div>

@@ -93,10 +93,18 @@ function getProgramDisplayName(ev) {
 // Événements filtrés par programmes et départements sélectionnés
 const filteredEvents = computed(() => {
     if (!lstEvents.value) { return []; }
-    return lstEvents.value.filter(e => {
+    const filtered = lstEvents.value.filter(e => {
         const prgMatch = activeFilters.value.programIds.length === 0 || activeFilters.value.programIds.includes(e.idPrg);
         const deptMatch = activeFilters.value.departmentIds.length === 0 || activeFilters.value.departmentIds.includes(e.departmentId);
         return prgMatch && deptMatch;
+    });
+    // Dedupliquer par date + idPrg (un programme ne doit apparaitre qu'une fois par jour)
+    const seen = new Set();
+    return filtered.filter(e => {
+        const key = `${e.date}_${e.idPrg}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
     }).map(e => ({
         ...e,
         fullName: e.title,
@@ -205,7 +213,7 @@ async function getEvent(month,year)
         const deptMap = {};
         for (const e of result.events) {
             if (e.departmentId && !deptMap[e.departmentId]) {
-                deptMap[e.departmentId] = { id: e.departmentId, name: e.departmentName || `Dept ${e.departmentId}` };
+                deptMap[e.departmentId] = { id: e.departmentId, name: e.departmentName || `Dept ${e.departmentId}`, shortName: e.departmentShortName };
             }
         }
         departments.value = Object.values(deptMap).sort((a, b) => a.name.localeCompare(b.name));

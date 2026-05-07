@@ -195,7 +195,7 @@ import { useI18n } from 'vue-i18n';
                 newEvents.forEach(e => api.addEvent(e));
             }
         },
-        { immediate: true }
+        { immediate: true, deep: true }
     );
 
     // Mettre à jour optionCal.headerToolbar quand showHeader change
