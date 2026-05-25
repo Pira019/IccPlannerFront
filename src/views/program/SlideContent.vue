@@ -1,5 +1,4 @@
 <script setup>
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -8,35 +7,6 @@ const props = defineProps({
   prgs: { type: Array, default: () => [] },
   departments: { type: Array, default: () => [] }
 });
-
-const emit = defineEmits(['filterChanged']);
-
-const selectedPrgs = ref([]);
-const selectedDepts = ref([]);
-
-watch(
-  () => props.prgs,
-  (newPrograms) => {
-    selectedPrgs.value = newPrograms.map(p => p.id);
-  },
-  { immediate: true, deep: true }
-);
-
-watch(
-  () => props.departments,
-  (newDepts) => {
-    selectedDepts.value = newDepts.map(d => d.id);
-  },
-  { immediate: true, deep: true }
-);
-
-// Émettre les filtres quand les sélections changent
-watch([selectedPrgs, selectedDepts], () => {
-  emit('filterChanged', {
-    programIds: selectedPrgs.value,
-    departmentIds: selectedDepts.value
-  });
-}, { deep: true });
 </script>
 
 <template>
@@ -46,11 +16,11 @@ watch([selectedPrgs, selectedDepts], () => {
             <AccordionContent>
                 <div class="flex flex-col gap-2">
                     <div v-for="prg in prgs" :key="prg.id" class="flex items-center gap-2 py-1">
-                        <Checkbox v-model="selectedPrgs" :inputId="'prg-' + prg.id" :value="prg.id" />
-                        <label :for="'prg-' + prg.id" class="text-sm break-words cursor-pointer">
+                        <i class="pi pi-circle-fill text-primary text-[8px]"></i>
+                        <span class="text-sm break-words">
                             <span v-if="prg.shortName" class="font-bold uppercase mr-1">{{ prg.shortName }}</span>
                             {{ prg.name }}
-                        </label>
+                        </span>
                     </div>
                     <div v-if="prgs.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNonPrg') }}</div>
                 </div>
@@ -61,11 +31,11 @@ watch([selectedPrgs, selectedDepts], () => {
             <AccordionContent>
                 <div class="flex flex-col gap-2">
                     <div v-for="dept in departments" :key="dept.id" class="flex items-center gap-2 py-1">
-                        <Checkbox v-model="selectedDepts" :inputId="'dept-' + dept.id" :value="dept.id" />
-                        <label :for="'dept-' + dept.id" class="text-sm break-words cursor-pointer">
+                        <i class="pi pi-circle-fill text-blue-500 text-[8px]"></i>
+                        <span class="text-sm break-words">
                             <span v-if="dept.shortName" class="font-bold uppercase mr-1">{{ dept.shortName }}</span>
-                            <span>{{ dept.name }}</span>
-                        </label>
+                            {{ dept.name }}
+                        </span>
                     </div>
                     <div v-if="departments.length === 0" class="text-sm text-muted-color py-2">{{ $t('liNoElement') }}</div>
                 </div>

@@ -86,6 +86,16 @@ import { useI18n } from 'vue-i18n';
                 calendarRef.value.getApi().gotoDate(date);
             }
         },
+
+        // Mettre a jour les events du calendrier
+        updateEvents(events) {
+            if (calendarRef.value) {
+                const api = calendarRef.value.getApi();
+                api.removeAllEvents();
+                const newEvents = eventsToCalendarEvents(events);
+                newEvents.forEach(e => api.addEvent(e));
+            }
+        },
     });
 
     const calendarRef = ref(null); // <-- référence du calendrier
@@ -128,6 +138,10 @@ import { useI18n } from 'vue-i18n';
         },
 
         dateClick(info) {
+            // Ne pas emettre si la date n'a pas d'events
+            const events = props.lstEvents || [];
+            const hasEvent = events.some(e => e.date === info.dateStr);
+            if (!hasEvent) return;
             emit('clickedDate', info.dateStr);
         },
         eventDidMount: function(info) {
@@ -179,16 +193,12 @@ import { useI18n } from 'vue-i18n';
         events: eventsToCalendarEvents(props.lstEvents)
     });
 
-    // Mettre à jour les events quand lstEvents change
+    // Mettre � jour les events quand lstEvents change
     watch(
         () => props.lstEvents,
         (newDates) => {
             const newEvents = eventsToCalendarEvents(newDates);
-            optionCal.value = {
-                ...optionCal.value,
-                events: newEvents
-            };
-            // Forcer la mise à jour via l'API FullCalendar (nécessaire pour la vue liste)
+            // Forcer la mise � jour via l'API FullCalendar
             if (calendarRef.value) {
                 const api = calendarRef.value.getApi();
                 api.removeAllEvents();

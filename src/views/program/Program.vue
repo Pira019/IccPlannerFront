@@ -8,7 +8,6 @@ import { useHandleAsyncError } from '@/utils/handleAsyncError';
 import { hasPermission } from '@/utils/hasPermission';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import SlideContent from './SlideContent.vue';
 import StepperPrg from './StepperPrg.vue';
 
 const { t } = useI18n();
@@ -25,7 +24,6 @@ const errorReq = ref(false);
 const lstEvents = ref();
 const lstPrg = ref();
 const departments = ref([]);
-const activeFilters = ref({ programIds: [], departmentIds: [] });
 
 const panelOpen = ref(false);
 
@@ -90,17 +88,27 @@ function getProgramDisplayName(ev) {
     return ev.fullName || ev.title;
 }
 
-// Événements filtrés par programmes et départements sélectionnés
+const allDepartmentsInServices = computed(() => {
+    const depts = new Map();
+    for (const group of detailServices.value) {
+        for (const prg of group.servicePrograms || []) {
+            if (prg.departmentName && !depts.has(prg.departmentId)) {
+                depts.set(prg.departmentId, {
+                    id: prg.departmentId,
+                    name: prg.departmentName,
+                    shortName: prg.departmentShortName
+                });
+            }
+        }
+    }
+    return [...depts.values()].sort((a, b) => a.name.localeCompare(b.name));
+});
+
+// Événements dedupliques (un programme par jour)
 const filteredEvents = computed(() => {
     if (!lstEvents.value) { return []; }
-    const filtered = lstEvents.value.filter(e => {
-        const prgMatch = activeFilters.value.programIds.length === 0 || activeFilters.value.programIds.includes(e.idPrg);
-        const deptMatch = activeFilters.value.departmentIds.length === 0 || activeFilters.value.departmentIds.includes(e.departmentId);
-        return prgMatch && deptMatch;
-    });
-    // Dedupliquer par date + idPrg (un programme ne doit apparaitre qu'une fois par jour)
     const seen = new Set();
-    return filtered.filter(e => {
+    return lstEvents.value.filter(e => {
         const key = `${e.date}_${e.idPrg}`;
         if (seen.has(key)) return false;
         seen.add(key);
@@ -111,10 +119,6 @@ const filteredEvents = computed(() => {
         title: e.shortName || e.title
     }));
 });
-
-function onFilterChanged(filters) {
-    activeFilters.value = filters;
-}
 
 const canAddAccess = computed(() =>
     hasPermission(Permission.PRG_MANAGER) || hasPermission(Permission.DEPART_MANAGER)
@@ -281,9 +285,6 @@ onUnmounted(() => {
             <div class="border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
 
-                    <div class="sm:hidden self-start">
-                        <Button icon="pi pi-bars" text @click="panelOpen = !panelOpen" />
-                    </div>
                     <Button :label="t('liToDay')" @click="selectToday" severity="Primary"
                     class="text-sm sm:text-base md:text-lg font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 w-full sm:w-auto" variant="outlined" rounded />
                     <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-0 flex-wrap">
@@ -304,25 +305,12 @@ onUnmounted(() => {
             </div>
             <!-- Contenu principal -->
             <div class="flex flex-col sm:flex-row w-full h-full overflow-auto">
-                <!-- Sidebar / Liste -->
-                <div class="bg-white border-r border-gray-200 flex flex-col w-full sm:w-1/4">
-                    <div v-if="view !== 'dayGridMonth'">
-                        <DatePicker inline class="w-full" v-model="selectedDate" />
-                    </div>
-                    <div class="flex-1 bg-white border-l pt-4 overflow-y-auto">
-                        <!-- Mobile : Drawer -->
-                        <Drawer v-if="isMobile" v-model:visible="panelOpen">
-                            <SlideContent :prgs="lstPrg" :departments="departments" @filterChanged="onFilterChanged" />
-                        </Drawer>
-
-                        <!-- Desktop : contenu normal -->
-                        <div v-else class="flex-1 overflow-y-auto">
-                            <SlideContent :prgs="lstPrg" :departments="departments" @filterChanged="onFilterChanged" />
-                        </div>
-                    </div>
+                <!-- Sidebar : DatePicker en vue liste -->
+                <div v-if="view !== 'dayGridMonth'" class="bg-white border-r border-gray-200 w-full sm:w-1/4">
+                    <DatePicker inline class="w-full" v-model="selectedDate" />
                 </div>
 
-                <!-- Calendrier principal (toujours visible) -->
+                <!-- Calendrier principal -->
                 <div class="flex-1 flex flex-col overflow-auto min-h-0">
                     <CalendarComponent ref="calendar" :showHeader="false" :lstEvents="filteredEvents"
                         @CurrentMonthYear="onMonthYearChanged" v-model:currentView="view"
@@ -337,7 +325,7 @@ onUnmounted(() => {
     </Dialog>
 
     <!-- Detail programme -->
-    <Dialog v-model:visible="showDetailDialog" :header="selectedProgramEvent ? (getProgramDisplayName(selectedProgramEvent) + ' - ' + selectedDateStr) : selectedDateStr" modal :style="{ width: '700px' }">
+    <Dialog v-model:visible="showDetailDialog" :header="selectedProgramEvent ? (getProgramDisplayName(selectedProgramEvent) + ' - ' + selectedDateStr) : selectedDateStr" modal :style="{ width: '700px' }" :breakpoints="{ '1199px': '75vw', '575px': '95vw' }">
         <!-- Liste des programmes (si plusieurs pour cette date) -->
         <template v-if="!selectedProgramEvent">
             <div v-if="selectedEvents.length === 0" class="text-muted-color text-sm py-4">Aucun programme pour cette date.</div>
@@ -360,11 +348,7 @@ onUnmounted(() => {
 
         <!-- Services du programme selectionne -->
         <template v-else>
-            <div v-if="selectedEvents.length > 1" class="mb-3">
-                <Button icon="pi pi-arrow-left" text size="small" :label="$t('Back')" @click="backToList" />
-            </div>
             <div class="flex flex-wrap gap-2 mb-4">
-                <Tag :value="selectedProgramEvent.departmentName || '-'" severity="info" class="text-xs" />
                 <Tag v-if="selectedProgramEvent.indRecurrent" value="Recurrent" severity="warn" class="text-xs" />
                 <Tag v-else value="Ponctuel" severity="secondary" class="text-xs" />
                 <Tag :value="selectedDateStr" severity="secondary" icon="pi pi-calendar" class="text-xs" />
@@ -372,27 +356,40 @@ onUnmounted(() => {
 
             <div v-if="detailLoading" class="flex justify-center py-6"><ProgressSpinner /></div>
             <div v-else-if="detailServices.length === 0" class="text-muted-color text-sm py-4">{{ $t('noServices') }}</div>
-            <div v-else class="flex flex-col gap-4">
-                <div v-for="group in detailServices" :key="group.groupKey">
-                    <div v-for="prg in group.servicePrograms" :key="prg.programId" class="mb-4">
-                        <div v-if="prg.services && prg.services.length > 0" class="flex flex-col gap-2">
-                            <div v-for="svc in prg.services" :key="svc.idTabService"
-                                class="p-3 rounded-lg border border-surface-200 dark:border-surface-700">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-sm">{{ svc.serviceTitle }}</span>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-mono bg-primary text-white px-2 py-0.5 rounded">{{ svc.startTime }}</span>
-                                        <span v-if="svc.endTime" class="text-xs text-muted-color">- {{ svc.endTime }}</span>
-                                    </div>
-                                </div>
-                                <div v-if="svc.arrivalTime" class="text-xs text-muted-color mt-1">
-                                    <i class="pi pi-clock mr-1"></i>Arrivee : {{ svc.arrivalTime }}
-                                </div>
+            <div v-else>
+                <Tabs :value="allDepartmentsInServices[0]?.name || '0'">
+                    <TabList>
+                        <Tab v-for="dept in allDepartmentsInServices" :key="dept.id" :value="dept.name" v-tooltip="dept.name">
+                            {{ (dept.shortName || dept.name).toUpperCase() }}
+                        </Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel v-for="dept in allDepartmentsInServices" :key="dept.id" :value="dept.name">
+                            <div class="flex flex-col gap-2 mt-3">
+                                <template v-for="group in detailServices" :key="group.groupKey">
+                                    <template v-for="prg in group.servicePrograms.filter(p => p.departmentName === dept.name)" :key="prg.programId + '-' + prg.departmentId">
+                                        <div v-for="svc in prg.services" :key="svc.idTabService"
+                                            class="p-3 rounded-lg border border-surface-200 dark:border-surface-700">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-semibold text-sm">{{ svc.serviceTitle }}</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs font-mono bg-primary text-white px-2 py-0.5 rounded">{{ svc.startTime }}</span>
+                                                    <span v-if="svc.endTime" class="text-xs text-muted-color">- {{ svc.endTime }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-if="svc.arrivalTime" class="text-xs text-muted-color mt-1">
+                                                <i class="pi pi-clock mr-1"></i>Arrivee : {{ svc.arrivalTime }}
+                                            </div>
+                                            <div v-if="svc.notes" class="text-xs text-muted-color mt-1 italic">
+                                                <i class="pi pi-comment mr-1"></i>{{ svc.notes }}
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
                             </div>
-                        </div>
-                        <div v-else class="text-muted-color text-sm">Aucun service configure.</div>
-                    </div>
-                </div>
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
             </div>
         </template>
 

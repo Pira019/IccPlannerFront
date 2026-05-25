@@ -123,8 +123,8 @@ const mergedEvents = computed(() => {
           hasAvailability: true
         });
       });
-    } else {
-      // Pas de dispo → événement placeholder pour garder la date cliquable
+    } else if (availableDates.value.includes(e.date)) {
+      // Date avec services mais pas de dispo - garder cliquable
       events.push({
         date: e.date,
         id: `date-${e.date}`,
@@ -161,6 +161,8 @@ watch(
 )
 
 const openDialog = (date) => {
+  // Ne pas ouvrir si la date n'a pas de services
+  if (!availableDates.value.includes(date)) return;
   clickedDate.value = date
   dialogVisible.value = true
 }
