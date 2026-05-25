@@ -328,7 +328,14 @@
     "resetBtn": "Reset",
     "resetSuccess": "Your password has been reset successfully.",
     "passwordMismatch": "Passwords do not match.",
-    "passwordTooShort": "Password must be at least 8 characters."
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "confirmEmailLoading": "Confirming...",
+    "confirmEmailSuccess": "Email confirmed!",
+    "confirmEmailSuccessDesc": "Your email address has been confirmed successfully. You can now sign in.",
+    "confirmEmailError": "Confirmation failed",
+    "confirmEmailInvalidLink": "Invalid confirmation link.",
+    "confirmEmailErrorDefault": "An error occurred during confirmation.",
+    "goToLogin": "Sign in"
   },
 
   "logout": "Logout",

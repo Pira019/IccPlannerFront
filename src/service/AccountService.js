@@ -46,6 +46,13 @@ export default class AccountService extends BaseService
         return await this.axiosInstance.post(endPoint, { email })
     }
 
+    /** Confirmer l'adresse email */
+    static async confirmEmail(userId, code)
+    {
+        const endPoint = `${this.authBaseUrl}confirm-email`;
+        return await this.axiosInstance.get(endPoint, { params: { userId, token: code } })
+    }
+
     /** Réinitialiser le mot de passe avec le token */
     static async resetPassword(userId, token, newPassword)
     {

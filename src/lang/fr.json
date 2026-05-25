@@ -330,7 +330,14 @@
     "resetBtn": "Réinitialiser",
     "resetSuccess": "Votre mot de passe a été réinitialisé avec succès.",
     "passwordMismatch": "Les mots de passe ne correspondent pas.",
-    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères."
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+    "confirmEmailLoading": "Confirmation en cours...",
+    "confirmEmailSuccess": "Email confirmé !",
+    "confirmEmailSuccessDesc": "Votre adresse e-mail a été confirmée avec succès. Vous pouvez maintenant vous connecter.",
+    "confirmEmailError": "Échec de la confirmation",
+    "confirmEmailInvalidLink": "Lien de confirmation invalide.",
+    "confirmEmailErrorDefault": "Une erreur est survenue lors de la confirmation.",
+    "goToLogin": "Se connecter"
   },
 
   "logout": "Déconnexion",
