@@ -13,6 +13,11 @@ export default class ServicePrgService extends BaseService
         return await this.axiosInstance.get(this.authBaseUrl);
     }
 
+    static async create(payload)
+    {
+        return await this.axiosInstance.post(this.authBaseUrl, payload);
+    }
+
     static async getDatesAsync(month,year,idDepart)
     {
         const endPoint = `${this.authBaseUrl}dates/${month}/${year}/${idDepart}`

@@ -340,6 +340,8 @@
 
   "logout": "Logout",
 
+  "liNewService": "New service",
+
   "dashboard": {
       "goodMorning": "Good morning",
       "goodAfternoon": "Good afternoon",

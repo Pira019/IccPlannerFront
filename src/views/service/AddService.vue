@@ -11,17 +11,44 @@
       <!-- Liste déroulante des services existants -->
       <div class="flex flex-col gap-1">
         <label class="font-semibold text-sm">{{ $t('servicesCulte') }}</label>
-        <Select 
-          v-model="formData.serviceId" 
-          :options="servicesList" 
-          optionLabel="label" 
-          optionValue="id" 
-          :placeholder="$t('servicesCulte')"
-          :loading="loadingServices"
-          filter
-          class="w-full"
-          @change="onServiceSelected"
-        />
+        <div class="flex gap-2">
+          <Select 
+            v-model="formData.serviceId" 
+            :options="servicesList" 
+            optionLabel="label" 
+            optionValue="id" 
+            :placeholder="$t('servicesCulte')"
+            :loading="loadingServices"
+            filter
+            class="w-full"
+            @change="onServiceSelected"
+          />
+          <Button icon="pi pi-plus" severity="secondary" @click="showCreateService = true" v-tooltip="$t('liAddService')" />
+        </div>
+      </div>
+
+      <!-- Formulaire inline pour créer un nouveau service -->
+      <div v-if="showCreateService" class="flex flex-col gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <span class="text-sm font-bold text-slate-700">{{ $t('liNewService') }}</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold">{{ $t('liDisplayName') }}</label>
+          <InputText v-model="newService.displayName" :placeholder="$t('liDisplayName')" />
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-1 flex flex-col gap-1">
+            <label class="text-xs font-semibold">{{ $t('liDateStart') }}</label>
+            <DatePicker v-model="newService.startTime" timeOnly placeholder="HH:mm" />
+          </div>
+          <div class="flex-1 flex flex-col gap-1">
+            <label class="text-xs font-semibold">{{ $t('liDateEnd') }}</label>
+            <DatePicker v-model="newService.endTime" timeOnly placeholder="HH:mm" />
+          </div>
+        </div>
+        <div class="flex gap-2 justify-end">
+          <Button :label="$t('Cancel')" size="small" text @click="showCreateService = false" />
+          <Button :label="$t('Save')" size="small" icon="pi pi-check" @click="createNewService" :loading="creatingService" />
+        </div>
+        <Message v-if="createServiceError" severity="error" size="small" :closable="true" @close="createServiceError = null">{{ createServiceError }}</Message>
       </div>
 
       <!-- Nom d'affichage -->
@@ -95,6 +122,15 @@ const errorReq = ref(null);
 const servicesList = ref([]);
 const isEdit = ref(false);
 const validationError = ref(null);
+const showCreateService = ref(false);
+const creatingService = ref(false);
+const createServiceError = ref(null);
+
+const newService = ref({
+  displayName: '',
+  startTime: null,
+  endTime: null
+});
 
 const formData = ref({
   serviceId: null,
@@ -153,6 +189,50 @@ function onServiceSelected() {
       formData.value.arrivalTime = parseTime(selected.arrivalTime);
     }
   }
+}
+
+async function createNewService() {
+  createServiceError.value = null;
+
+  if (!newService.value.displayName?.trim()) {
+    createServiceError.value = t('validation.displayNameRequired');
+    return;
+  }
+  if (!newService.value.startTime) {
+    createServiceError.value = t('validation.startTimeRequired');
+    return;
+  }
+  if (!newService.value.endTime) {
+    createServiceError.value = t('validation.endTimeRequired');
+    return;
+  }
+
+  const payload = {
+    displayName: newService.value.displayName,
+    startTime: formatTime(newService.value.startTime),
+    endTime: formatTime(newService.value.endTime)
+  };
+
+  const { error, result } = await handleAsyncError(
+    () => ServicePrgService.create(payload),
+    (val) => (creatingService.value = val),
+    true
+  );
+
+  if (error) {
+    createServiceError.value = error?.message || t('internalError');
+    return;
+  }
+
+  // Recharger la liste et sélectionner le nouveau service
+  await loadServices();
+  if (result?.id) {
+    formData.value.serviceId = result.id;
+    onServiceSelected();
+  }
+
+  showCreateService.value = false;
+  newService.value = { displayName: '', startTime: null, endTime: null };
 }
 
 function initForm() {

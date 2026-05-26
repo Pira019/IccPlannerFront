@@ -342,6 +342,8 @@
 
   "logout": "Déconnexion",
 
+  "liNewService": "Nouveau service",
+
   "dashboard": {
       "goodMorning": "Bonjour",
       "goodAfternoon": "Bon après-midi",
