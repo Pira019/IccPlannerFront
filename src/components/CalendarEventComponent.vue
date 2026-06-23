@@ -29,7 +29,7 @@ const views = [
     { key: 'dayGridMonth', label: 'liMonth' },
     { key: 'timeGridWeek', label: 'liWeek' },
     { key: 'timeGridDay', label: 'liDay' },
-    { key: 'listWeek', label: 'lilist' }
+    { key: 'listWeek', label: 'liList' }
 ];
 
 const currentViewLabel = computed(() => views.find((v) => v.key === view.value)?.label);

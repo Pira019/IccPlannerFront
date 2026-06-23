@@ -72,7 +72,9 @@
       "used": "Utilisée",
       "expired": "Expirée",
       "pending": "En attente",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "sentOn": "Envoyée le",
+      "usedOn": "Utilisée le"
     },
     "liQuarter": "Secteur",
 
@@ -343,6 +345,7 @@
   "logout": "Déconnexion",
 
   "liNewService": "Nouveau service",
+  "liSavePrgFirst": "Enregistrez le programme avant d'associer des départements.",
 
   "dashboard": {
       "goodMorning": "Bonjour",

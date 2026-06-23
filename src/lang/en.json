@@ -76,7 +76,9 @@
       "used": "Used",
       "expired": "Expired",
       "pending": "Pending",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "sentOn": "Sent on",
+      "usedOn": "Used on"
     },
 
     "liDescRecurrent": "A recurring program is an activity that happens every week. For example, the celebration service or the prophetic prayer gathering that take place regularly.",
@@ -341,6 +343,7 @@
   "logout": "Logout",
 
   "liNewService": "New service",
+  "liSavePrgFirst": "Save the program before associating departments.",
 
   "dashboard": {
       "goodMorning": "Good morning",

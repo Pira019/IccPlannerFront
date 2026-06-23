@@ -7,6 +7,7 @@ export enum Permission {
 
     //Dept manager
     DEPART_MANAGER = 'depart:manager',
+    CAN_MANAG_DEPART = 'CanManagDepart',
 
     //Ministry
     CAN_CREATE_MINISTRY = 'CanCreateMinistry'

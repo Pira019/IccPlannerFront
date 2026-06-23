@@ -1,7 +1,9 @@
 <script setup>
 import PageComponent from '@/components/PageComponent.vue';
 import ResponseComponent from '@/components/ResponseComponent.vue';
+import { Permission } from '@/model/Enum/Permission';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { hasPermission } from '@/utils/hasPermission';
 import { useConfirmDialog } from '@/utils/useConfirmDialog';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -9,6 +11,8 @@ import { useRouter } from 'vue-router';
 import DepartmentService from '../../service/DepartmentService';
 import SendInviation from '../membre/invitation/SendInviation.vue';
 import AddDepartment from './AddDepartment.vue';
+
+const canCreateDepartment = computed(() => hasPermission(Permission.CAN_MANAG_DEPART));
 
 const { handleAsyncError } = useHandleAsyncError();
 const { t } = useI18n();
@@ -35,48 +39,61 @@ const showSendInvitEdit = ref(false);
 var deptEdtId = ref(null);
 
 // menu
-const getItems = (rowData) => [
-    {
-        label: t('liDetail'),
-        icon: 'pi pi-eye',
-        command: () => {
-            router.push({ name: 'department-details', params: { id: rowData.id } });
+const canManageDepartment = computed(() => hasPermission(Permission.DEPART_MANAGER));
+
+const getItems = (rowData) => {
+    const items = [
+        {
+            label: t('liDetail'),
+            icon: 'pi pi-eye',
+            command: () => {
+                router.push({ name: 'department-details', params: { id: rowData.id } });
+            }
         }
-    },
-    {
-        label: t('liSendInv'),
-        icon: 'pi pi-user-plus',
-        command: () => {
-             deptEdtId.value = rowData.id;
-            showSendInvitEdit.value=true;
-        }
-    },
-    {
-        separator: true
-    },
-    {
-        label: t('btnUpdate'),
-        icon: 'pi pi-pencil',
-        command: () => {
-            deptEdtId.value = rowData.id;
-            departDialog.value = true;
-        }
-    },
-    {
-        label: t('btnDel'),
-        icon: 'pi pi-trash',
-        command: () => {
-            showConfirm({
-                group: 'deleteDialog',
-                message: 'liMsgDel',
-                header: 'liDeptDel',
-                acceptLabel: 'btnDel',
-                acceptSeverity: 'danger',
-                onAccept: () => deleteById(rowData.id)
-            });
-        }
+    ];
+
+    if (canManageDepartment.value) {
+        items.push({
+            label: t('liSendInv'),
+            icon: 'pi pi-user-plus',
+            command: () => {
+                deptEdtId.value = rowData.id;
+                showSendInvitEdit.value = true;
+            }
+        });
     }
-];
+
+    if (canCreateDepartment.value || canManageDepartment.value) {
+        items.push({ separator: true });
+        items.push({
+            label: t('btnUpdate'),
+            icon: 'pi pi-pencil',
+            command: () => {
+                deptEdtId.value = rowData.id;
+                departDialog.value = true;
+            }
+        });
+    }
+
+    if (canCreateDepartment.value) {
+        items.push({
+            label: t('btnDel'),
+            icon: 'pi pi-trash',
+            command: () => {
+                showConfirm({
+                    group: 'deleteDialog',
+                    message: 'liMsgDel',
+                    header: 'liDeptDel',
+                    acceptLabel: 'btnDel',
+                    acceptSeverity: 'danger',
+                    onAccept: () => deleteById(rowData.id)
+                });
+            }
+        });
+    }
+
+    return items;
+};
 
 const pageSize = ref(10);
 const totalRecords = ref(null);
@@ -217,6 +234,7 @@ const toggle = (event, id) => {
 
 <template>
     <PageComponent :title-page="$t('liDepart')" @btn-add="onAddDepartment()"
+        :showAddBtn="canCreateDepartment"
         :breadcrumbs="[{ label: $t('liDepart') }]">
         <div>
             <DataTable

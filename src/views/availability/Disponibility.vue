@@ -21,7 +21,7 @@
         </div>
       </template>
       <template #rightContent>
-        <Button v-if="availableDates.length > 0" :label="$t('addDispo')"
+        <Button v-if="availableDates.length > 0 && !notInDepartment" :label="$t('addDispo')"
         @click="openDialogFirstDate"
         icon="pi pi-fw pi-calendar-plus" />
       </template>

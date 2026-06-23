@@ -135,4 +135,18 @@ export default class DepartmentService extends BaseService
         return await this.axiosInstance.post(endPoint, { posteIds })
     }
 
+    /** Desaffecter un poste d'un departement */
+    static async removePoste(departmentId, posteId)
+    {
+        const endPoint = `${this.authBaseUrl}${departmentId}/postes/${posteId}`
+        return await this.axiosInstance.delete(endPoint)
+    }
+
+    /** Restaurer un programme soft-deleted dans un departement */
+    static async restoreDepartmentProgram(programId, departmentIds, indRecurrent)
+    {
+        const endPoint = `${this.authBaseUrl}programs/restore/${programId}`
+        return await this.axiosInstance.post(endPoint, { programId, departmentIds, indRecurrent })
+    }
+
 }

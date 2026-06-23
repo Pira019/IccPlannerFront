@@ -48,12 +48,7 @@
                         <span class="font-bold uppercase">{{ slotProps.data.name }}</span>
                     </template>
                 </Column>
-                <Column :header="$t('liDisplayName')">
-                    <template #body="slotProps">
-                       <div class="px-5">{{ slotProps.data.nickName }}</div>
-                     </template>
-                </Column>
-                <Column field="sex" :header="$t('liSex')">
+                <Column v-if="canManage" field="sex" :header="$t('liSex')">
                 <template #body="slotProps">
                        <div class="px-5">{{ slotProps.data.sex }}</div>
                      </template>
@@ -77,12 +72,16 @@
 
 <script setup>
 import PageComponent from '@/components/PageComponent.vue';
+import { Permission } from '@/model/Enum/Permission';
 import DepartmentService from '@/service/DepartmentService';
 import MemberService from '@/service/MemberService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { hasPermission } from '@/utils/hasPermission';
 import { FilterMatchMode } from '@primevue/core/api';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+const canManage = computed(() => hasPermission(Permission.DEPART_MANAGER));
 
 const { handleAsyncError } = useHandleAsyncError();
 const route = useRoute();

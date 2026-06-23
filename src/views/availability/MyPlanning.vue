@@ -168,8 +168,27 @@ async function fetchDepartments() {
     departments.value = result?.departments || [];
 }
 
+async function exportPdf() {
+    if (!effectiveDept.value) return;
+    try {
+        const response = await PlanningService.downloadPdf(currentMonth.value, currentYear.value, effectiveDept.value);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Planification-${currentMonth.value}-${currentYear.value}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (e) { /* silently fail */ }
+}
+
 onMounted(async () => {
     await fetchDepartments();
+    // Sélectionner le premier département par défaut si un seul
+    if (!props.departmentSelected && departments.value.length > 0 && !selectedDept.value) {
+        selectedDept.value = departments.value[0].id;
+    }
     await fetchMyPlanning();
     await fetchTeamPlanning();
 });
@@ -210,6 +229,7 @@ watch([currentMonth, currentYear, effectiveDept], () => { fetchMyPlanning(); fet
                     size="small"
                 />
                 <Tag severity="primary" :value="`${totalAssignments} ${t('myPlanning.assignments')}`" rounded />
+                <Button v-if="effectiveDept" icon="pi pi-file-pdf" :label="t('planning.exportPdf')" outlined size="small" @click="exportPdf" />
             </div>
         </div>
 
