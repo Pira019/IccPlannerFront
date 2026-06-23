@@ -6,5 +6,8 @@ export enum Permission {
     PRG_MANAGER = 'prg:manager',
 
     //Dept manager
-    DEPART_MANAGER = 'depart:manager'
+    DEPART_MANAGER = 'depart:manager',
+
+    //Ministry
+    CAN_CREATE_MINISTRY = 'CanCreateMinistry'
 }

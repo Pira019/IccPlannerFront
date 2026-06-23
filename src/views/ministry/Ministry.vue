@@ -1,7 +1,9 @@
 <script setup>
 import LoadingDialogComponent from '@/components/LoadingDialogComponent.vue';
+import { Permission } from '@/model/Enum/Permission';
 import MinistryService from '@/service/MinistryService';
 import { useHandleAsyncError } from '@/utils/handleAsyncError';
+import { hasPermission } from '@/utils/hasPermission';
 import { useConfirmDialog } from '@/utils/useConfirmDialog';
 import { FilterMatchMode } from '@primevue/core/api';
 import { computed, onMounted, ref } from 'vue';
@@ -22,6 +24,8 @@ const modalTitle = ref('AddMinistry');
 const errorReq = ref();
 const selectedMinistry = ref(null);
 const ministryList = ref([]);
+
+const canManageMinistry = computed(() => hasPermission(Permission.CAN_CREATE_MINISTRY));
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -123,7 +127,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <PageComponent :title-page="$t('Ministries')" @btn-add="openAdd"
+    <PageComponent :title-page="$t('Ministries')" @btn-add="openAdd" :showAddBtn="canManageMinistry"
         :breadcrumbs="[{ label: $t('Ministries') }]">
         <div>
             <DataTable ref="dt" dataKey="id" selectionMode="single" :metaKeySelection="false" :value="ministryList" tableStyle="min-width: 50rem" stripedRows :filters="filters" :loading="loading">
@@ -154,7 +158,7 @@ onMounted(async () => {
 
                 <Column field="name" :header="$t('colName')" sortable style="width: 25%" headerClass="header-name"></Column>
                 <Column field="description" :header="$t('colDesc')" style="width: 80%"></Column>
-                <Column style="min-width: 10rem">
+                <Column v-if="canManageMinistry" style="min-width: 10rem">
                     <template #body="slotProps">
                         <ButtonGroup>
                             <Button icon="pi pi-pencil" variant="outlined" @click="openAdd(slotProps.data)" />

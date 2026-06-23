@@ -19,8 +19,11 @@ const router = createRouter({
                 {
                     path: '/ministry',
                     name: 'ministry',
-                    component: () => import('@/views/ministry/Ministry.vue')
-
+                    component: () => import('@/views/ministry/Ministry.vue'),
+                    meta: {
+                        requiresAuth: true,
+                        requiredClaim: [{ key: 'permissions', value: ['CanCreateMinistry'] }]
+                    }
                 },
                 {
                     path: '/profil',
